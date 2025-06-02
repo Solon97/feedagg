@@ -140,6 +140,100 @@
   .safe-right {
     padding-right: env(safe-area-inset-right);
   }
+
+  /* Enhanced mobile dropdown animations */
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideOutRight {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fadeOutScale {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+
+  /* Mobile menu animations */
+  .mobile-menu-enter {
+    animation: slideInRight 0.3s ease-out forwards;
+  }
+
+  .mobile-menu-exit {
+    animation: slideOutRight 0.25s ease-in forwards;
+  }
+
+  /* Dropdown content animations */
+  .dropdown-enter {
+    animation: fadeInScale 0.2s ease-out forwards;
+  }
+
+  .dropdown-exit {
+    animation: fadeOutScale 0.15s ease-in forwards;
+  }
+
+  /* Touch feedback */
+  .touch-feedback {
+    transition: all 0.1s ease-out;
+  }
+
+  .touch-feedback:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+
+  /* Improved focus styles for mobile */
+  .focus-visible:focus-visible {
+    outline: 2px solid #14b8a6;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Prevent text selection on touch */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Hardware acceleration for smooth animations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
 }
 
 /* Article content styling for mobile */

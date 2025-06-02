@@ -39,6 +39,11 @@ import {
   Rss,
   Youtube,
   XCircle,
+  ChevronRight,
+  Calendar,
+  Clock,
+  Settings,
+  BookOpen,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { previewCache, type UrlPreview } from "@/lib/preview-cache"
@@ -77,7 +82,7 @@ export default function Dashboard() {
   const [digests, setDigests] = useState<Digest[]>([
     {
       id: 1,
-      title: "Daily Reads",
+      title: "Daily Tech News",
       frequency: "daily",
       scheduleTime: "09:00",
       selectedDays: [],
@@ -109,13 +114,13 @@ export default function Dashboard() {
   })
 
   const daysOfWeek = [
-    { value: 0, label: "Sunday" },
-    { value: 1, label: "Monday" },
-    { value: 2, label: "Tuesday" },
-    { value: 3, label: "Wednesday" },
-    { value: 4, label: "Thursday" },
-    { value: 5, label: "Friday" },
-    { value: 6, label: "Saturday" },
+    { value: 0, label: "Sun", fullLabel: "Sunday" },
+    { value: 1, label: "Mon", fullLabel: "Monday" },
+    { value: 2, label: "Tue", fullLabel: "Tuesday" },
+    { value: 3, label: "Wed", fullLabel: "Wednesday" },
+    { value: 4, label: "Thu", fullLabel: "Thursday" },
+    { value: 5, label: "Fri", fullLabel: "Friday" },
+    { value: 6, label: "Sat", fullLabel: "Saturday" },
   ]
 
   const daysOfMonth = Array.from({ length: 31 }, (_, i) => i + 1)
@@ -473,6 +478,20 @@ export default function Dashboard() {
     return `${sourceCount} source${sourceCount !== 1 ? "s" : ""}`
   }
 
+  const getFrequencyDisplay = (frequency: string, selectedDays: number[]) => {
+    if (frequency === "daily") return "Daily"
+    if (frequency === "weekly") {
+      if (selectedDays.length === 0) return "Weekly"
+      if (selectedDays.length === 7) return "Daily"
+      return `${selectedDays.length} days/week`
+    }
+    if (frequency === "monthly") {
+      if (selectedDays.length === 0) return "Monthly"
+      return `${selectedDays.length} days/month`
+    }
+    return frequency
+  }
+
   const renderValidationStatus = (source: ContentSource) => {
     if (source.isValidating) {
       return (
@@ -546,7 +565,7 @@ export default function Dashboard() {
               <img
                 src={source.preview.image || "/placeholder.svg"}
                 alt={source.preview.title}
-                className="w-16 h-16 object-cover rounded flex-shrink-0"
+                className="w-12 h-12 md:w-16 md:h-16 object-cover rounded flex-shrink-0"
               />
             )}
             <div className="flex-1 min-w-0">
@@ -559,12 +578,12 @@ export default function Dashboard() {
                 {source.fromCache && (
                   <div className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
                     <Database className="w-3 h-3" />
-                    Cached
+                    <span className="hidden sm:inline">Cached</span>
                   </div>
                 )}
               </div>
               <h4 className="font-medium text-sm text-gray-900 line-clamp-1 mb-1">{source.preview.title}</h4>
-              <p className="text-xs text-gray-600 line-clamp-2">{source.preview.description}</p>
+              <p className="text-xs text-gray-600 line-clamp-2 hidden sm:block">{source.preview.description}</p>
               <div className="flex items-center gap-4 mt-2">
                 <a
                   href={source.url}
@@ -573,7 +592,8 @@ export default function Dashboard() {
                   className="inline-flex items-center gap-1 text-xs text-teal-600 hover:text-teal-700"
                 >
                   <ExternalLink className="w-3 h-3" />
-                  Visit site
+                  <span className="hidden sm:inline">Visit site</span>
+                  <span className="sm:hidden">Visit</span>
                 </a>
                 {source.rssUrl && (
                   <a
@@ -583,7 +603,8 @@ export default function Dashboard() {
                     className="inline-flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700"
                   >
                     <Rss className="w-3 h-3" />
-                    RSS Feed
+                    <span className="hidden sm:inline">RSS Feed</span>
+                    <span className="sm:hidden">RSS</span>
                   </a>
                 )}
               </div>
@@ -601,7 +622,7 @@ export default function Dashboard() {
       return (
         <div className="grid gap-2">
           <Label>Select Days of the Week</Label>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-7 gap-1 md:gap-2">
             {daysOfWeek.map((day) => (
               <Button
                 key={day.value}
@@ -609,13 +630,15 @@ export default function Dashboard() {
                 variant={formData.selectedDays.includes(day.value) ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleDayToggle(day.value)}
-                className={
+                className={`h-10 p-0 text-xs md:text-sm ${
                   formData.selectedDays.includes(day.value)
                     ? "bg-teal-600 hover:bg-teal-700 text-white"
                     : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
-                }
+                }`}
+                title={day.fullLabel}
               >
-                {day.label}
+                <span className="md:hidden">{day.label}</span>
+                <span className="hidden md:inline">{day.fullLabel}</span>
               </Button>
             ))}
           </div>
@@ -627,7 +650,7 @@ export default function Dashboard() {
       return (
         <div className="grid gap-2">
           <Label>Select Days of the Month</Label>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 md:gap-2 max-h-40 overflow-y-auto">
             {daysOfMonth.map((day) => (
               <Button
                 key={day}
@@ -635,7 +658,7 @@ export default function Dashboard() {
                 variant={formData.selectedDays.includes(day) ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleDayToggle(day)}
-                className={`h-10 w-10 p-0 ${
+                className={`h-8 w-8 p-0 text-xs ${
                   formData.selectedDays.includes(day)
                     ? "bg-teal-600 hover:bg-teal-700 text-white"
                     : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
@@ -653,7 +676,7 @@ export default function Dashboard() {
   }
 
   const renderDigestForm = () => (
-    <div className="grid gap-6 py-4">
+    <div className="grid gap-4 md:gap-6 py-4 max-h-[70vh] overflow-y-auto">
       {/* Template Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Template Information</h3>
@@ -665,17 +688,18 @@ export default function Dashboard() {
             value={formData.title}
             onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
             placeholder="My Daily News Digest"
+            className="h-12 text-base"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="frequency">Frequency</Label>
             <Select
               value={formData.frequency}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, frequency: value, selectedDays: [] }))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-12">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -687,12 +711,13 @@ export default function Dashboard() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="scheduleTime">Schedule Time (HH:MM)</Label>
+            <Label htmlFor="scheduleTime">Schedule Time</Label>
             <Input
               id="scheduleTime"
               type="time"
               value={formData.scheduleTime}
               onChange={(e) => setFormData((prev) => ({ ...prev, scheduleTime: e.target.value }))}
+              className="h-12 text-base"
             />
           </div>
         </div>
@@ -712,7 +737,8 @@ export default function Dashboard() {
             className="text-gray-600 hover:text-teal-600"
           >
             {showPreviews ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-            {showPreviews ? "Hide" : "Show"} Previews
+            <span className="hidden sm:inline">{showPreviews ? "Hide" : "Show"} Previews</span>
+            <span className="sm:hidden">{showPreviews ? "Hide" : "Show"}</span>
           </Button>
         </div>
 
@@ -722,19 +748,19 @@ export default function Dashboard() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <Globe className="w-4 h-4 text-gray-500" />
-                  <Label className="text-sm font-medium text-gray-700">Content Source #{index + 1}</Label>
+                  <Label className="text-sm font-medium text-gray-700">Source #{index + 1}</Label>
                 </div>
                 <Input
                   value={source.url}
                   onChange={(e) => handleContentSourceChange(index, e.target.value)}
-                  placeholder="https://... (YouTube channel or website with RSS feed)"
-                  className={
+                  placeholder="https://... (YouTube channel or RSS feed)"
+                  className={`h-12 text-base ${
                     source.validationError
                       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                       : source.sourceType && source.sourceType !== "invalid"
                         ? "border-green-300 focus:border-green-500 focus:ring-green-500"
                         : ""
-                  }
+                  }`}
                 />
                 {renderValidationStatus(source)}
               </div>
@@ -744,7 +770,7 @@ export default function Dashboard() {
                   variant="outline"
                   size="sm"
                   onClick={() => removeContentSource(index)}
-                  className="text-gray-500 hover:text-red-600 hover:border-red-600 mt-6"
+                  className="text-gray-500 hover:text-red-600 hover:border-red-600 mt-6 h-10 w-10 p-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -758,7 +784,7 @@ export default function Dashboard() {
           type="button"
           variant="outline"
           onClick={addContentSource}
-          className="text-gray-600 hover:text-teal-600 hover:border-teal-600"
+          className="w-full h-12 text-gray-600 hover:text-teal-600 hover:border-teal-600"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Content Source
@@ -772,85 +798,181 @@ export default function Dashboard() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="px-6 py-8 max-w-7xl mx-auto">
-        {/* Digests Section */}
-        <Card className="mb-8">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-2xl font-semibold text-gray-900">Your Digests</CardTitle>
-            <Button onClick={handleCreateDigest} className="bg-teal-600 hover:bg-teal-700 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              New Digest
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-0 font-medium text-gray-600">Title</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Frequency</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Schedule</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Sources</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-600">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {digests.map((digest) => (
-                    <tr
-                      key={digest.id}
-                      className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="py-4 px-0 text-gray-900 font-medium">{digest.title}</td>
-                      <td className="py-4 px-4 text-gray-900 capitalize">{digest.frequency}</td>
-                      <td className="py-4 px-4 text-gray-900">{digest.scheduleTime}</td>
-                      <td className="py-4 px-4 text-gray-900">{getDigestSummary(digest)}</td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center justify-end gap-2">
+      <main className="px-4 md:px-6 py-4 md:py-8 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 text-sm md:text-base">Manage your content digests</p>
+          </div>
+          <Button onClick={handleCreateDigest} className="bg-teal-600 hover:bg-teal-700 text-white h-12 px-6">
+            <Plus className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">New Digest</span>
+            <span className="sm:hidden">New</span>
+          </Button>
+        </div>
+
+        {/* Digests Grid - Mobile Optimized */}
+        <div className="grid gap-4 md:gap-6">
+          {digests.length === 0 ? (
+            <Card className="text-center py-12">
+              <CardContent>
+                <div className="max-w-md mx-auto">
+                  <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No digests yet</h3>
+                  <p className="text-gray-600 mb-6">
+                    Create your first digest to get started with personalized content delivery.
+                  </p>
+                  <Button onClick={handleCreateDigest} className="bg-teal-600 hover:bg-teal-700 text-white">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First Digest
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Mobile Card View */}
+              <div className="block md:hidden space-y-4">
+                {digests.map((digest) => (
+                  <Card key={digest.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-lg mb-1 truncate">{digest.title}</h3>
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>{getFrequencyDisplay(digest.frequency, digest.selectedDays)}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{digest.scheduleTime}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <a
+                          href={`/digest/${digest.id}`}
+                          className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition-colors"
+                        >
+                          <BookOpen className="w-5 h-5" />
+                          <ChevronRight className="w-4 h-4" />
+                        </a>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">{getDigestSummary(digest)}</span>
+                        <div className="flex gap-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditDigest(digest)}
-                            className="text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                            className="text-gray-600 hover:text-teal-600 hover:border-teal-600 h-8 w-8 p-0"
                           >
                             <Edit className="w-4 h-4" />
-                            <span className="sr-only">Edit {digest.title}</span>
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeleteDigest(digest)}
-                            className="text-gray-600 hover:text-red-600 hover:border-red-600"
+                            className="text-gray-600 hover:text-red-600 hover:border-red-600 h-8 w-8 p-0"
                           >
                             <Trash2 className="w-4 h-4" />
-                            <span className="sr-only">Delete {digest.title}</span>
                           </Button>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <Card className="hidden md:block">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-semibold text-gray-900">Your Digests</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-0 font-medium text-gray-600">Title</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Frequency</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Schedule</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Sources</th>
+                          <th className="text-right py-3 px-4 font-medium text-gray-600">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {digests.map((digest) => (
+                          <tr
+                            key={digest.id}
+                            className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="py-4 px-0">
+                              <a
+                                href={`/digest/${digest.id}`}
+                                className="text-gray-900 font-medium hover:text-teal-600 transition-colors flex items-center gap-2"
+                              >
+                                {digest.title}
+                                <BookOpen className="w-4 h-4" />
+                              </a>
+                            </td>
+                            <td className="py-4 px-4 text-gray-900">
+                              {getFrequencyDisplay(digest.frequency, digest.selectedDays)}
+                            </td>
+                            <td className="py-4 px-4 text-gray-900">{digest.scheduleTime}</td>
+                            <td className="py-4 px-4 text-gray-900">{getDigestSummary(digest)}</td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditDigest(digest)}
+                                  className="text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  <span className="sr-only">Edit {digest.title}</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteDigest(digest)}
+                                  className="text-gray-600 hover:text-red-600 hover:border-red-600"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  <span className="sr-only">Delete {digest.title}</span>
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
 
         {/* Create Dialog */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>Create New Email Template</DialogTitle>
               <DialogDescription>
                 Set up your email template with YouTube channels or websites that have RSS feeds
               </DialogDescription>
             </DialogHeader>
-            {renderDigestForm()}
-            <DialogFooter>
-              <Button variant="outline" onClick={cancelDialog}>
+            <div className="flex-1 overflow-y-auto">{renderDigestForm()}</div>
+            <DialogFooter className="flex-shrink-0 gap-2">
+              <Button variant="outline" onClick={cancelDialog} className="h-12">
                 Cancel
               </Button>
               <Button
                 onClick={confirmCreate}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-teal-600 hover:bg-teal-700 text-white h-12"
                 disabled={!isFormValid()}
               >
                 Save Template
@@ -861,19 +983,19 @@ export default function Dashboard() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>Edit Email Template</DialogTitle>
               <DialogDescription>Make changes to your email template configuration</DialogDescription>
             </DialogHeader>
-            {renderDigestForm()}
-            <DialogFooter>
-              <Button variant="outline" onClick={cancelDialog}>
+            <div className="flex-1 overflow-y-auto">{renderDigestForm()}</div>
+            <DialogFooter className="flex-shrink-0 gap-2">
+              <Button variant="outline" onClick={cancelDialog} className="h-12">
                 Cancel
               </Button>
               <Button
                 onClick={confirmEdit}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-teal-600 hover:bg-teal-700 text-white h-12"
                 disabled={!isFormValid()}
               >
                 Save Changes

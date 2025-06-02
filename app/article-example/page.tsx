@@ -2,55 +2,109 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, ExternalLink, MoreHorizontal, Clock, Calendar } from "lucide-react"
+import {
+  ArrowLeft,
+  ExternalLink,
+  MoreHorizontal,
+  Clock,
+  Calendar,
+  Share,
+  Bookmark,
+  Type,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react"
+import { useState } from "react"
 
 export default function ArticleExample() {
+  const [fontSize, setFontSize] = useState("base")
+  const [isBookmarked, setIsBookmarked] = useState(false)
+
+  const fontSizes = {
+    sm: "text-sm",
+    base: "text-base",
+    lg: "text-lg",
+    xl: "text-xl",
+  }
+
+  const increaseFontSize = () => {
+    const sizes = Object.keys(fontSizes)
+    const currentIndex = sizes.indexOf(fontSize)
+    if (currentIndex < sizes.length - 1) {
+      setFontSize(sizes[currentIndex + 1])
+    }
+  }
+
+  const decreaseFontSize = () => {
+    const sizes = Object.keys(fontSizes)
+    const currentIndex = sizes.indexOf(fontSize)
+    if (currentIndex > 0) {
+      setFontSize(sizes[currentIndex - 1])
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+      {/* Mobile-Optimized Header */}
+      <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 sticky top-0 z-40 backdrop-blur-sm bg-white/95">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-teal-500 rounded flex items-center justify-center">
-              <div className="w-5 h-3 bg-white rounded-sm transform rotate-12"></div>
-            </div>
-            <h1 className="text-2xl font-semibold text-gray-900">Digestly</h1>
+            <a href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
+              <div className="w-6 h-6 md:w-8 md:h-8 bg-teal-500 rounded flex items-center justify-center">
+                <div className="w-4 h-3 md:w-5 md:h-3 bg-white rounded-sm transform rotate-12"></div>
+              </div>
+              <h1 className="text-lg md:text-2xl font-semibold text-gray-900">Digestly</h1>
+            </a>
           </div>
-          <div className="flex items-center gap-6">
-            <nav className="flex items-center gap-6">
-              <a href="/saved-content" className="text-gray-600 hover:text-teal-600 transition-colors font-medium">
-                Saved Content
-              </a>
-              <a href="/" className="text-gray-600 hover:text-teal-600 transition-colors font-medium">
-                Dashboard
-              </a>
-            </nav>
-            <button className="text-gray-600 hover:text-gray-900 transition-colors">Log out</button>
+
+          {/* Mobile Actions */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsBookmarked(!isBookmarked)}
+              className={`h-8 w-8 p-0 md:h-10 md:w-auto md:px-3 ${isBookmarked ? "text-teal-600" : "text-gray-600"}`}
+            >
+              <Bookmark className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
+              <span className="hidden md:inline ml-2">{isBookmarked ? "Saved" : "Save"}</span>
+            </Button>
+
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-10 md:w-auto md:px-3 text-gray-600">
+              <Share className="w-4 h-4" />
+              <span className="hidden md:inline ml-2">Share</span>
+            </Button>
+
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-10 md:w-auto md:px-3 text-gray-600">
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="hidden md:inline ml-2">More</span>
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Article View */}
-      <main className="px-6 py-8">
-        <div className="flex items-center gap-4 mb-8">
+      <main className="px-4 md:px-6 py-4 md:py-8">
+        {/* Back Button */}
+        <div className="flex items-center gap-4 mb-4 md:mb-8">
           <a
             href="/saved-content"
             className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Saved Content
+            <span className="hidden sm:inline">Back to Saved Content</span>
+            <span className="sm:hidden">Back</span>
           </a>
         </div>
 
         <div className="max-w-4xl mx-auto">
           <Card>
-            <CardHeader className="pb-6">
-              <div className="flex items-start justify-between">
+            <CardHeader className="pb-4 md:pb-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-3xl font-bold text-gray-900 mb-4">
+                  <CardTitle className="text-xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">
                     Engenharia de Prompts: A Nova Habilidade Essencial da Era da IA
                   </CardTitle>
-                  <div className="flex items-center gap-6 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-gray-500">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">TechBlog Brasil</span>
                     </div>
@@ -64,7 +118,9 @@ export default function ArticleExample() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+
+                {/* Desktop Actions */}
+                <div className="hidden md:flex gap-2 flex-shrink-0">
                   <Button variant="outline" size="sm">
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Open Original
@@ -75,8 +131,40 @@ export default function ArticleExample() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="article-content">
+
+            {/* Reading Controls */}
+            <div className="px-4 md:px-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Type className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm text-gray-600 hidden sm:inline">Reading size:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={decreaseFontSize}
+                    disabled={fontSize === "sm"}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomOut className="w-3 h-3" />
+                  </Button>
+                  <span className="text-sm text-gray-600 min-w-[60px] text-center capitalize">{fontSize}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={increaseFontSize}
+                    disabled={fontSize === "xl"}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomIn className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="pt-6">
+              <div className={`article-content ${fontSizes[fontSize as keyof typeof fontSizes]}`}>
                 <div id="readability-page-1">
                   {/* Introdução */}
                   <p>
@@ -112,24 +200,26 @@ export default function ArticleExample() {
                   </ul>
 
                   {/* Tabela simplificada */}
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Setor</th>
-                        <th>Benefício</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Data Science</td>
-                        <td>Scripts de análise e visualizações rápidas</td>
-                      </tr>
-                      <tr>
-                        <td>Design</td>
-                        <td>Geração de ideias visuais</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Setor</th>
+                          <th>Benefício</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Data Science</td>
+                          <td>Scripts de análise e visualizações rápidas</td>
+                        </tr>
+                        <tr>
+                          <td>Design</td>
+                          <td>Geração de ideias visuais</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
                   {/* Citação */}
                   <blockquote>
@@ -146,8 +236,29 @@ export default function ArticleExample() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Mobile Action Bar */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-bottom">
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1 h-12">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open Original
+              </Button>
+              <Button
+                variant={isBookmarked ? "default" : "outline"}
+                className={`flex-1 h-12 ${isBookmarked ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}`}
+                onClick={() => setIsBookmarked(!isBookmarked)}
+              >
+                <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-current" : ""}`} />
+                {isBookmarked ? "Saved" : "Save"}
+              </Button>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Add bottom padding for mobile action bar */}
+      <div className="h-20 md:hidden"></div>
 
       <style jsx>{`
         .article-content {

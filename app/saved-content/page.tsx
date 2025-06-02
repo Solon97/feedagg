@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,8 +18,24 @@ import {
   List,
   ChevronDown,
   Play,
+  CheckCircle,
+  Circle,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+interface SavedContentItem {
+  id: number
+  title: string
+  source: string
+  type: "article" | "video"
+  readTime: string
+  savedDate: string
+  thumbnail: string
+  content?: string
+  videoUrl?: string
+  isConsumed: boolean // Add consumed status
+}
 
 export default function SavedContent() {
   const [selectedContent, setSelectedContent] = useState<any>(null)
@@ -28,6 +44,8 @@ export default function SavedContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showFilters, setShowFilters] = useState(false)
+  const [sortBy, setSortBy] = useState<string>("newest")
+  const [filteredContent, setFilteredContent] = useState<SavedContentItem[]>([])
 
   const [previousFilterState, setPreviousFilterState] = useState<{
     types: string[]
@@ -39,7 +57,9 @@ export default function SavedContent() {
     search: "",
   })
 
-  const savedContent = [
+  const [selectedConsumed, setSelectedConsumed] = useState<string>("all")
+
+  const [savedContent, setSavedContent] = useState<SavedContentItem[]>([
     {
       id: 1,
       title: "Engenharia de Prompts: A Nova Habilidade Essencial da Era da IA",
@@ -48,6 +68,7 @@ export default function SavedContent() {
       readTime: "8 min",
       savedDate: "2 days ago",
       thumbnail: "/placeholder.svg?height=200&width=300",
+      isConsumed: false,
       content: `
     <div id="readability-page-1">
       <p>A IA generativa já faz parte do nosso dia a dia. Aprender a "conversar" com ela, ou seja, dominar a <strong>engenharia de prompts</strong>, é essencial para guiar seu potencial.</p>
@@ -105,6 +126,7 @@ export default function SavedContent() {
       readTime: "8 min",
       savedDate: "1 week ago",
       thumbnail: "/placeholder.svg?height=200&width=300",
+      isConsumed: true,
       content: `
         <h2>Artificial Intelligence: Looking Ahead</h2>
         <p>Artificial Intelligence continues to evolve at an unprecedented pace, transforming industries and reshaping how we interact with technology. As we look toward the future, several key trends are emerging that will define the next decade of AI development.</p>
@@ -132,6 +154,7 @@ export default function SavedContent() {
       savedDate: "3 days ago",
       thumbnail: "/placeholder.svg?height=200&width=300",
       videoUrl: "https://www.youtube.com/watch?v=ohI7iu0Ub_U",
+      isConsumed: false,
     },
     {
       id: 4,
@@ -141,6 +164,7 @@ export default function SavedContent() {
       readTime: "6 min",
       savedDate: "3 weeks ago",
       thumbnail: "/placeholder.svg?height=200&width=300",
+      isConsumed: false,
       content: `
         <h2>CSS Layout: Grid vs Flexbox</h2>
         <p>CSS Grid and Flexbox are two powerful layout systems that have revolutionized how we create layouts on the web. While they can sometimes be used interchangeably, each has its strengths and ideal use cases.</p>
@@ -168,6 +192,7 @@ export default function SavedContent() {
       savedDate: "1 week ago",
       thumbnail: "/placeholder.svg?height=200&width=300",
       videoUrl: "https://www.youtube.com/watch?v=ohI7iu0Ub_U",
+      isConsumed: true,
     },
     {
       id: 6,
@@ -177,6 +202,7 @@ export default function SavedContent() {
       readTime: "12 min",
       savedDate: "2 weeks ago",
       thumbnail: "/placeholder.svg?height=200&width=300",
+      isConsumed: false,
       content: `
         <h2>Mastering TypeScript Generics</h2>
         <p>TypeScript generics are one of the most powerful features of the language, allowing you to create reusable components and functions that work with multiple types while maintaining type safety.</p>
@@ -207,25 +233,60 @@ export default function SavedContent() {
       thumbnail: "/placeholder.svg?height=200&width=300",
       content: `<h2>Sample content ${i + 1}</h2><p>This is sample content for testing.</p>`,
       ...(i % 2 === 1 && { videoUrl: "https://www.youtube.com/watch?v=ohI7iu0Ub_U" }),
+      isConsumed: i % 3 === 0,
     })),
-  ]
+  ])
 
   // Get unique content types and sources (providers)
   const contentTypes = [...new Set(savedContent.map((item) => item.type))]
   const contentProviders = [...new Set(savedContent.map((item) => item.source))].sort()
 
   // Filter content based on selected filters and search
-  const filteredContent = useMemo(() => {
-    return savedContent.filter((item) => {
-      const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(item.type)
-      const providerMatch = selectedProviders.length === 0 || selectedProviders.includes(item.source)
-      const searchMatch =
-        searchQuery === "" ||
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.source.toLowerCase().includes(searchQuery.toLowerCase())
-      return typeMatch && providerMatch && searchMatch
+  useEffect(() => {
+    let filtered = [...savedContent]
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (item) =>
+          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.source.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    }
+
+    // Content Type Filters
+    if (selectedTypes.length > 0) {
+      filtered = filtered.filter((item) => selectedTypes.includes(item.type))
+    }
+
+    // Content Source/Provider Filters
+    if (selectedProviders.length > 0) {
+      filtered = filtered.filter((item) => selectedProviders.includes(item.source))
+    }
+
+    // Consumed status filter
+    if (selectedConsumed !== "all") {
+      filtered = filtered.filter((item) => (selectedConsumed === "consumed" ? item.isConsumed : !item.isConsumed))
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return new Date(b.savedDate).getTime() - new Date(a.savedDate).getTime()
+        case "oldest":
+          return new Date(a.savedDate).getTime() - new Date(b.savedDate).getTime()
+        case "title":
+          return a.title.localeCompare(b.title)
+        case "source":
+          return a.source.localeCompare(b.source)
+        default:
+          return 0
+      }
     })
-  }, [selectedTypes, selectedProviders, searchQuery])
+
+    setFilteredContent(filtered)
+  }, [selectedTypes, selectedProviders, searchQuery, selectedConsumed, sortBy, savedContent])
 
   const toggleTypeFilter = (type: string) => {
     setSelectedTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]))
@@ -239,9 +300,11 @@ export default function SavedContent() {
     setSelectedTypes([])
     setSelectedProviders([])
     setSearchQuery("")
+    setSelectedConsumed("all")
   }
 
-  const hasActiveFilters = selectedTypes.length > 0 || selectedProviders.length > 0 || searchQuery !== ""
+  const hasActiveFilters =
+    selectedTypes.length > 0 || selectedProviders.length > 0 || searchQuery !== "" || selectedConsumed !== "all"
 
   const openDetailView = (content: any) => {
     // Save current filter state before opening detail view
@@ -259,6 +322,12 @@ export default function SavedContent() {
     setSelectedTypes(previousFilterState.types)
     setSelectedProviders(previousFilterState.providers)
     setSearchQuery(previousFilterState.search)
+  }
+
+  const toggleConsumed = (itemId: number) => {
+    setSavedContent((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, isConsumed: !item.isConsumed } : item)),
+    )
   }
 
   if (selectedContent) {
@@ -432,6 +501,17 @@ export default function SavedContent() {
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 hidden sm:inline">{filteredContent.length} items</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="oldest">Oldest</SelectItem>
+                  <SelectItem value="title">Title A-Z</SelectItem>
+                  <SelectItem value="source">Source A-Z</SelectItem>
+                </SelectContent>
+              </Select>
               <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
@@ -484,6 +564,49 @@ export default function SavedContent() {
                             className={`ml-2 ${isSelected ? "bg-teal-500 text-white" : "bg-gray-100 text-gray-600"}`}
                           >
                             {count}
+                          </Badge>
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Consumed Status Filter */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Status</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: "all", label: "All Items", count: savedContent.length },
+                      {
+                        value: "consumed",
+                        label: "Consumed",
+                        count: savedContent.filter((item) => item.isConsumed).length,
+                      },
+                      {
+                        value: "unconsumed",
+                        label: "Not Consumed",
+                        count: savedContent.filter((item) => !item.isConsumed).length,
+                      },
+                    ].map((status) => {
+                      const isSelected = selectedConsumed === status.value
+                      return (
+                        <Button
+                          key={status.value}
+                          variant={isSelected ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedConsumed(status.value)}
+                          className={`${
+                            isSelected
+                              ? "bg-teal-600 hover:bg-teal-700 text-white"
+                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                          }`}
+                        >
+                          {status.label}
+                          <Badge
+                            variant="secondary"
+                            className={`ml-2 ${isSelected ? "bg-teal-500 text-white" : "bg-gray-100 text-gray-600"}`}
+                          >
+                            {status.count}
                           </Badge>
                         </Button>
                       )
@@ -556,6 +679,14 @@ export default function SavedContent() {
                   </button>
                 </Badge>
               ))}
+              {selectedConsumed !== "all" && (
+                <Badge key={`consumed-${selectedConsumed}`} variant="secondary" className="bg-gray-100 text-gray-700">
+                  {selectedConsumed === "consumed" ? "Consumed" : "Not Consumed"}
+                  <button onClick={() => setSelectedConsumed("all")} className="ml-1 hover:text-gray-900">
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              )}
             </div>
           </div>
         )}
@@ -601,9 +732,18 @@ export default function SavedContent() {
                       <img
                         src={content.thumbnail || "/placeholder.svg"}
                         alt={content.title}
-                        className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                        className={`w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-200 ${
+                          content.isConsumed ? "opacity-60" : ""
+                        }`}
                         loading="lazy"
                       />
+                      {content.isConsumed && (
+                        <div className="absolute top-3 right-3">
+                          <div className="bg-green-100 text-green-700 px-2 py-1 text-xs font-medium rounded-full">
+                            ✓ Consumed
+                          </div>
+                        </div>
+                      )}
                       {/* Content Type Badge */}
                       <div className="absolute top-3 left-3">
                         <span
@@ -618,6 +758,22 @@ export default function SavedContent() {
                       {/* Actions */}
                       <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleConsumed(content.id)
+                            }}
+                            title={content.isConsumed ? "Mark as not consumed" : "Mark as consumed"}
+                          >
+                            {content.isConsumed ? (
+                              <CheckCircle className="w-3 h-3 text-green-600" />
+                            ) : (
+                              <Circle className="w-3 h-3" />
+                            )}
+                          </Button>
                           <Button
                             variant="secondary"
                             size="sm"
