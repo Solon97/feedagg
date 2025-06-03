@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home, Bookmark, LogOut, Settings } from "lucide-react"
+import { Home, Bookmark, LogOut, Settings, Rss, Link } from "lucide-react"
 
 interface NavItem {
   href: string
@@ -24,8 +24,9 @@ export function MobileNav() {
   const isActive = (path: string) => pathname === path
 
   const navItems: NavItem[] = [
-    { href: "/", label: "Dashboard", icon: Home },
+    { href: "/news", label: "News", icon: Rss },
     { href: "/saved-content", label: "Saved Content", icon: Bookmark },
+    { href: "/feeds", label: "Feeds", icon: Link },
     { href: "/settings", label: "Settings", icon: Settings },
   ]
 
@@ -145,9 +146,8 @@ export function MobileNav() {
           {/* Backdrop */}
           <div
             ref={backdropRef}
-            className={`fixed inset-0 bg-black transition-opacity duration-300 ease-out ${
-              isAnimating && !isOpen ? "opacity-0" : "opacity-50"
-            }`}
+            className={`fixed inset-0 bg-black transition-opacity duration-300 ease-out ${isAnimating && !isOpen ? "opacity-0" : "opacity-50"
+              }`}
             onClick={closeMenu}
             aria-hidden="true"
           />
@@ -156,9 +156,8 @@ export function MobileNav() {
           <div
             ref={menuRef}
             id="mobile-menu"
-            className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl transition-transform duration-300 ease-out ${
-              isAnimating && !isOpen ? "translate-x-full" : "translate-x-0"
-            }`}
+            className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl transition-transform duration-300 ease-out ${isAnimating && !isOpen ? "translate-x-full" : "translate-x-0"
+              }`}
             onTouchStart={handleTouchStart}
             role="dialog"
             aria-modal="true"
@@ -202,11 +201,10 @@ export function MobileNav() {
                       <a
                         key={item.href}
                         href={item.href}
-                        className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-200 ease-out transform hover:scale-[1.02] active:scale-[0.98] ${
-                          active
-                            ? "bg-teal-50 text-teal-700 shadow-sm border border-teal-100"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        }`}
+                        className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-200 ease-out transform hover:scale-[1.02] active:scale-[0.98] ${active
+                          ? "bg-teal-50 text-teal-700 shadow-sm border border-teal-100"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
                         style={{
                           animationDelay: `${index * 50}ms`,
                           animation: isOpen && !isAnimating ? "slideInRight 0.3s ease-out forwards" : undefined,
@@ -216,9 +214,8 @@ export function MobileNav() {
                       >
                         <div className="flex items-center gap-4">
                           <div
-                            className={`p-2 rounded-lg transition-colors duration-200 ${
-                              active ? "bg-teal-100" : "bg-gray-100 group-hover:bg-gray-200"
-                            }`}
+                            className={`p-2 rounded-lg transition-colors duration-200 ${active ? "bg-teal-100" : "bg-gray-100 group-hover:bg-gray-200"
+                              }`}
                           >
                             <Icon className="w-5 h-5" />
                           </div>

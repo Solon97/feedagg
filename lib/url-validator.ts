@@ -13,21 +13,35 @@ export class UrlValidator {
     /youtube\.com\/@([a-zA-Z0-9_-]+)/,
     /youtu\.be\/([a-zA-Z0-9_-]+)/,
   ]
+  private static readonly RSS_PATTERNS = [/\/feed\/?$/, /\/rss\/?$/, /\/atom\/?$/, /\.xml$/, /\/index\.xml$/, /\/blog\/rss\/?$/, /\/blog\/feed\/?$/]
 
-  private static readonly RSS_PATTERNS = [/\/feed\/?$/, /\/rss\/?$/, /\/atom\/?$/, /\.xml$/, /\/index\.xml$/]
+  private static normalizeUrl(url: string): string {
+    // Remove whitespace
+    url = url.trim()
+
+    // If URL doesn't start with http:// or https://, add https://
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url
+    }
+
+    return url
+  }
 
   static async validateUrl(url: string): Promise<ValidationResult> {
     try {
+      // Normalize URL by adding https:// if needed
+      const normalizedUrl = this.normalizeUrl(url)
+
       // Basic URL validation
-      const urlObj = new URL(url)
+      const urlObj = new URL(normalizedUrl)
 
       // Check if it's a YouTube URL
       if (this.isYouTubeUrl(urlObj)) {
-        return await this.validateYouTubeChannel(url)
+        return await this.validateYouTubeChannel(normalizedUrl)
       }
 
       // Check for RSS feed
-      return await this.validateRssFeed(url)
+      return await this.validateRssFeed(normalizedUrl)
     } catch (error) {
       return {
         isValid: false,
@@ -40,16 +54,10 @@ export class UrlValidator {
   private static isYouTubeUrl(urlObj: URL): boolean {
     return urlObj.hostname.includes("youtube.com") || urlObj.hostname.includes("youtu.be")
   }
-
   private static async validateYouTubeChannel(url: string): Promise<ValidationResult> {
     try {
-      // Simulate fetching YouTube channel page
       console.log(`Validating YouTube channel: ${url}`)
 
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000))
-
-      // Mock YouTube channel validation
       const rssUrl = await this.getYouTubeChannelRss(url)
 
       if (rssUrl) {
@@ -73,58 +81,55 @@ export class UrlValidator {
       }
     }
   }
-
   private static async getYouTubeChannelRss(handleUrl: string): Promise<string | null> {
     try {
-      // Mock implementation - in real app, this would fetch the actual page
       console.log(`Fetching YouTube RSS for: ${handleUrl}`)
 
-      // Simulate the HTML parsing logic
-      const mockChannelIds: Record<string, string> = {
-        "https://youtube.com/@vercel": "UCLq8gNoee7oXM7MvTdjyQvA",
-        "https://youtube.com/c/vercel": "UCLq8gNoee7oXM7MvTdjyQvA",
-        "https://youtube.com/channel/UCLq8gNoee7oXM7MvTdjyQvA": "UCLq8gNoee7oXM7MvTdjyQvA",
-        "https://youtube.com/@techworld-with-nana": "UCdngmbVKX1Tgre699-XLlUA",
-        "https://youtube.com/@codewithmosh": "UCWv7vMbMWH4-V0ZXdmDpPBA",
-        "https://youtube.com/@kentcdodds": "UCz-BYvuntVRt_VpfR6FKXJw",
+      // Fetch the YouTube page to find RSS link
+      const response = await fetch(handleUrl, {
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      })
+
+      if (!response.ok) {
+        console.error(`Failed to fetch YouTube page: ${response.status}`)
+        return null
       }
 
-      // Normalize URL for lookup
-      const normalizedUrl = handleUrl.toLowerCase().replace(/\/$/, "")
-      const channelId = mockChannelIds[normalizedUrl]
+      const html = await response.text()
 
-      if (channelId) {
-        return `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
+      // Look for RSS feed link in the HTML
+      const rssMatch = html.match(/<link rel="alternate" type="application\/rss\+xml"[^>]*href="([^"]+)"/)
+      if (rssMatch && rssMatch[1]) {
+        return rssMatch[1]
       }
 
-      // If not in mock data, simulate HTML parsing
-     /* if (handleUrl.includes("youtube.com")) {
-        // Simulate finding RSS link in HTML
-        const mockHtml = `
-          <html>
-            <head>
-              <link rel="alternate" type="application/rss+xml" href="https://www.youtube.com/feeds/videos.xml?channel_id=MOCK_CHANNEL_ID">
-            </head>
-          </html>
-        `
+      // If no RSS link found, try to extract channel ID from various sources
+      const channelIdPatterns = [
+        /"channelId":"([^"]+)"/,
+        /"channel_id":"([^"]+)"/,
+        /\/channel\/([a-zA-Z0-9_-]+)/,
+        /"externalId":"([^"]+)"/
+      ]
 
-        const match = mockHtml.match(/<link rel="alternate" type="application\/rss\+xml"[^>]*href="([^"]+)"/)
-        return match ? match[1] : null
+      for (const pattern of channelIdPatterns) {
+        const match = html.match(pattern)
+        if (match && match[1]) {
+          return `https://www.youtube.com/feeds/videos.xml?channel_id=${match[1]}`
+        }
       }
-    */
+
       return null
     } catch (error) {
       console.error("Error fetching YouTube RSS:", error)
       return null
     }
   }
-
   private static async validateRssFeed(url: string): Promise<ValidationResult> {
     try {
       console.log(`Validating RSS feed: ${url}`)
-
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 1200))
 
       // First, check if the URL already looks like an RSS feed
       if (this.looksLikeRssFeed(url)) {
@@ -166,50 +171,121 @@ export class UrlValidator {
   private static looksLikeRssFeed(url: string): boolean {
     return this.RSS_PATTERNS.some((pattern) => pattern.test(url))
   }
-
   private static async checkRssValidity(url: string): Promise<boolean> {
-    // Mock RSS validation - in real app, would fetch and parse XML
-    const mockValidRssUrls = [
-      "https://techcrunch.com/feed/",
-      "https://dev.to/feed",
-      "https://feeds.feedburner.com/oreilly/radar",
-      "https://css-tricks.com/feed/",
-      "https://blog.mozilla.org/feed/",
-    ]
+    try {
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      })
 
-    return mockValidRssUrls.some((validUrl) => url.includes(validUrl.split("/")[2]))
+      if (!response.ok) {
+        console.error(`RSS feed returned ${response.status}`)
+        return false
+      }
+
+      const contentType = response.headers.get('content-type') || ''
+
+      // Check if content type indicates XML/RSS
+      if (contentType.includes('application/rss+xml') ||
+        contentType.includes('application/atom+xml') ||
+        contentType.includes('application/xml') ||
+        contentType.includes('text/xml')) {
+        return true
+      }
+
+      // If content type is not explicitly RSS, check the actual content
+      const content = await response.text()
+
+      // Look for RSS/Atom feed indicators
+      const rssIndicators = [
+        /<rss[^>]*version/i,
+        /<feed[^>]*xmlns/i,
+        /<channel>/i,
+        /<item>/i,
+        /<entry>/i
+      ]
+
+      return rssIndicators.some(pattern => pattern.test(content))
+    } catch (error) {
+      console.error(`Error checking RSS validity for ${url}:`, error)
+      return false
+    }
   }
-
   private static async findRssFeed(url: string): Promise<string | null> {
     try {
-      // Mock implementation - in real app, would fetch the page and parse HTML
-      const domain = new URL(url).hostname
+      const urlObj = new URL(url)
+      const baseUrl = `${urlObj.protocol}//${urlObj.host}`
 
-      // Mock RSS feed discovery
-      const mockRssFeeds: Record<string, string> = {
-        "techcrunch.com": "https://techcrunch.com/feed/",
-        "dev.to": "https://dev.to/feed",
-        "css-tricks.com": "https://css-tricks.com/feed/",
-        "blog.mozilla.org": "https://blog.mozilla.org/feed/",
-        "a11yproject.com": "https://www.a11yproject.com/feed.xml",
-        "smashingmagazine.com": "https://www.smashingmagazine.com/feed/",
-        "alistapart.com": "https://alistapart.com/main/feed/",
+      // First, try to fetch the main page to look for RSS links
+      try {
+        const response = await fetch(url, {
+          signal: AbortSignal.timeout(10000),
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          }
+        })
+
+        if (response.ok) {
+          const html = await response.text()
+
+          // Look for RSS feed links in the HTML
+          const rssLinkPatterns = [
+            /<link[^>]*rel=["']alternate["'][^>]*type=["']application\/rss\+xml["'][^>]*href=["']([^"']+)["']/i,
+            /<link[^>]*type=["']application\/rss\+xml["'][^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["']/i,
+            /<link[^>]*rel=["']alternate["'][^>]*type=["']application\/atom\+xml["'][^>]*href=["']([^"']+)["']/i,
+            /<link[^>]*type=["']application\/atom\+xml["'][^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["']/i
+          ]
+
+          for (const pattern of rssLinkPatterns) {
+            const match = html.match(pattern)
+            if (match && match[1]) {
+              let rssUrl = match[1]
+              // Handle relative URLs
+              if (rssUrl.startsWith('/')) {
+                rssUrl = `${baseUrl}${rssUrl}`
+              } else if (!rssUrl.startsWith('http')) {
+                rssUrl = `${baseUrl}/${rssUrl}`
+              }
+
+              // Validate the found RSS URL
+              const isValid = await this.checkRssValidity(rssUrl)
+              if (isValid) {
+                return rssUrl
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`Could not fetch main page, trying common RSS paths: ${error}`)
       }
 
-      // Check if we have a known RSS feed for this domain
-      const rssUrl = mockRssFeeds[domain]
-      if (rssUrl) {
-        return rssUrl
-      }
+      // If no RSS link found in HTML, try common RSS paths
+      const commonPaths = [
+        "/feed/",
+        "/rss/",
+        "/atom.xml",
+        "/feed.xml",
+        "/index.xml",
+        "/rss.xml",
+        "/blog/feed/",
+        "/blog/rss/",
+        "/blog/rss.xml",
+        "/blog/feed.xml"
+      ]
 
-      // Simulate common RSS feed paths
-      const commonPaths = ["/feed/", "/rss/", "/atom.xml", "/feed.xml", "/index.xml"]
+      // Special handling for Rocketseat
+      if (urlObj.hostname.includes('rocketseat.com.br')) {
+        commonPaths.unshift("/blog/rss")
+      }
 
       for (const path of commonPaths) {
-        const testUrl = `${url.replace(/\/$/, "")}${path}`
-        // In real implementation, would test if these URLs exist
-        if (Math.random() > 0.7) {
-          // Simulate 30% chance of finding RSS
+        const testUrl = `${baseUrl}${path}`
+        console.log(`Testing RSS path: ${testUrl}`)
+
+        const isValid = await this.checkRssValidity(testUrl)
+        if (isValid) {
           return testUrl
         }
       }

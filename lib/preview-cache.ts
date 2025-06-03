@@ -35,9 +35,13 @@ class PreviewCache {
       return url
     }
   }
-
   private loadFromStorage(): void {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+        return
+      }
+
       const stored = localStorage.getItem("digestly-preview-cache")
       if (stored) {
         const data = JSON.parse(stored)
@@ -53,9 +57,13 @@ class PreviewCache {
       console.warn("Failed to load preview cache from storage:", error)
     }
   }
-
   private saveToStorage(): void {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+        return
+      }
+
       const data: Record<string, CachedPreview> = {}
       this.cache.forEach((value, key) => {
         data[key] = value

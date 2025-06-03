@@ -20,9 +20,11 @@ import {
   Play,
   CheckCircle,
   Circle,
+  Trash2,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SavedContentManager } from "@/lib/saved-content-manager"
 
 interface SavedContentItem {
   id: number
@@ -56,186 +58,25 @@ export default function SavedContent() {
     providers: [],
     search: "",
   })
-
   const [selectedConsumed, setSelectedConsumed] = useState<string>("all")
 
-  const [savedContent, setSavedContent] = useState<SavedContentItem[]>([
-    {
-      id: 1,
-      title: "Engenharia de Prompts: A Nova Habilidade Essencial da Era da IA",
-      source: "TechBlog Brasil",
-      type: "article",
-      readTime: "8 min",
-      savedDate: "2 days ago",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      isConsumed: false,
-      content: `
-    <div id="readability-page-1">
-      <p>A IA generativa já faz parte do nosso dia a dia. Aprender a "conversar" com ela, ou seja, dominar a <strong>engenharia de prompts</strong>, é essencial para guiar seu potencial.</p>
+  const [savedContent, setSavedContent] = useState<SavedContentItem[]>([])
+  // Load saved content from localStorage on component mount
+  useEffect(() => {
+    const loadSavedContent = () => {
+      const savedItems = SavedContentManager.getSavedContent()
+      setSavedContent(savedItems)
+    }
 
-      <figure>
-        <img src="/placeholder.svg?height=400&width=600" alt="Pessoa ensinando IA" />
-        <figcaption>"Saber falar com a IA é o novo inglês."</figcaption>
-      </figure>
+    loadSavedContent()
 
-      <h3>O que é engenharia de prompts?</h3>
-      <p>É a arte de criar instruções claras para modelos de linguagem (LLMs) gerarem resultados precisos, como um chef que segue uma receita detalhada.</p>
-
-      <h3>Por que é importante?</h3>
-      <ul>
-        <li><strong>Desenvolvimento de software:</strong> gerar código, testes e documentações.</li>
-        <li><strong>Marketing:</strong> criar textos persuasivos e ideias para campanhas.</li>
-        <li><strong>Educação:</strong> material didático adaptativo e tutores virtuais.</li>
-      </ul>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Setor</th>
-            <th>Benefício</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Data Science</td>
-            <td>Scripts de análise e visualizações rápidas</td>
-          </tr>
-          <tr>
-            <td>Design</td>
-            <td>Geração de ideias visuais</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <blockquote>
-        <p>"O futuro é conversacional – você está pronto para liderar a conversa?"</p>
-      </blockquote>
-
-      <p>Saiba mais em:
-        <a href="https://www.rocketseat.com.br/formacao/ia-para-devs">Formação IA para devs</a> |
-        <a href="https://www.rocketseat.com.br/formacao/ia">Desenvolvimento de IA</a>
-      </p>
-    </div>
-  `,
-    },
-    {
-      id: 2,
-      title: "The Future of AI: Trends and Predictions",
-      source: "AI Research Weekly",
-      type: "article",
-      readTime: "8 min",
-      savedDate: "1 week ago",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      isConsumed: true,
-      content: `
-        <h2>Artificial Intelligence: Looking Ahead</h2>
-        <p>Artificial Intelligence continues to evolve at an unprecedented pace, transforming industries and reshaping how we interact with technology. As we look toward the future, several key trends are emerging that will define the next decade of AI development.</p>
-        
-        <h3>Machine Learning Democratization</h3>
-        <p>One of the most significant trends is the democratization of machine learning tools. No-code and low-code platforms are making AI accessible to non-technical users, enabling businesses of all sizes to leverage AI capabilities without requiring extensive technical expertise.</p>
-        
-        <h3>Ethical AI and Responsible Development</h3>
-        <p>As AI systems become more powerful and widespread, the focus on ethical AI development has intensified. Organizations are implementing frameworks to ensure AI systems are fair, transparent, and accountable.</p>
-        
-        <p>This includes addressing bias in AI models, ensuring privacy protection, and developing AI systems that can explain their decision-making processes.</p>
-        
-        <h3>AI in Healthcare and Education</h3>
-        <p>Healthcare and education are two sectors where AI is expected to have transformative impacts. From personalized medicine to adaptive learning systems, AI is enabling more personalized and effective solutions.</p>
-        
-        <p>The integration of AI in these critical sectors promises to improve outcomes and accessibility while reducing costs.</p>
-      `,
-    },
-    {
-      id: 3,
-      title: "React Hooks Explained in 10 Minutes",
-      source: "CodeWithMosh",
-      type: "video",
-      readTime: "10 min",
-      savedDate: "3 days ago",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      videoUrl: "https://www.youtube.com/watch?v=ohI7iu0Ub_U",
-      isConsumed: false,
-    },
-    {
-      id: 4,
-      title: "CSS Grid vs Flexbox: When to Use Which",
-      source: "CSS-Tricks",
-      type: "article",
-      readTime: "6 min",
-      savedDate: "3 weeks ago",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      isConsumed: false,
-      content: `
-        <h2>CSS Layout: Grid vs Flexbox</h2>
-        <p>CSS Grid and Flexbox are two powerful layout systems that have revolutionized how we create layouts on the web. While they can sometimes be used interchangeably, each has its strengths and ideal use cases.</p>
-        
-        <h3>Understanding Flexbox</h3>
-        <p>Flexbox is designed for one-dimensional layouts. It excels at distributing space and aligning items within a container, whether in a row or column. Flexbox is perfect for components like navigation bars, card layouts, and centering content.</p>
-        
-        <p>The flexible nature of Flexbox makes it ideal for responsive design, as items can grow, shrink, and wrap as needed.</p>
-        
-        <h3>Understanding CSS Grid</h3>
-        <p>CSS Grid is designed for two-dimensional layouts. It allows you to create complex layouts with rows and columns simultaneously. Grid is perfect for page layouts, image galleries, and any design that requires precise control over both dimensions.</p>
-        
-        <h3>When to Use Each</h3>
-        <p>Use Flexbox when you need to arrange items in a single direction and want them to be flexible. Use Grid when you need to create complex two-dimensional layouts or when you need precise control over both rows and columns.</p>
-        
-        <p>In many cases, you'll use both together - Grid for the overall page layout and Flexbox for component-level layouts.</p>
-      `,
-    },
-    {
-      id: 5,
-      title: "Building Modern Web Apps with Next.js",
-      source: "Vercel",
-      type: "video",
-      readTime: "25 min",
-      savedDate: "1 week ago",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      videoUrl: "https://www.youtube.com/watch?v=ohI7iu0Ub_U",
-      isConsumed: true,
-    },
-    {
-      id: 6,
-      title: "Understanding TypeScript Generics",
-      source: "Dev.to",
-      type: "article",
-      readTime: "12 min",
-      savedDate: "2 weeks ago",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      isConsumed: false,
-      content: `
-        <h2>Mastering TypeScript Generics</h2>
-        <p>TypeScript generics are one of the most powerful features of the language, allowing you to create reusable components and functions that work with multiple types while maintaining type safety.</p>
-        
-        <h3>What Are Generics?</h3>
-        <p>Generics provide a way to make components work with any data type and not restrict to one data type. They allow you to capture the type of the argument in such a way that you can also use it to denote what is being returned.</p>
-        
-        <h3>Basic Generic Functions</h3>
-        <p>The simplest way to understand generics is through functions. Instead of using 'any' type, which loses type information, generics preserve the type relationship between input and output.</p>
-        
-        <h3>Generic Interfaces and Classes</h3>
-        <p>Generics aren't limited to functions. You can also create generic interfaces and classes that provide flexibility while maintaining type safety throughout your application.</p>
-        
-        <p>This is particularly useful when building data structures, API clients, or any component that needs to work with various data types.</p>
-        
-        <h3>Advanced Generic Patterns</h3>
-        <p>Advanced generic patterns include conditional types, mapped types, and utility types. These patterns enable you to create sophisticated type transformations and constraints.</p>
-      `,
-    },
-    // Add more content items for better mobile testing
-    ...Array.from({ length: 6 }, (_, i) => ({
-      id: 7 + i,
-      title: `Sample Article ${i + 1}`,
-      source: `Source ${i + 1}`,
-      type: i % 2 === 0 ? "article" : "video",
-      readTime: `${5 + i} min`,
-      savedDate: `${i + 1} days ago`,
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      content: `<h2>Sample content ${i + 1}</h2><p>This is sample content for testing.</p>`,
-      ...(i % 2 === 1 && { videoUrl: "https://www.youtube.com/watch?v=ohI7iu0Ub_U" }),
-      isConsumed: i % 3 === 0,
-    })),
-  ])
+    // Listen for storage changes to sync across tabs
+    const handleStorageChange = () => {
+      loadSavedContent()
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   // Get unique content types and sources (providers)
   const contentTypes = [...new Set(savedContent.map((item) => item.type))]
@@ -323,11 +164,41 @@ export default function SavedContent() {
     setSelectedProviders(previousFilterState.providers)
     setSearchQuery(previousFilterState.search)
   }
-
   const toggleConsumed = (itemId: number) => {
     setSavedContent((prev) =>
       prev.map((item) => (item.id === itemId ? { ...item, isConsumed: !item.isConsumed } : item)),
     )
+  }
+  const convertYouTubeUrl = (url: string) => {
+    if (!url) return ""
+
+    // Handle YouTube URLs with timestamps and parameters
+    if (url.includes("youtube.com/watch")) {
+      const urlObj = new URL(url)
+      const videoId = urlObj.searchParams.get("v")
+      const timestamp = urlObj.searchParams.get("t")
+
+      let embedUrl = `https://www.youtube.com/embed/${videoId}`
+      if (timestamp) {
+        // Convert timestamp (e.g., "4850s" to "start=4850")
+        const startTime = timestamp.replace("s", "")
+        embedUrl += `?start=${startTime}`
+      }
+      return embedUrl
+    }
+
+    // Fallback for other URL formats
+    return url.replace("watch?v=", "embed/")
+  }
+
+  const handleRemoveFromSaved = (itemId: number) => {
+    const itemToRemove = savedContent.find(item => item.id === itemId)
+    if (itemToRemove) {
+      // Remove from saved content manager
+      SavedContentManager.removeSavedContent(itemToRemove.id)
+      // Update local state
+      setSavedContent(prev => prev.filter(item => item.id !== itemId))
+    }
   }
 
   if (selectedContent) {
@@ -428,11 +299,10 @@ export default function SavedContent() {
                       </Button>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </CardHeader>                <CardContent>
                   <div className="aspect-video w-full">
                     <iframe
-                      src={selectedContent.videoUrl.replace("watch?v=", "embed/")}
+                      src={convertYouTubeUrl(selectedContent.videoUrl)}
                       title={selectedContent.title}
                       className="w-full h-full rounded-lg"
                       allowFullScreen
@@ -470,6 +340,32 @@ export default function SavedContent() {
           {/* Controls Row */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
+              {/* Test Integration Button - Temporary */}
+              <Button
+                onClick={() => {
+                  SavedContentManager.addTestData()
+                  // Trigger reload of saved content
+                  const savedItems = SavedContentManager.getSavedContent()
+                  setSavedContent(savedItems)
+                }}
+                variant="outline"
+                size="sm"
+                className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
+              >
+                Add Test Data
+              </Button>
+              <Button
+                onClick={() => {
+                  localStorage.removeItem('digestly-saved-content')
+                  setSavedContent([])
+                }}
+                variant="outline"
+                size="sm"
+                className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+              >
+                Clear All
+              </Button>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -552,11 +448,10 @@ export default function SavedContent() {
                           variant={isSelected ? "default" : "outline"}
                           size="sm"
                           onClick={() => toggleTypeFilter(type)}
-                          className={`capitalize ${
-                            isSelected
-                              ? "bg-teal-600 hover:bg-teal-700 text-white"
-                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
-                          }`}
+                          className={`capitalize ${isSelected
+                            ? "bg-teal-600 hover:bg-teal-700 text-white"
+                            : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                            }`}
                         >
                           {type}
                           <Badge
@@ -595,11 +490,10 @@ export default function SavedContent() {
                           variant={isSelected ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedConsumed(status.value)}
-                          className={`${
-                            isSelected
-                              ? "bg-teal-600 hover:bg-teal-700 text-white"
-                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
-                          }`}
+                          className={`${isSelected
+                            ? "bg-teal-600 hover:bg-teal-700 text-white"
+                            : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                            }`}
                         >
                           {status.label}
                           <Badge
@@ -627,11 +521,10 @@ export default function SavedContent() {
                           variant={isSelected ? "default" : "outline"}
                           size="sm"
                           onClick={() => toggleProviderFilter(provider)}
-                          className={`text-xs md:text-sm ${
-                            isSelected
-                              ? "bg-teal-600 hover:bg-teal-700 text-white"
-                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
-                          }`}
+                          className={`text-xs md:text-sm ${isSelected
+                            ? "bg-teal-600 hover:bg-teal-700 text-white"
+                            : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                            }`}
                         >
                           <span className="truncate max-w-[120px]">{provider}</span>
                           <Badge
@@ -732,9 +625,8 @@ export default function SavedContent() {
                       <img
                         src={content.thumbnail || "/placeholder.svg"}
                         alt={content.title}
-                        className={`w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-200 ${
-                          content.isConsumed ? "opacity-60" : ""
-                        }`}
+                        className={`w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-200 ${content.isConsumed ? "opacity-60" : ""
+                          }`}
                         loading="lazy"
                       />
                       {content.isConsumed && (
@@ -747,9 +639,8 @@ export default function SavedContent() {
                       {/* Content Type Badge */}
                       <div className="absolute top-3 left-3">
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${
-                            content.type === "video" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
-                          }`}
+                          className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${content.type === "video" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
+                            }`}
                         >
                           {content.type === "video" && <Play className="w-3 h-3" />}
                           {content.type === "video" ? "Video" : "Article"}
@@ -773,8 +664,7 @@ export default function SavedContent() {
                             ) : (
                               <Circle className="w-3 h-3" />
                             )}
-                          </Button>
-                          <Button
+                          </Button>                          <Button
                             variant="secondary"
                             size="sm"
                             className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
@@ -784,6 +674,18 @@ export default function SavedContent() {
                             }}
                           >
                             <ExternalLink className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-8 w-8 p-0 bg-white/90 hover:bg-red-50 text-red-600 hover:text-red-700"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleRemoveFromSaved(content.id)
+                            }}
+                            title="Remove from saved"
+                          >
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                           <Button
                             variant="secondary"
@@ -855,17 +757,26 @@ export default function SavedContent() {
                       <div className="flex items-center gap-2">
                         <Badge
                           variant="secondary"
-                          className={`text-xs ${
-                            content.type === "video" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
-                          }`}
+                          className={`text-xs ${content.type === "video" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
+                            }`}
                         >
                           {content.type === "video" ? "Video" : "Article"}
                         </Badge>
                       </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex-shrink-0 flex items-center">
+                    </div>                    {/* Actions */}
+                    <div className="flex-shrink-0 flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleRemoveFromSaved(content.id)
+                        }}
+                        title="Remove from saved"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
