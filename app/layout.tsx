@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/components/auth-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -62,16 +63,18 @@ export default function RootLayout({
           href="/favicon-16x16.png"
         />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#14b8a6" />
-      </head>
+      </head>{" "}
       <body className={`${inter.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

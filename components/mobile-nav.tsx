@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { useAuth } from "./auth-provider";
 import {
   Home,
   Bookmark,
@@ -32,6 +33,7 @@ export function MobileNav() {
   const menuRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const { user, signOut } = useAuth();
 
   const isActive = (path: string) => pathname === path;
 
@@ -260,19 +262,21 @@ export function MobileNav() {
               </nav>{" "}
               {/* Footer */}{" "}
               <div className="border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 h-12 rounded-xl transition-all duration-200"
-                  onClick={() => {
-                    closeMenu();
-                    // Handle logout
-                  }}
-                  tabIndex={isOpen ? 0 : -1}
-                  disabled={isAnimating}
-                >
-                  <LogOut className="w-5 h-5 mr-4" />
-                  <span className="font-medium">Log out</span>
-                </Button>
+                {user && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 h-12 rounded-xl transition-all duration-200"
+                    onClick={() => {
+                      closeMenu();
+                      signOut();
+                    }}
+                    tabIndex={isOpen ? 0 : -1}
+                    disabled={isAnimating}
+                  >
+                    <LogOut className="w-5 h-5 mr-4" />
+                    <span className="font-medium">Log out</span>
+                  </Button>
+                )}
               </div>
             </div>{" "}
             {/* Swipe indicator */}

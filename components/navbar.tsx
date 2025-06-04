@@ -4,10 +4,12 @@ import { usePathname } from "next/navigation";
 import { MobileNav } from "./mobile-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { useState, useEffect } from "react";
+import { useAuth } from "./auth-provider";
 
 export function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, signOut } = useAuth();
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -90,12 +92,17 @@ export function Navbar() {
               Settings
             </a>
           </nav>{" "}
-          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
+          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>{" "}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <button className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 font-medium hover:scale-105 active:scale-95 transform transition-transform">
-              Log out
-            </button>
+            {user && (
+              <button
+                onClick={() => signOut()}
+                className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 font-medium hover:scale-105 active:scale-95 transform transition-transform"
+              >
+                Log out
+              </button>
+            )}
           </div>
         </div>
         {/* Mobile Navigation */}
