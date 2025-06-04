@@ -14,8 +14,6 @@ import {
   X,
   ArrowLeft,
   Search,
-  Grid3X3,
-  List,
   ChevronDown,
   Play,
   Bookmark,
@@ -53,7 +51,7 @@ export default function FeedsPage() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<string>("newest");
   const [filteredContent, setFilteredContent] = useState<FeedContentItem[]>([]);
@@ -387,7 +385,7 @@ export default function FeedsPage() {
   };
 
   const ContentCard = ({ item }: { item: FeedContentItem }) => (
-    <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer border-0 shadow-sm bg-white hover:bg-gray-50/50">
+    <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer border-0 shadow-sm bg-white dark:bg-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
       <div className="relative">
         <img
           src={item.thumbnail}
@@ -411,7 +409,7 @@ export default function FeedsPage() {
           className={`absolute top-3 right-3 h-8 w-8 p-0 ${
             item.isSaved
               ? "bg-teal-500 hover:bg-teal-600 text-white"
-              : "bg-white/90 hover:bg-white text-gray-700"
+              : "bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
           }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -427,29 +425,33 @@ export default function FeedsPage() {
       </div>
       <CardContent className="p-4">
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <span className="font-medium text-teal-600">{item.source}</span>
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <span className="font-medium text-teal-600 dark:text-teal-400">
+              {item.source}
+            </span>
             <div className="flex items-center gap-2">
               <Clock className="h-3 w-3" />
               <span>{item.readTime}</span>
             </div>
           </div>
           <h3
-            className="font-semibold text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors"
+            className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors"
             onClick={() => setSelectedContent(item)}
           >
             {item.title}
           </h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{item.excerpt}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+            {item.excerpt}
+          </p>
           <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <Calendar className="h-3 w-3" />
               <span>{item.publishedDate}</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 text-xs hover:bg-teal-50 hover:text-teal-600"
+              className="h-8 px-3 text-xs hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-600 dark:hover:text-teal-400"
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(item.url, "_blank");
@@ -464,113 +466,23 @@ export default function FeedsPage() {
     </Card>
   );
 
-  const ContentListItem = ({ item }: { item: FeedContentItem }) => (
-    <Card className="hover:shadow-md transition-all duration-300 group cursor-pointer border-0 shadow-sm bg-white hover:bg-gray-50/50">
-      <CardContent className="p-4">
-        <div className="flex gap-4">
-          <div className="relative flex-shrink-0">
-            <img
-              src={item.thumbnail}
-              alt={item.title}
-              className="w-24 h-18 object-cover rounded-lg"
-            />
-            {item.type === "video" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                <Play className="h-6 w-6 text-white drop-shadow-lg" />
-              </div>
-            )}
-          </div>
-          <div className="flex-1 space-y-2">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant={
-                      item.type === "video" ? "destructive" : "secondary"
-                    }
-                    className="text-xs"
-                  >
-                    {item.type === "video" ? "Video" : "Article"}
-                  </Badge>
-                  <span className="text-sm font-medium text-teal-600">
-                    {item.source}
-                  </span>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Clock className="h-3 w-3" />
-                    <span>{item.readTime}</span>
-                  </div>
-                </div>
-                <h3
-                  className="font-semibold text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-1"
-                  onClick={() => setSelectedContent(item)}
-                >
-                  {item.title}
-                </h3>
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {item.excerpt}
-                </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Calendar className="h-3 w-3" />
-                  <span>{item.publishedDate}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className={`h-8 w-8 p-0 ${
-                    item.isSaved
-                      ? "bg-teal-500 hover:bg-teal-600 text-white"
-                      : "bg-white hover:bg-gray-100 text-gray-700"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSaveContent(item.id);
-                  }}
-                >
-                  {item.isSaved ? (
-                    <BookmarkCheck className="h-4 w-4" />
-                  ) : (
-                    <Bookmark className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-3 text-xs hover:bg-teal-50 hover:text-teal-600"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(item.url, "_blank");
-                  }}
-                >
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  View
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   if (selectedContent) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <main className="px-4 md:px-6 py-4 md:py-8 max-w-4xl mx-auto">
           <div className="mb-6">
             <Button
               variant="ghost"
               onClick={() => setSelectedContent(null)}
-              className="mb-4 hover:bg-gray-100"
+              className="mb-4 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Feeds
             </Button>
           </div>
 
-          <article className="bg-white rounded-lg shadow-sm p-8">
+          <article className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-4">
                 <Badge
@@ -582,19 +494,19 @@ export default function FeedsPage() {
                 >
                   {selectedContent.type === "video" ? "Video" : "Article"}
                 </Badge>
-                <span className="text-sm font-medium text-teal-600">
+                <span className="text-sm font-medium text-teal-600 dark:text-teal-400">
                   {selectedContent.source}
                 </span>
-                <div className="flex items-center gap-1 text-sm text-gray-500">
+                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                   <Clock className="h-4 w-4" />
                   <span>{selectedContent.readTime}</span>
                 </div>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 {selectedContent.title}
               </h1>
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Calendar className="h-4 w-4" />
                   <span>Published {selectedContent.publishedDate}</span>
                 </div>
@@ -604,7 +516,7 @@ export default function FeedsPage() {
                     size="sm"
                     className={
                       selectedContent.isSaved
-                        ? "bg-teal-50 border-teal-200 text-teal-700"
+                        ? "bg-teal-50 dark:bg-teal-900/30 border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-400"
                         : ""
                     }
                     onClick={() => handleSaveContent(selectedContent.id)}
@@ -648,7 +560,7 @@ export default function FeedsPage() {
             ) : (
               selectedContent.content && (
                 <div
-                  className="prose prose-lg max-w-none"
+                  className="prose prose-lg max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: selectedContent.content }}
                 />
               )
@@ -660,23 +572,23 @@ export default function FeedsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <main className="px-4 md:px-6 py-4 md:py-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Latest from Your Feeds
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-gray-300 mt-2">
               Stay updated with the latest content from your subscribed sources
             </p>
           </div>
 
           {/* Search Bar */}
           <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <Input
               placeholder="Search articles and videos..."
               value={searchQuery}
@@ -699,7 +611,7 @@ export default function FeedsPage() {
                 {hasActiveFilters && (
                   <Badge
                     variant="secondary"
-                    className="ml-1 bg-teal-100 text-teal-700"
+                    className="ml-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400"
                   >
                     {selectedTypes.length +
                       selectedProviders.length +
@@ -718,7 +630,7 @@ export default function FeedsPage() {
                   variant="ghost"
                   size="sm"
                   onClick={clearFilters}
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
                   <X className="w-4 h-4 mr-1" />
                   Clear
@@ -727,7 +639,7 @@ export default function FeedsPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 hidden sm:inline">
+              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 {filteredContent.length} items
               </span>
               <Select value={sortBy} onValueChange={setSortBy}>
@@ -741,28 +653,6 @@ export default function FeedsPage() {
                   <SelectItem value="saved">Saved</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className={`rounded-none ${
-                    viewMode === "grid" ? "bg-teal-600 text-white" : ""
-                  }`}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className={`rounded-none ${
-                    viewMode === "list" ? "bg-teal-600 text-white" : ""
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
           </div>
         </div>
@@ -774,7 +664,7 @@ export default function FeedsPage() {
               <div className="space-y-4">
                 {/* Content Type Filters */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Content Type
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -792,7 +682,7 @@ export default function FeedsPage() {
                           className={`capitalize ${
                             isSelected
                               ? "bg-teal-600 hover:bg-teal-700 text-white"
-                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                              : "text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-600 dark:hover:border-teal-400"
                           }`}
                         >
                           {type === "article" ? "Articles" : "Videos"}
@@ -801,7 +691,7 @@ export default function FeedsPage() {
                             className={`ml-2 ${
                               isSelected
                                 ? "bg-teal-500 text-white"
-                                : "bg-gray-100 text-gray-600"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                             }`}
                           >
                             {count}
@@ -814,7 +704,7 @@ export default function FeedsPage() {
 
                 {/* Content Source/Provider Filters */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Source
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -832,7 +722,7 @@ export default function FeedsPage() {
                           className={`text-xs md:text-sm ${
                             isSelected
                               ? "bg-teal-600 hover:bg-teal-700 text-white"
-                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                              : "text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-600 dark:hover:border-teal-400"
                           }`}
                         >
                           <span className="truncate max-w-[120px]">
@@ -843,7 +733,7 @@ export default function FeedsPage() {
                             className={`ml-2 ${
                               isSelected
                                 ? "bg-teal-500 text-white"
-                                : "bg-gray-100 text-gray-600"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                             }`}
                           >
                             {count}
@@ -862,16 +752,18 @@ export default function FeedsPage() {
         {hasActiveFilters && (
           <div className="mb-6">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-gray-600">Active filters:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Active filters:
+              </span>
               {searchQuery && (
                 <Badge
                   variant="secondary"
-                  className="bg-purple-100 text-purple-700"
+                  className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
                 >
                   Search: "{searchQuery}"
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="ml-1 hover:text-purple-900"
+                    className="ml-1 hover:text-purple-900 dark:hover:text-purple-300"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -881,12 +773,12 @@ export default function FeedsPage() {
                 <Badge
                   key={type}
                   variant="secondary"
-                  className="bg-blue-100 text-blue-700"
+                  className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
                 >
                   Type: {type}
                   <button
                     onClick={() => handleTypeToggle(type)}
-                    className="ml-1 hover:text-blue-900"
+                    className="ml-1 hover:text-blue-900 dark:hover:text-blue-300"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -896,12 +788,12 @@ export default function FeedsPage() {
                 <Badge
                   key={provider}
                   variant="secondary"
-                  className="bg-green-100 text-green-700"
+                  className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                 >
                   Source: {provider}
                   <button
                     onClick={() => handleProviderToggle(provider)}
-                    className="ml-1 hover:text-green-900"
+                    className="ml-1 hover:text-green-900 dark:hover:text-green-300"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -913,9 +805,9 @@ export default function FeedsPage() {
 
         {/* Content Grid/List */}
         {filteredContent.length === 0 ? (
-          <Card className="p-12 text-center bg-white">
-            <div className="text-gray-500">
-              <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <Card className="p-12 text-center bg-white dark:bg-gray-800">
+            <div className="text-gray-500 dark:text-gray-400">
+              <Search className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <h3 className="text-lg font-medium mb-2">No content found</h3>
               <p className="text-sm">
                 {hasActiveFilters
@@ -934,26 +826,16 @@ export default function FeedsPage() {
             </div>
           </Card>
         ) : (
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                : "space-y-4"
-            }
-          >
-            {filteredContent.map((item) =>
-              viewMode === "grid" ? (
-                <ContentCard key={item.id} item={item} />
-              ) : (
-                <ContentListItem key={item.id} item={item} />
-              )
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredContent.map((item) => (
+              <ContentCard key={item.id} item={item} />
+            ))}
           </div>
         )}
 
         {/* Results Summary */}
         {filteredContent.length > 0 && (
-          <div className="mt-8 text-center text-sm text-gray-500">
+          <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Showing {filteredContent.length} of {feedContent.length} articles
             {hasActiveFilters && " (filtered)"}
           </div>

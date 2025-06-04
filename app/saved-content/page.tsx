@@ -14,8 +14,6 @@ import {
   X,
   ArrowLeft,
   Search,
-  Grid3X3,
-  List,
   ChevronDown,
   Play,
   CheckCircle,
@@ -52,7 +50,7 @@ export default function SavedContent() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<string>("newest");
   const [filteredContent, setFilteredContent] = useState<SavedContentItem[]>(
@@ -254,9 +252,8 @@ export default function SavedContent() {
     // Fallback for other URL formats
     return url.replace("watch?v=", "embed/");
   };
-
   const SavedContentCard = ({ item }: { item: SavedContentItem }) => (
-    <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer border-0 shadow-sm bg-white hover:bg-gray-50/50">
+    <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer border-0 shadow-sm bg-white dark:bg-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
       <div className="relative">
         <img
           src={item.thumbnail || "/placeholder.svg"}
@@ -278,7 +275,9 @@ export default function SavedContent() {
         </Badge>
         {item.isConsumed && (
           <div className="absolute top-3 right-3">
-            <Badge className="bg-green-100 text-green-700">✓ Consumed</Badge>
+            <Badge className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
+              ✓ Consumed
+            </Badge>
           </div>
         )}
         {/* Action buttons - adapted for saved content */}
@@ -287,7 +286,7 @@ export default function SavedContent() {
             <Button
               variant="secondary"
               size="sm"
-              className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
+              className="h-8 w-8 p-0 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleConsumed(item.id);
@@ -297,15 +296,15 @@ export default function SavedContent() {
               }
             >
               {item.isConsumed ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
               ) : (
-                <Circle className="h-4 w-4" />
+                <Circle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               )}
             </Button>
             <Button
               variant="secondary"
               size="sm"
-              className="h-8 w-8 p-0 bg-white/90 hover:bg-red-50 text-red-600 hover:text-red-700"
+              className="h-8 w-8 p-0 bg-white/90 dark:bg-gray-800/90 hover:bg-red-50 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
               onClick={(e) => {
                 e.stopPropagation();
                 handleRemoveFromSaved(item.id);
@@ -319,28 +318,32 @@ export default function SavedContent() {
       </div>
       <CardContent className="p-4" onClick={() => openDetailView(item)}>
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <span className="font-medium text-teal-600">{item.source}</span>
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <span className="font-medium text-teal-600 dark:text-teal-400">
+              {item.source}
+            </span>
             <div className="flex items-center gap-2">
               <Clock className="h-3 w-3" />
               <span>{item.readTime}</span>
             </div>
           </div>
-          <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors">
+          <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
             {item.title}
           </h3>
           {item.excerpt && (
-            <p className="text-sm text-gray-600 line-clamp-2">{item.excerpt}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+              {item.excerpt}
+            </p>
           )}
           <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <Calendar className="h-3 w-3" />
               <span>Saved {item.savedDate}</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 text-xs hover:bg-teal-50 hover:text-teal-600"
+              className="h-8 px-3 text-xs hover:bg-teal-50 dark:hover:bg-teal-900/50 hover:text-teal-600 dark:hover:text-teal-400"
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(item.url || item.videoUrl, "_blank");
@@ -354,123 +357,9 @@ export default function SavedContent() {
       </CardContent>
     </Card>
   );
-
-  const SavedContentListItem = ({ item }: { item: SavedContentItem }) => (
-    <Card className="hover:shadow-md transition-all duration-300 group cursor-pointer border-0 shadow-sm bg-white hover:bg-gray-50/50">
-      <CardContent className="p-4">
-        <div className="flex gap-4" onClick={() => openDetailView(item)}>
-          <div className="relative flex-shrink-0">
-            <img
-              src={item.thumbnail || "/placeholder.svg"}
-              alt={item.title}
-              className={`w-24 h-18 object-cover rounded-lg ${
-                item.isConsumed ? "opacity-60" : ""
-              }`}
-            />
-            {item.type === "video" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                <Play className="h-6 w-6 text-white drop-shadow-lg" />
-              </div>
-            )}
-            {item.isConsumed && (
-              <div className="absolute -top-1 -right-1">
-                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-3 h-3 text-white" />
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex-1 space-y-2">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant={
-                      item.type === "video" ? "destructive" : "secondary"
-                    }
-                    className="text-xs"
-                  >
-                    {item.type === "video" ? "Video" : "Article"}
-                  </Badge>
-                  <span className="text-sm font-medium text-teal-600">
-                    {item.source}
-                  </span>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Clock className="h-3 w-3" />
-                    <span>{item.readTime}</span>
-                  </div>
-                </div>
-                <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-1">
-                  {item.title}
-                </h3>
-                {item.excerpt && (
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {item.excerpt}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Calendar className="h-3 w-3" />
-                <span>Saved {item.savedDate}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="h-8 w-8 p-0 bg-white hover:bg-gray-100 text-gray-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleConsumed(item.id);
-                  }}
-                  title={
-                    item.isConsumed
-                      ? "Mark as not consumed"
-                      : "Mark as consumed"
-                  }
-                >
-                  {item.isConsumed ? (
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Circle className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="h-8 w-8 p-0 bg-white hover:bg-red-50 text-red-600 hover:text-red-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveFromSaved(item.id);
-                  }}
-                  title="Remove from saved"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-3 text-xs hover:bg-teal-50 hover:text-teal-600"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(item.url || item.videoUrl, "_blank");
-                  }}
-                >
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  View
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   if (selectedContent) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
 
         {/* Detail View */}
@@ -480,7 +369,7 @@ export default function SavedContent() {
             <Button
               variant="outline"
               onClick={closeDetailView}
-              className="flex items-center gap-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 border-teal-200"
+              className="flex items-center gap-2 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/50 border-teal-200 dark:border-teal-700"
               size="sm"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -492,16 +381,16 @@ export default function SavedContent() {
           <div className="max-w-4xl mx-auto">
             {selectedContent.type === "article" ? (
               // Article View
-              <Card>
+              <Card className="bg-white dark:bg-gray-800">
                 <CardHeader className="pb-4 md:pb-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">
+                      <CardTitle className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4 leading-tight">
                         {selectedContent.title}
                       </CardTitle>
-                      <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">
+                          <span className="font-medium text-teal-600 dark:text-teal-400">
                             {selectedContent.source}
                           </span>
                         </div>
@@ -519,7 +408,7 @@ export default function SavedContent() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs md:text-sm"
+                        className="text-xs md:text-sm border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         onClick={() =>
                           window.open(selectedContent.url, "_blank")
                         }
@@ -534,8 +423,8 @@ export default function SavedContent() {
                         onClick={() => toggleConsumed(selectedContent.id)}
                         className={
                           selectedContent.isConsumed
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : ""
+                            ? "bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700"
+                            : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         }
                       >
                         {selectedContent.isConsumed ? (
@@ -551,11 +440,15 @@ export default function SavedContent() {
                           handleRemoveFromSaved(selectedContent.id);
                           closeDetailView();
                         }}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 border-red-200 dark:border-red-700"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </div>
@@ -563,7 +456,7 @@ export default function SavedContent() {
                 </CardHeader>
                 <CardContent>
                   <div
-                    className="prose prose-sm md:prose-lg max-w-none"
+                    className="prose prose-sm md:prose-lg max-w-none dark:prose-invert"
                     dangerouslySetInnerHTML={{
                       __html: selectedContent.content,
                     }}
@@ -572,16 +465,16 @@ export default function SavedContent() {
               </Card>
             ) : (
               // Video View
-              <Card>
+              <Card className="bg-white dark:bg-gray-800">
                 <CardHeader className="pb-4 md:pb-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">
+                      <CardTitle className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4 leading-tight">
                         {selectedContent.title}
                       </CardTitle>
-                      <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">
+                          <span className="font-medium text-teal-600 dark:text-teal-400">
                             {selectedContent.source}
                           </span>
                         </div>
@@ -599,7 +492,7 @@ export default function SavedContent() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs md:text-sm"
+                        className="text-xs md:text-sm border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         onClick={() =>
                           window.open(
                             selectedContent.videoUrl || selectedContent.url,
@@ -619,8 +512,8 @@ export default function SavedContent() {
                         onClick={() => toggleConsumed(selectedContent.id)}
                         className={
                           selectedContent.isConsumed
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : ""
+                            ? "bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700"
+                            : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         }
                       >
                         {selectedContent.isConsumed ? (
@@ -636,11 +529,15 @@ export default function SavedContent() {
                           handleRemoveFromSaved(selectedContent.id);
                           closeDetailView();
                         }}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 border-red-200 dark:border-red-700"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </div>
@@ -664,17 +561,18 @@ export default function SavedContent() {
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       {/* Main Content */}
       <main className="px-4 md:px-6 py-4 md:py-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Saved Content</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Saved Content
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
             Access your saved articles and videos for later reading
           </p>
         </div>
@@ -682,7 +580,7 @@ export default function SavedContent() {
         <div className="mb-6 space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <Input
               placeholder="Search articles and videos..."
               value={searchQuery}
@@ -690,21 +588,21 @@ export default function SavedContent() {
               className="pl-10 h-12 text-base"
             />
           </div>{" "}
-          {/* Controls Row */}
+          {/* Controls Row */}{" "}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 <Filter className="w-4 h-4" />
-                <span className="hidden sm:inline">Filters</span>
+                <span className="hidden sm:inline">Filters</span>{" "}
                 {hasActiveFilters && (
                   <Badge
                     variant="secondary"
-                    className="ml-1 bg-teal-100 text-teal-700"
+                    className="ml-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400"
                   >
                     {selectedTypes.length +
                       selectedProviders.length +
@@ -716,23 +614,21 @@ export default function SavedContent() {
                     showFilters ? "rotate-180" : ""
                   }`}
                 />
-              </Button>
-
+              </Button>{" "}
               {hasActiveFilters && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearAllFilters}
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
                   <X className="w-4 h-4 mr-1" />
                   Clear
                 </Button>
               )}
-            </div>
-
+            </div>{" "}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 hidden sm:inline">
+              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 {filteredContent.length} items
               </span>
               <Select value={sortBy} onValueChange={setSortBy}>
@@ -743,31 +639,9 @@ export default function SavedContent() {
                   <SelectItem value="newest">Newest</SelectItem>
                   <SelectItem value="oldest">Oldest</SelectItem>
                   <SelectItem value="title">Title A-Z</SelectItem>
-                  <SelectItem value="source">Source A-Z</SelectItem>
+                  <SelectItem value="source">Source A-Z</SelectItem>{" "}
                 </SelectContent>
               </Select>
-              <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className={`rounded-none ${
-                    viewMode === "grid" ? "bg-teal-600 text-white" : ""
-                  }`}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className={`rounded-none ${
-                    viewMode === "list" ? "bg-teal-600 text-white" : ""
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
           </div>
         </div>
@@ -776,9 +650,10 @@ export default function SavedContent() {
           <Card className="mb-6">
             <CardContent className="pt-6">
               <div className="space-y-4">
+                {" "}
                 {/* Content Type Filters */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Content Type
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -796,16 +671,16 @@ export default function SavedContent() {
                           className={`capitalize ${
                             isSelected
                               ? "bg-teal-600 hover:bg-teal-700 text-white"
-                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                              : "text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-600 dark:hover:border-teal-400"
                           }`}
                         >
-                          {type}
+                          {type}{" "}
                           <Badge
                             variant="secondary"
                             className={`ml-2 ${
                               isSelected
                                 ? "bg-teal-500 text-white"
-                                : "bg-gray-100 text-gray-600"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                             }`}
                           >
                             {count}
@@ -815,10 +690,9 @@ export default function SavedContent() {
                     })}
                   </div>
                 </div>
-
                 {/* Consumed Status Filter */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Status
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -869,11 +743,10 @@ export default function SavedContent() {
                       );
                     })}
                   </div>
-                </div>
-
+                </div>{" "}
                 {/* Content Source/Provider Filters */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Source
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -891,7 +764,7 @@ export default function SavedContent() {
                           className={`text-xs md:text-sm ${
                             isSelected
                               ? "bg-teal-600 hover:bg-teal-700 text-white"
-                              : "text-gray-600 hover:text-teal-600 hover:border-teal-600"
+                              : "text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-600 dark:hover:border-teal-400"
                           }`}
                         >
                           <span className="truncate max-w-[120px]">
@@ -902,7 +775,7 @@ export default function SavedContent() {
                             className={`ml-2 ${
                               isSelected
                                 ? "bg-teal-500 text-white"
-                                : "bg-gray-100 text-gray-600"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                             }`}
                           >
                             {count}
@@ -916,20 +789,22 @@ export default function SavedContent() {
             </CardContent>
           </Card>
         )}
-        {/* Active Filters Display */}
+        {/* Active Filters Display */}{" "}
         {hasActiveFilters && (
           <div className="mb-6">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-gray-600">Active filters:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Active filters:
+              </span>
               {searchQuery && (
                 <Badge
                   variant="secondary"
-                  className="bg-purple-100 text-purple-700"
+                  className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
                 >
                   Search: "{searchQuery}"
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="ml-1 hover:text-purple-900"
+                    className="ml-1 hover:text-purple-900 dark:hover:text-purple-100"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -939,12 +814,12 @@ export default function SavedContent() {
                 <Badge
                   key={`type-${type}`}
                   variant="secondary"
-                  className="bg-teal-100 text-teal-700"
+                  className="bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
                 >
                   {type}
                   <button
                     onClick={() => toggleTypeFilter(type)}
-                    className="ml-1 hover:text-teal-900"
+                    className="ml-1 hover:text-teal-900 dark:hover:text-teal-100"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -954,12 +829,12 @@ export default function SavedContent() {
                 <Badge
                   key={`provider-${provider}`}
                   variant="secondary"
-                  className="bg-blue-100 text-blue-700"
+                  className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                 >
                   <span className="truncate max-w-[100px]">{provider}</span>
                   <button
                     onClick={() => toggleProviderFilter(provider)}
-                    className="ml-1 hover:text-blue-900"
+                    className="ml-1 hover:text-blue-900 dark:hover:text-blue-100"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -969,14 +844,14 @@ export default function SavedContent() {
                 <Badge
                   key={`consumed-${selectedConsumed}`}
                   variant="secondary"
-                  className="bg-gray-100 text-gray-700"
+                  className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                 >
                   {selectedConsumed === "consumed"
                     ? "Consumed"
                     : "Not Consumed"}
                   <button
                     onClick={() => setSelectedConsumed("all")}
-                    className="ml-1 hover:text-gray-900"
+                    className="ml-1 hover:text-gray-900 dark:hover:text-gray-100"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -985,12 +860,12 @@ export default function SavedContent() {
             </div>
           </div>
         )}{" "}
-        {/* Content Grid/List */}
+        {/* Content Grid/List */}{" "}
         {filteredContent.length === 0 ? (
-          <Card className="p-12 text-center bg-white">
-            <div className="text-gray-500">
-              <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium mb-2">
+          <Card className="p-12 text-center bg-white dark:bg-gray-800">
+            <div className="text-gray-500 dark:text-gray-400">
+              <Search className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+              <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
                 {hasActiveFilters
                   ? "No content matches your filters"
                   : "No saved content yet"}
@@ -1003,7 +878,7 @@ export default function SavedContent() {
               {hasActiveFilters && (
                 <Button
                   variant="outline"
-                  className="mt-4"
+                  className="mt-4 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={clearAllFilters}
                 >
                   Clear all filters
@@ -1012,25 +887,15 @@ export default function SavedContent() {
             </div>
           </Card>
         ) : (
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                : "space-y-4"
-            }
-          >
-            {filteredContent.map((item) =>
-              viewMode === "grid" ? (
-                <SavedContentCard key={item.id} item={item} />
-              ) : (
-                <SavedContentListItem key={item.id} item={item} />
-              )
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredContent.map((item) => (
+              <SavedContentCard key={item.id} item={item} />
+            ))}
           </div>
         )}
-        {/* Results Summary */}
+        {/* Results Summary */}{" "}
         {filteredContent.length > 0 && (
-          <div className="mt-8 text-center text-sm text-gray-500">
+          <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Showing {filteredContent.length} of {savedContent.length} saved
             items
             {hasActiveFilters && " (filtered)"}

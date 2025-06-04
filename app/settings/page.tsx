@@ -1,13 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +21,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +31,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import {
   User,
   Lock,
@@ -48,43 +54,43 @@ import {
   Clock,
   Volume2,
   VolumeX,
-} from "lucide-react"
-import { Navbar } from "@/components/navbar"
+} from "lucide-react";
+import { Navbar } from "@/components/navbar";
 
 interface UserSettings {
   // Personal Information
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
 
   // Security
-  currentPassword: string
-  newPassword: string
-  confirmPassword: string
-  twoFactorEnabled: boolean
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  twoFactorEnabled: boolean;
 
   // Preferences
-  timezone: string
-  language: string
-  theme: "light" | "dark" | "system"
+  timezone: string;
+  language: string;
+  theme: "light" | "dark" | "system";
 
   // Notifications
-  emailNotifications: boolean
-  pushNotifications: boolean
-  digestReminders: boolean
-  weeklyReports: boolean
-  securityAlerts: boolean
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  digestReminders: boolean;
+  weeklyReports: boolean;
+  securityAlerts: boolean;
 
   // Privacy
-  profileVisibility: "public" | "private"
-  dataSharing: boolean
-  analyticsOptIn: boolean
+  profileVisibility: "public" | "private";
+  dataSharing: boolean;
+  analyticsOptIn: boolean;
 
   // App Settings
-  autoSave: boolean
-  soundEnabled: boolean
-  compactMode: boolean
+  autoSave: boolean;
+  soundEnabled: boolean;
+  compactMode: boolean;
 }
 
 const timezones = [
@@ -98,7 +104,7 @@ const timezones = [
   { value: "Asia/Tokyo", label: "Japan Standard Time (JST)" },
   { value: "Asia/Shanghai", label: "China Standard Time (CST)" },
   { value: "Australia/Sydney", label: "Australian Eastern Time (AET)" },
-]
+];
 
 const languages = [
   { value: "en", label: "English" },
@@ -110,7 +116,7 @@ const languages = [
   { value: "ja", label: "日本語" },
   { value: "ko", label: "한국어" },
   { value: "zh", label: "中文" },
-]
+];
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings>({
@@ -136,17 +142,19 @@ export default function SettingsPage() {
     autoSave: true,
     soundEnabled: true,
     compactMode: false,
-  })
+  });
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showExportDialog, setShowExportDialog] = useState(false)
-  const [activeSection, setActiveSection] = useState("personal")
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [activeSection, setActiveSection] = useState("personal");
 
   const sections = [
     { id: "personal", label: "Personal Info", icon: User },
@@ -155,80 +163,83 @@ export default function SettingsPage() {
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "privacy", label: "Privacy", icon: Shield },
     { id: "app", label: "App Settings", icon: Smartphone },
-  ]
+  ];
 
   // Validation functions
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const validatePassword = (password: string) => {
-    return password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
-  }
+    return (
+      password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
+    );
+  };
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+?[\d\s\-$$$$]+$/
-    return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 10
-  }
+    const phoneRegex = /^\+?[\d\s\-$$$$]+$/;
+    return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 10;
+  };
 
   const handleInputChange = (field: keyof UserSettings, value: any) => {
-    setSettings((prev) => ({ ...prev, [field]: value }))
+    setSettings((prev) => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     // Personal Information Validation
     if (!settings.firstName.trim()) {
-      newErrors.firstName = "First name is required"
+      newErrors.firstName = "First name is required";
     }
     if (!settings.lastName.trim()) {
-      newErrors.lastName = "Last name is required"
+      newErrors.lastName = "Last name is required";
     }
     if (!validateEmail(settings.email)) {
-      newErrors.email = "Please enter a valid email address"
+      newErrors.email = "Please enter a valid email address";
     }
     if (settings.phone && !validatePhone(settings.phone)) {
-      newErrors.phone = "Please enter a valid phone number"
+      newErrors.phone = "Please enter a valid phone number";
     }
 
     // Password Validation (only if changing password)
     if (settings.newPassword || settings.confirmPassword) {
       if (!settings.currentPassword) {
-        newErrors.currentPassword = "Current password is required"
+        newErrors.currentPassword = "Current password is required";
       }
       if (!validatePassword(settings.newPassword)) {
-        newErrors.newPassword = "Password must be at least 8 characters with uppercase, lowercase, and number"
+        newErrors.newPassword =
+          "Password must be at least 8 characters with uppercase, lowercase, and number";
       }
       if (settings.newPassword !== settings.confirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match"
+        newErrors.confirmPassword = "Passwords do not match";
       }
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = async () => {
     if (!validateForm()) {
-      setSaveStatus("error")
-      return
+      setSaveStatus("error");
+      return;
     }
 
-    setIsLoading(true)
-    setSaveStatus("saving")
+    setIsLoading(true);
+    setSaveStatus("saving");
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      setSaveStatus("success")
+      setSaveStatus("success");
 
       // Clear password fields after successful save
       setSettings((prev) => ({
@@ -236,20 +247,20 @@ export default function SettingsPage() {
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-      }))
+      }));
 
       // Reset status after 3 seconds
-      setTimeout(() => setSaveStatus("idle"), 3000)
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } catch (error) {
-      setSaveStatus("error")
-      setTimeout(() => setSaveStatus("idle"), 3000)
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleExportData = async () => {
-    setShowExportDialog(false)
+    setShowExportDialog(false);
     // Simulate data export
     const data = {
       personal: {
@@ -263,16 +274,18 @@ export default function SettingsPage() {
         theme: settings.theme,
       },
       exportDate: new Date().toISOString(),
-    }
+    };
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "digestly-data-export.json"
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "digestly-data-export.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const renderPersonalInfo = () => (
     <div className="space-y-6">
@@ -348,7 +361,7 @@ export default function SettingsPage() {
         )}
       </div>
     </div>
-  )
+  );
 
   const renderSecurity = () => (
     <div className="space-y-6">
@@ -362,8 +375,12 @@ export default function SettingsPage() {
               id="currentPassword"
               type={showCurrentPassword ? "text" : "password"}
               value={settings.currentPassword}
-              onChange={(e) => handleInputChange("currentPassword", e.target.value)}
-              className={`h-12 pr-12 ${errors.currentPassword ? "border-red-500" : ""}`}
+              onChange={(e) =>
+                handleInputChange("currentPassword", e.target.value)
+              }
+              className={`h-12 pr-12 ${
+                errors.currentPassword ? "border-red-500" : ""
+              }`}
               placeholder="Enter current password"
             />
             <Button
@@ -373,7 +390,11 @@ export default function SettingsPage() {
               className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
             >
-              {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showCurrentPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </Button>
           </div>
           {errors.currentPassword && (
@@ -392,7 +413,9 @@ export default function SettingsPage() {
               type={showNewPassword ? "text" : "password"}
               value={settings.newPassword}
               onChange={(e) => handleInputChange("newPassword", e.target.value)}
-              className={`h-12 pr-12 ${errors.newPassword ? "border-red-500" : ""}`}
+              className={`h-12 pr-12 ${
+                errors.newPassword ? "border-red-500" : ""
+              }`}
               placeholder="Enter new password"
             />
             <Button
@@ -402,7 +425,11 @@ export default function SettingsPage() {
               className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
               onClick={() => setShowNewPassword(!showNewPassword)}
             >
-              {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showNewPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </Button>
           </div>
           {errors.newPassword && (
@@ -420,8 +447,12 @@ export default function SettingsPage() {
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               value={settings.confirmPassword}
-              onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-              className={`h-12 pr-12 ${errors.confirmPassword ? "border-red-500" : ""}`}
+              onChange={(e) =>
+                handleInputChange("confirmPassword", e.target.value)
+              }
+              className={`h-12 pr-12 ${
+                errors.confirmPassword ? "border-red-500" : ""
+              }`}
               placeholder="Confirm new password"
             />
             <Button
@@ -431,7 +462,11 @@ export default function SettingsPage() {
               className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
-              {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showConfirmPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </Button>
           </div>
           {errors.confirmPassword && (
@@ -446,27 +481,36 @@ export default function SettingsPage() {
       <Separator />
 
       <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h4>
+        <h4 className="text-lg font-semibold text-gray-900">
+          Two-Factor Authentication
+        </h4>
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div className="space-y-1">
             <p className="font-medium">Enable Two-Factor Authentication</p>
-            <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
+            <p className="text-sm text-gray-600">
+              Add an extra layer of security to your account
+            </p>
           </div>
           <Switch
             checked={settings.twoFactorEnabled}
-            onCheckedChange={(checked) => handleInputChange("twoFactorEnabled", checked)}
+            onCheckedChange={(checked) =>
+              handleInputChange("twoFactorEnabled", checked)
+            }
           />
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderPreferences = () => (
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="timezone">Timezone</Label>
-          <Select value={settings.timezone} onValueChange={(value) => handleInputChange("timezone", value)}>
+          <Select
+            value={settings.timezone}
+            onValueChange={(value) => handleInputChange("timezone", value)}
+          >
             <SelectTrigger className="h-12">
               <SelectValue placeholder="Select your timezone" />
             </SelectTrigger>
@@ -485,7 +529,10 @@ export default function SettingsPage() {
 
         <div className="space-y-2">
           <Label htmlFor="language">Language</Label>
-          <Select value={settings.language} onValueChange={(value) => handleInputChange("language", value)}>
+          <Select
+            value={settings.language}
+            onValueChange={(value) => handleInputChange("language", value)}
+          >
             <SelectTrigger className="h-12">
               <SelectValue placeholder="Select your language" />
             </SelectTrigger>
@@ -504,7 +551,10 @@ export default function SettingsPage() {
 
         <div className="space-y-2">
           <Label htmlFor="theme">Theme</Label>
-          <Select value={settings.theme} onValueChange={(value) => handleInputChange("theme", value)}>
+          <Select
+            value={settings.theme}
+            onValueChange={(value) => handleInputChange("theme", value)}
+          >
             <SelectTrigger className="h-12">
               <SelectValue placeholder="Select theme" />
             </SelectTrigger>
@@ -532,55 +582,73 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderNotifications = () => (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-gray-900">Email Notifications</h4>
+        <h4 className="text-lg font-semibold text-gray-900">
+          Email Notifications
+        </h4>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="space-y-1">
               <p className="font-medium">Email Notifications</p>
-              <p className="text-sm text-gray-600">Receive notifications via email</p>
+              <p className="text-sm text-gray-600">
+                Receive notifications via email
+              </p>
             </div>
             <Switch
               checked={settings.emailNotifications}
-              onCheckedChange={(checked) => handleInputChange("emailNotifications", checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange("emailNotifications", checked)
+              }
             />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="space-y-1">
               <p className="font-medium">Digest Reminders</p>
-              <p className="text-sm text-gray-600">Get reminded when new digests are available</p>
+              <p className="text-sm text-gray-600">
+                Get reminded when new digests are available
+              </p>
             </div>
             <Switch
               checked={settings.digestReminders}
-              onCheckedChange={(checked) => handleInputChange("digestReminders", checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange("digestReminders", checked)
+              }
             />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="space-y-1">
               <p className="font-medium">Weekly Reports</p>
-              <p className="text-sm text-gray-600">Receive weekly summary reports</p>
+              <p className="text-sm text-gray-600">
+                Receive weekly summary reports
+              </p>
             </div>
             <Switch
               checked={settings.weeklyReports}
-              onCheckedChange={(checked) => handleInputChange("weeklyReports", checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange("weeklyReports", checked)
+              }
             />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="space-y-1">
               <p className="font-medium">Security Alerts</p>
-              <p className="text-sm text-gray-600">Important security notifications</p>
+              <p className="text-sm text-gray-600">
+                Important security notifications
+              </p>
             </div>
             <Switch
               checked={settings.securityAlerts}
-              onCheckedChange={(checked) => handleInputChange("securityAlerts", checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange("securityAlerts", checked)
+              }
             />
           </div>
         </div>
@@ -589,21 +657,27 @@ export default function SettingsPage() {
       <Separator />
 
       <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-gray-900">Push Notifications</h4>
+        <h4 className="text-lg font-semibold text-gray-900">
+          Push Notifications
+        </h4>
 
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div className="space-y-1">
             <p className="font-medium">Push Notifications</p>
-            <p className="text-sm text-gray-600">Receive push notifications on your device</p>
+            <p className="text-sm text-gray-600">
+              Receive push notifications on your device
+            </p>
           </div>
           <Switch
             checked={settings.pushNotifications}
-            onCheckedChange={(checked) => handleInputChange("pushNotifications", checked)}
+            onCheckedChange={(checked) =>
+              handleInputChange("pushNotifications", checked)
+            }
           />
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderPrivacy = () => (
     <div className="space-y-6">
@@ -612,7 +686,9 @@ export default function SettingsPage() {
           <Label htmlFor="profileVisibility">Profile Visibility</Label>
           <Select
             value={settings.profileVisibility}
-            onValueChange={(value) => handleInputChange("profileVisibility", value)}
+            onValueChange={(value) =>
+              handleInputChange("profileVisibility", value)
+            }
           >
             <SelectTrigger className="h-12">
               <SelectValue placeholder="Select profile visibility" />
@@ -627,27 +703,35 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div className="space-y-1">
             <p className="font-medium">Data Sharing</p>
-            <p className="text-sm text-gray-600">Allow sharing anonymized usage data</p>
+            <p className="text-sm text-gray-600">
+              Allow sharing anonymized usage data
+            </p>
           </div>
           <Switch
             checked={settings.dataSharing}
-            onCheckedChange={(checked) => handleInputChange("dataSharing", checked)}
+            onCheckedChange={(checked) =>
+              handleInputChange("dataSharing", checked)
+            }
           />
         </div>
 
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div className="space-y-1">
             <p className="font-medium">Analytics</p>
-            <p className="text-sm text-gray-600">Help improve the app with usage analytics</p>
+            <p className="text-sm text-gray-600">
+              Help improve the app with usage analytics
+            </p>
           </div>
           <Switch
             checked={settings.analyticsOptIn}
-            onCheckedChange={(checked) => handleInputChange("analyticsOptIn", checked)}
+            onCheckedChange={(checked) =>
+              handleInputChange("analyticsOptIn", checked)
+            }
           />
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderAppSettings = () => (
     <div className="space-y-6">
@@ -657,19 +741,32 @@ export default function SettingsPage() {
             <p className="font-medium">Auto-save</p>
             <p className="text-sm text-gray-600">Automatically save changes</p>
           </div>
-          <Switch checked={settings.autoSave} onCheckedChange={(checked) => handleInputChange("autoSave", checked)} />
+          <Switch
+            checked={settings.autoSave}
+            onCheckedChange={(checked) =>
+              handleInputChange("autoSave", checked)
+            }
+          />
         </div>
 
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div className="space-y-1">
             <p className="font-medium">Sound Effects</p>
-            <p className="text-sm text-gray-600">Play sound effects for interactions</p>
+            <p className="text-sm text-gray-600">
+              Play sound effects for interactions
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            {settings.soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {settings.soundEnabled ? (
+              <Volume2 className="w-4 h-4" />
+            ) : (
+              <VolumeX className="w-4 h-4" />
+            )}
             <Switch
               checked={settings.soundEnabled}
-              onCheckedChange={(checked) => handleInputChange("soundEnabled", checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange("soundEnabled", checked)
+              }
             />
           </div>
         </div>
@@ -677,11 +774,15 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div className="space-y-1">
             <p className="font-medium">Compact Mode</p>
-            <p className="text-sm text-gray-600">Use compact layout for more content</p>
+            <p className="text-sm text-gray-600">
+              Use compact layout for more content
+            </p>
           </div>
           <Switch
             checked={settings.compactMode}
-            onCheckedChange={(checked) => handleInputChange("compactMode", checked)}
+            onCheckedChange={(checked) =>
+              handleInputChange("compactMode", checked)
+            }
           />
         </div>
       </div>
@@ -692,7 +793,11 @@ export default function SettingsPage() {
         <h4 className="text-lg font-semibold text-gray-900">Data Management</h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Button variant="outline" onClick={() => setShowExportDialog(true)} className="h-12 justify-start">
+          <Button
+            variant="outline"
+            onClick={() => setShowExportDialog(true)}
+            className="h-12 justify-start"
+          >
             <Download className="w-4 h-4 mr-2" />
             Export Data
           </Button>
@@ -708,36 +813,39 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderContent = () => {
     switch (activeSection) {
       case "personal":
-        return renderPersonalInfo()
+        return renderPersonalInfo();
       case "security":
-        return renderSecurity()
+        return renderSecurity();
       case "preferences":
-        return renderPreferences()
+        return renderPreferences();
       case "notifications":
-        return renderNotifications()
+        return renderNotifications();
       case "privacy":
-        return renderPrivacy()
+        return renderPrivacy();
       case "app":
-        return renderAppSettings()
+        return renderAppSettings();
       default:
-        return renderPersonalInfo()
+        return renderPersonalInfo();
     }
-  }
-
+  };
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <main className="px-4 md:px-6 py-4 md:py-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-gray-600">Manage your account settings and preferences</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Settings
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Manage your account settings and preferences
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -747,22 +855,22 @@ export default function SettingsPage() {
               <CardContent className="p-4">
                 <nav className="space-y-2">
                   {sections.map((section) => {
-                    const Icon = section.icon
-                    const isActive = activeSection === section.id
+                    const Icon = section.icon;
+                    const isActive = activeSection === section.id;
                     return (
                       <button
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-left ${
                           isActive
-                            ? "bg-teal-50 text-teal-700 border border-teal-200"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-700"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
                         }`}
                       >
                         <Icon className="w-5 h-5" />
                         <span className="font-medium">{section.label}</span>
                       </button>
-                    )
+                    );
                   })}
                 </nav>
               </CardContent>
@@ -775,14 +883,16 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   {(() => {
-                    const section = sections.find((s) => s.id === activeSection)
-                    const Icon = section?.icon || User
+                    const section = sections.find(
+                      (s) => s.id === activeSection
+                    );
+                    const Icon = section?.icon || User;
                     return (
                       <>
                         <Icon className="w-5 h-5" />
                         {section?.label}
                       </>
-                    )
+                    );
                   })()}
                 </CardTitle>
               </CardHeader>
@@ -795,7 +905,9 @@ export default function SettingsPage() {
                     {saveStatus === "success" && (
                       <div className="flex items-center gap-2 text-green-600">
                         <CheckCircle className="w-4 h-4" />
-                        <span className="text-sm">Settings saved successfully</span>
+                        <span className="text-sm">
+                          Settings saved successfully
+                        </span>
                       </div>
                     )}
                     {saveStatus === "error" && (
@@ -835,15 +947,22 @@ export default function SettingsPage() {
             <DialogHeader>
               <DialogTitle>Export Your Data</DialogTitle>
               <DialogDescription>
-                Download a copy of your personal data and settings. This will include your profile information,
-                preferences, and digest configurations.
+                Download a copy of your personal data and settings. This will
+                include your profile information, preferences, and digest
+                configurations.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowExportDialog(false)}
+              >
                 Cancel
               </Button>
-              <Button onClick={handleExportData} className="bg-teal-600 hover:bg-teal-700 text-white">
+              <Button
+                onClick={handleExportData}
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+              >
                 <Download className="w-4 h-4 mr-2" />
                 Export Data
               </Button>
@@ -857,17 +976,19 @@ export default function SettingsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Account</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your account and remove all your data from
-                our servers.
+                This action cannot be undone. This will permanently delete your
+                account and remove all your data from our servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white">Delete Account</AlertDialogAction>
+              <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white">
+                Delete Account
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       </main>
     </div>
-  )
+  );
 }

@@ -384,16 +384,16 @@ export default function FeedsManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 Feed Management
               </h1>
-              <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
+              <p className="text-gray-600 dark:text-gray-300 mt-1 sm:mt-2 text-sm sm:text-base">
                 Manage your RSS feeds and YouTube channels
               </p>
             </div>
@@ -415,10 +415,10 @@ export default function FeedsManagementPage() {
                     <Rss className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   </div>
                   <div className="ml-3 sm:ml-4">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
                       Total Feeds
                     </p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {stats.totalFeeds}
                     </p>
                   </div>
@@ -429,14 +429,14 @@ export default function FeedsManagementPage() {
             <Card>
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
-                    <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                  <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div className="ml-3 sm:ml-4">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
                       Active Feeds
                     </p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {stats.activeFeeds}
                     </p>
                   </div>
@@ -447,14 +447,14 @@ export default function FeedsManagementPage() {
             <Card>
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
-                    <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                  <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="ml-3 sm:ml-4">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
                       Total Items
                     </p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {stats.totalItems}
                     </p>
                   </div>
@@ -643,7 +643,7 @@ export default function FeedsManagementPage() {
 
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2 mb-1">
-                            <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate">
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate dark:text-white">
                               {feed.name}
                             </h3>
                             <Badge
@@ -657,7 +657,7 @@ export default function FeedsManagementPage() {
                           </div>
 
                           {feed.description && (
-                            <p className="text-sm sm:text-base text-gray-600 mb-2 break-words">
+                            <p className="text-sm sm:text-base text-gray-600 mb-2 break-words dark:text-gray-400">
                               {feed.description}
                             </p>
                           )}

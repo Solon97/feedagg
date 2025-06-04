@@ -5,6 +5,7 @@ import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "./theme-toggle";
 import {
   Home,
   Bookmark,
@@ -147,14 +148,14 @@ export function MobileNav() {
           ref={triggerRef}
           variant="ghost"
           size="sm"
-          className="md:hidden relative z-50 h-10 w-10 p-0 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-150"
+          className="md:hidden relative z-50 h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 transition-colors duration-150"
           onClick={openMenu}
           aria-label="Open menu"
           aria-expanded={isOpen}
           aria-controls="mobile-menu"
           disabled={isAnimating}
         >
-          <Menu className="h-5 w-5 text-gray-600" />
+          <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
         </Button>
       )}{" "}
       {/* Mobile Menu Overlay */}
@@ -174,7 +175,7 @@ export function MobileNav() {
           <div
             ref={menuRef}
             id="mobile-menu"
-            className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl transform transition-transform duration-500 ease-out ${
+            className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl transform transition-transform duration-500 ease-out ${
               isClosing || !shouldSlideIn ? "translate-x-full" : "translate-x-0"
             }`}
             style={{
@@ -189,8 +190,8 @@ export function MobileNav() {
           >
             <div className="flex flex-col h-full">
               {" "}
-              {/* Header - Single close button */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+              {/* Header - Single close button */}{" "}
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center shadow-sm">
                     <div className="w-5 h-3 bg-white rounded-sm transform rotate-12"></div>
@@ -198,25 +199,28 @@ export function MobileNav() {
                   <div>
                     <h2
                       id="mobile-menu-title"
-                      className="font-semibold text-gray-900 text-lg"
+                      className="font-semibold text-gray-900 dark:text-white text-lg"
                     >
                       Digestly
                     </h2>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Content Digest Platform
                     </p>
                   </div>
                 </div>{" "}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={closeMenu}
-                  className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full transition-colors duration-150"
-                  aria-label="Close menu"
-                  disabled={isAnimating}
-                >
-                  <X className="h-4 w-4 text-gray-600" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={closeMenu}
+                    className="h-8 w-8 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors duration-150"
+                    aria-label="Close menu"
+                    disabled={isAnimating}
+                  >
+                    <X className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  </Button>
+                </div>
               </div>{" "}
               {/* Navigation */}
               <nav className="flex-1 overflow-y-auto py-2" role="navigation">
@@ -231,8 +235,8 @@ export function MobileNav() {
                         href={item.href}
                         className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-200 ease-out transform hover:scale-[1.02] active:scale-[0.98] ${
                           active
-                            ? "bg-teal-50 text-teal-700 shadow-sm border border-teal-100"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 shadow-sm border border-teal-100 dark:border-teal-800"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                         }`}
                         role="menuitem"
                         tabIndex={isOpen ? 0 : -1}
@@ -241,8 +245,8 @@ export function MobileNav() {
                           <div
                             className={`p-2 rounded-lg transition-colors duration-200 ${
                               active
-                                ? "bg-teal-100"
-                                : "bg-gray-100 group-hover:bg-gray-200"
+                                ? "bg-teal-100 dark:bg-teal-800"
+                                : "bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600"
                             }`}
                           >
                             <Icon className="w-5 h-5" />
@@ -254,11 +258,11 @@ export function MobileNav() {
                   })}
                 </div>
               </nav>{" "}
-              {/* Footer */}
-              <div className="border-t border-gray-100 p-4 bg-gray-50">
+              {/* Footer */}{" "}
+              <div className="border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50 h-12 rounded-xl transition-all duration-200"
+                  className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 h-12 rounded-xl transition-all duration-200"
                   onClick={() => {
                     closeMenu();
                     // Handle logout

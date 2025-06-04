@@ -1,72 +1,81 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, ArrowLeft } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-  })
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Simulate successful authentication
-    console.log(isLogin ? "Login successful" : "Registration successful", formData)
+    console.log(
+      isLogin ? "Login successful" : "Registration successful",
+      formData
+    );
 
     // Redirect to dashboard (in a real app, you'd use router.push)
-    window.location.href = "/"
-  }
+    window.location.href = "/";
+  };
 
   const toggleMode = () => {
-    setIsLogin(!isLogin)
+    setIsLogin(!isLogin);
     setFormData({
       username: "",
       email: "",
       password: "",
       confirmPassword: "",
-    })
-    setShowPassword(false)
-    setShowConfirmPassword(false)
-  }
-
+    });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
       {/* Mobile Header */}
       <div className="flex items-center justify-between p-4 md:hidden">
-        <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="text-gray-600">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => window.history.back()}
+          className="text-gray-600 dark:text-gray-400"
+        >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-teal-500 rounded flex items-center justify-center">
             <div className="w-4 h-3 bg-white rounded-sm transform rotate-12"></div>
           </div>
-          <span className="font-semibold text-gray-900">Digestly</span>
+          <span className="font-semibold text-gray-900 dark:text-white">
+            Digestly
+          </span>
         </div>
         <div className="w-9"></div> {/* Spacer for centering */}
       </div>
@@ -74,39 +83,53 @@ export default function AuthPage() {
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
+          {" "}
           {/* Desktop Logo and Header */}
           <div className="text-center mb-6 md:mb-8 hidden md:block">
-            <a href="/" className="flex items-center justify-center gap-3 mb-4 hover:opacity-80 transition-opacity">
+            <a
+              href="/"
+              className="flex items-center justify-center gap-3 mb-4 hover:opacity-80 transition-opacity"
+            >
               <div className="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center">
                 <div className="w-7 h-5 bg-white rounded-sm transform rotate-12"></div>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Digestly</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Digestly
+              </h1>
             </a>
-            <p className="text-gray-600 text-sm md:text-base">
-              {isLogin ? "Welcome back! Sign in to your account" : "Create your account to get started"}
+            <p className="text-gray-600 dark:text-gray-300 text-sm md:text-base">
+              {isLogin
+                ? "Welcome back! Sign in to your account"
+                : "Create your account to get started"}
             </p>
           </div>
-
           {/* Mobile Header Text */}
           <div className="text-center mb-6 md:hidden">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{isLogin ? "Welcome back!" : "Get started"}</h2>
-            <p className="text-gray-600 text-sm">
-              {isLogin ? "Sign in to your account" : "Create your account to continue"}
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              {isLogin ? "Welcome back!" : "Get started"}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              {isLogin
+                ? "Sign in to your account"
+                : "Create your account to continue"}
             </p>
-          </div>
-
+          </div>{" "}
           {/* Auth Card */}
-          <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+          <Card className="shadow-xl border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
             <CardHeader className="space-y-1 pb-4 md:pb-6">
-              <CardTitle className="text-xl md:text-2xl font-bold text-center">
+              <CardTitle className="text-xl md:text-2xl font-bold text-center text-gray-900 dark:text-white">
                 {isLogin ? "Sign In" : "Create Account"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <form onSubmit={handleSubmit} className="space-y-4">
+                {" "}
                 {/* Username Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-medium">
+                  <Label
+                    htmlFor="username"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
                     Username
                   </Label>
                   <Input
@@ -117,15 +140,17 @@ export default function AuthPage() {
                     value={formData.username}
                     onChange={handleInputChange}
                     required
-                    className="h-12 text-base"
+                    className="h-12 text-base bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
                     autoComplete="username"
                   />
-                </div>
-
+                </div>{" "}
                 {/* Email Field (Registration only) */}
                 {!isLogin && (
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium">
+                    <Label
+                      htmlFor="email"
+                      className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                    >
                       Email
                     </Label>
                     <Input
@@ -136,15 +161,17 @@ export default function AuthPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="h-12 text-base"
+                      className="h-12 text-base bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
                       autoComplete="email"
                     />
                   </div>
-                )}
-
+                )}{" "}
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
                     Password
                   </Label>
                   <div className="relative">
@@ -156,24 +183,34 @@ export default function AuthPage() {
                       value={formData.password}
                       onChange={handleInputChange}
                       required
-                      className="h-12 pr-12 text-base"
-                      autoComplete={isLogin ? "current-password" : "new-password"}
+                      className="h-12 pr-12 text-base bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                      autoComplete={
+                        isLogin ? "current-password" : "new-password"
+                      }
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-1"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
-                </div>
-
+                </div>{" "}
                 {/* Confirm Password Field (Registration only) */}
                 {!isLogin && (
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                    >
                       Confirm Password
                     </Label>
                     <div className="relative">
@@ -185,34 +222,45 @@ export default function AuthPage() {
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
                         required
-                        className="h-12 pr-12 text-base"
+                        className="h-12 pr-12 text-base bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
                         autoComplete="new-password"
                       />
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
-                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-1"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
                       >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
                       </button>
                     </div>
                   </div>
-                )}
-
+                )}{" "}
                 {/* Forgot Password Link (Login only) */}
                 {isLogin && (
                   <div className="text-right">
-                    <button type="button" className="text-sm text-teal-600 hover:text-teal-700 transition-colors p-1">
+                    <button
+                      type="button"
+                      className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors p-1"
+                    >
                       Forgot password?
                     </button>
                   </div>
                 )}
-
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white font-medium text-base"
+                  className="w-full h-12 bg-teal-600 hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-medium text-base"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -226,30 +274,30 @@ export default function AuthPage() {
                     "Create Account"
                   )}
                 </Button>
-              </form>
-
+              </form>{" "}
               {/* Divider */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                  <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or</span>
+                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    or
+                  </span>
                 </div>
-              </div>
-
+              </div>{" "}
               {/* Social Login Buttons */}
               <div className="space-y-3">
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-gray-300 text-base"
+                  className="w-full h-12 border-gray-300 dark:border-gray-600 text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600"
                   onClick={() => {
                     // Simulate social login
-                    setIsLoading(true)
+                    setIsLoading(true);
                     setTimeout(() => {
-                      window.location.href = "/"
-                    }, 1000)
+                      window.location.href = "/";
+                    }, 1000);
                   }}
                 >
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -276,47 +324,57 @@ export default function AuthPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-gray-300 text-base"
+                  className="w-full h-12 border-gray-300 dark:border-gray-600 text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600"
                   onClick={() => {
                     // Simulate social login
-                    setIsLoading(true)
+                    setIsLoading(true);
                     setTimeout(() => {
-                      window.location.href = "/"
-                    }, 1000)
+                      window.location.href = "/";
+                    }, 1000);
                   }}
                 >
-                  <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5 mr-3"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                   </svg>
                   Continue with Twitter
                 </Button>
-              </div>
-
+              </div>{" "}
               {/* Toggle Mode */}
               <div className="text-center mt-6">
-                <p className="text-gray-600 text-sm">
-                  {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  {isLogin
+                    ? "Don't have an account?"
+                    : "Already have an account?"}{" "}
                   <button
                     type="button"
                     onClick={toggleMode}
-                    className="text-teal-600 hover:text-teal-700 font-medium transition-colors p-1"
+                    className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium transition-colors p-1"
                   >
                     {isLogin ? "Sign up" : "Sign in"}
                   </button>
                 </p>
               </div>
             </CardContent>
-          </Card>
-
+          </Card>{" "}
           {/* Footer */}
-          <div className="text-center mt-6 md:mt-8 text-xs md:text-sm text-gray-500 px-4">
+          <div className="text-center mt-6 md:mt-8 text-xs md:text-sm text-gray-500 dark:text-gray-400 px-4">
             <p>
               By continuing, you agree to our{" "}
-              <a href="#" className="text-teal-600 hover:text-teal-700 underline">
+              <a
+                href="#"
+                className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 underline"
+              >
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href="#" className="text-teal-600 hover:text-teal-700 underline">
+              <a
+                href="#"
+                className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 underline"
+              >
                 Privacy Policy
               </a>
             </p>
@@ -324,5 +382,5 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
