@@ -140,10 +140,8 @@ export function MobileNav() {
     document.addEventListener("touchmove", handleTouchMove, { passive: true });
     document.addEventListener("touchend", handleTouchEnd);
   };
-
   return (
     <>
-      {" "}
       {/* Mobile Menu Button - Only shows when menu is closed */}
       {!isOpen && !isClosing && (
         <Button
@@ -159,11 +157,10 @@ export function MobileNav() {
         >
           <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
         </Button>
-      )}{" "}
-      {/* Mobile Menu Overlay */}
+      )}
+      {/* Mobile Menu Overlay */}{" "}
       {(isOpen || isClosing) && (
         <div className="fixed inset-0 z-40 md:hidden">
-          {" "}
           {/* Backdrop */}
           <div
             ref={backdropRef}
@@ -172,7 +169,7 @@ export function MobileNav() {
             }`}
             onClick={closeMenu}
             aria-hidden="true"
-          />{" "}
+          />
           {/* Menu Panel */}
           <div
             ref={menuRef}
@@ -191,8 +188,7 @@ export function MobileNav() {
             aria-labelledby="mobile-menu-title"
           >
             <div className="flex flex-col h-full">
-              {" "}
-              {/* Header - Single close button */}{" "}
+              {/* Header - Single close button */}
               <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center shadow-sm">
@@ -206,10 +202,10 @@ export function MobileNav() {
                       Digestly
                     </h2>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Content Digest Platform
+                      Content Digest Platform{" "}
                     </p>
                   </div>
-                </div>{" "}
+                </div>
                 <div className="flex items-center gap-2">
                   <ThemeToggle />
                   <Button
@@ -221,13 +217,12 @@ export function MobileNav() {
                     disabled={isAnimating}
                   >
                     <X className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                  </Button>
+                  </Button>{" "}
                 </div>
-              </div>{" "}
+              </div>
               {/* Navigation */}
               <nav className="flex-1 overflow-y-auto py-2" role="navigation">
                 <div className="space-y-1 px-2">
-                  {" "}
                   {navItems.map((item, index) => {
                     const Icon = item.icon;
                     const active = isActive(item.href);
@@ -258,9 +253,9 @@ export function MobileNav() {
                       </a>
                     );
                   })}
-                </div>
-              </nav>{" "}
-              {/* Footer */}{" "}
+                </div>{" "}
+              </nav>
+              {/* Footer */}
               <div className="border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800">
                 {user && (
                   <Button
@@ -278,14 +273,14 @@ export function MobileNav() {
                   </Button>
                 )}
               </div>
-            </div>{" "}
+            </div>
             {/* Swipe indicator */}
             <div className="absolute top-4 left-4 opacity-30">
               <div className="w-8 h-1 bg-gray-300 rounded-full"></div>
-            </div>
+            </div>{" "}
           </div>
         </div>
-      )}{" "}
+      )}
       <style jsx>{`
         /* Smooth scrolling for menu */
         #mobile-menu nav {

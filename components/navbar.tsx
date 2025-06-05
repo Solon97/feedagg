@@ -40,17 +40,17 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity duration-200 group"
         >
+          {" "}
           <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-500 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200">
             <div className="w-5 h-3 md:w-6 md:h-4 bg-white rounded-sm transform rotate-12 group-hover:rotate-6 transition-transform duration-200"></div>
-          </div>{" "}
+          </div>
           <h1 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-200">
             Digestly
           </h1>
-        </a>{" "}
+        </a>
         {/* Desktop Navigation */}{" "}
         <div className="hidden md:flex items-center gap-8">
           <nav className="flex items-center gap-2" role="navigation">
-            {" "}
             <a
               href="/news"
               className={`font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 ${
@@ -89,10 +89,10 @@ export function Navbar() {
                   : "text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
-              Settings
+              Settings{" "}
             </a>
-          </nav>{" "}
-          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>{" "}
+          </nav>
+          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
             {user && (

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ForgotPasswordDialog } from "@/components/forgot-password-dialog";
 import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 
@@ -18,6 +19,7 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -149,11 +151,9 @@ export default function AuthPage() {
         </div>
         <div className="w-9"></div> {/* Spacer for centering */}
       </div>
-
-      {/* Main Content */}
+      {/* Main Content */}{" "}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {" "}
           {/* Desktop Logo and Header */}
           <div className="text-center mb-6 md:mb-8 hidden md:block">
             <a
@@ -181,18 +181,17 @@ export default function AuthPage() {
             <p className="text-gray-600 dark:text-gray-300 text-sm">
               {isLogin
                 ? "Sign in to your account"
-                : "Create your account to continue"}
+                : "Create your account to continue"}{" "}
             </p>
-          </div>{" "}
+          </div>
           {/* Auth Card */}
           <Card className="shadow-xl border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
             <CardHeader className="space-y-1 pb-4 md:pb-6">
               <CardTitle className="text-xl md:text-2xl font-bold text-center text-gray-900 dark:text-white">
                 {isLogin ? "Sign In" : "Create Account"}
-              </CardTitle>
+              </CardTitle>{" "}
             </CardHeader>
             <CardContent className="space-y-4">
-              {" "}
               {/* Error Alert */}
               {error && (
                 <Alert className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
@@ -287,9 +286,9 @@ export default function AuthPage() {
                       ) : (
                         <Eye className="w-5 h-5" />
                       )}
-                    </button>
+                    </button>{" "}
                   </div>
-                </div>{" "}
+                </div>
                 {/* Confirm Password Field (Registration only) */}
                 {!isLogin && (
                   <div className="space-y-2">
@@ -328,7 +327,7 @@ export default function AuthPage() {
                         ) : (
                           <Eye className="w-5 h-5" />
                         )}
-                      </button>
+                      </button>{" "}
                     </div>
                   </div>
                 )}{" "}
@@ -337,12 +336,13 @@ export default function AuthPage() {
                   <div className="text-right">
                     <button
                       type="button"
+                      onClick={() => setShowForgotPassword(true)}
                       className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors p-1"
                     >
-                      Forgot password?
+                      Forgot password?{" "}
                     </button>
                   </div>
-                )}{" "}
+                )}
                 {/* Submit Button */}
                 <Button
                   type="submit"
@@ -359,14 +359,15 @@ export default function AuthPage() {
                   ) : (
                     "Create Account"
                   )}
-                </Button>{" "}
+                </Button>
               </form>
               {/* Toggle Mode */}
               <div className="text-center mt-6">
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  {" "}
                   {isLogin
                     ? "Don't have an account?"
-                    : "Already have an account?"}{" "}
+                    : "Already have an account?"}
                   <button
                     type="button"
                     onClick={toggleMode}
@@ -376,8 +377,8 @@ export default function AuthPage() {
                   </button>
                 </p>
               </div>
-            </CardContent>
-          </Card>{" "}
+            </CardContent>{" "}
+          </Card>
           {/* Footer */}
           <div className="text-center mt-6 md:mt-8 text-xs md:text-sm text-gray-500 dark:text-gray-400 px-4">
             <p>
@@ -386,6 +387,7 @@ export default function AuthPage() {
                 href="#"
                 className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 underline"
               >
+                {" "}
                 Terms of Service
               </a>{" "}
               and{" "}
@@ -395,10 +397,15 @@ export default function AuthPage() {
               >
                 Privacy Policy
               </a>
-            </p>
+            </p>{" "}
           </div>
         </div>
       </div>
+      {/* Forgot Password Dialog */}
+      <ForgotPasswordDialog
+        open={showForgotPassword}
+        onOpenChange={setShowForgotPassword}
+      />
     </div>
   );
 }

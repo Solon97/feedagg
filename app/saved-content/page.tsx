@@ -403,7 +403,7 @@ export default function SavedContent() {
                           <span>Saved {selectedContent.savedDate}</span>
                         </div>
                       </div>
-                    </div>{" "}
+                    </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <Button
                         variant="outline"
@@ -487,7 +487,7 @@ export default function SavedContent() {
                           <span>Saved {selectedContent.savedDate}</span>
                         </div>
                       </div>
-                    </div>{" "}
+                    </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <Button
                         variant="outline"
@@ -542,7 +542,7 @@ export default function SavedContent() {
                       </Button>
                     </div>
                   </div>
-                </CardHeader>{" "}
+                </CardHeader>
                 <CardContent>
                   <div className="aspect-video w-full">
                     <iframe
@@ -587,8 +587,8 @@ export default function SavedContent() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-12 text-base"
             />
-          </div>{" "}
-          {/* Controls Row */}{" "}
+          </div>
+          {/* Controls Row */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Button
@@ -598,7 +598,7 @@ export default function SavedContent() {
                 className="flex items-center gap-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 <Filter className="w-4 h-4" />
-                <span className="hidden sm:inline">Filters</span>{" "}
+                <span className="hidden sm:inline">Filters</span>
                 {hasActiveFilters && (
                   <Badge
                     variant="secondary"
@@ -614,7 +614,7 @@ export default function SavedContent() {
                     showFilters ? "rotate-180" : ""
                   }`}
                 />
-              </Button>{" "}
+              </Button>
               {hasActiveFilters && (
                 <Button
                   variant="ghost"
@@ -626,7 +626,7 @@ export default function SavedContent() {
                   Clear
                 </Button>
               )}
-            </div>{" "}
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 {filteredContent.length} items
@@ -639,7 +639,7 @@ export default function SavedContent() {
                   <SelectItem value="newest">Newest</SelectItem>
                   <SelectItem value="oldest">Oldest</SelectItem>
                   <SelectItem value="title">Title A-Z</SelectItem>
-                  <SelectItem value="source">Source A-Z</SelectItem>{" "}
+                  <SelectItem value="source">Source A-Z</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -650,7 +650,6 @@ export default function SavedContent() {
           <Card className="mb-6">
             <CardContent className="pt-6">
               <div className="space-y-4">
-                {" "}
                 {/* Content Type Filters */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -674,7 +673,7 @@ export default function SavedContent() {
                               : "text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-600 dark:hover:border-teal-400"
                           }`}
                         >
-                          {type}{" "}
+                          {type}
                           <Badge
                             variant="secondary"
                             className={`ml-2 ${
@@ -743,7 +742,7 @@ export default function SavedContent() {
                       );
                     })}
                   </div>
-                </div>{" "}
+                </div>
                 {/* Content Source/Provider Filters */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -789,7 +788,7 @@ export default function SavedContent() {
             </CardContent>
           </Card>
         )}
-        {/* Active Filters Display */}{" "}
+        {/* Active Filters Display */}
         {hasActiveFilters && (
           <div className="mb-6">
             <div className="flex items-center gap-2 flex-wrap">
@@ -859,8 +858,8 @@ export default function SavedContent() {
               )}
             </div>
           </div>
-        )}{" "}
-        {/* Content Grid/List */}{" "}
+        )}
+        {/* Content Grid/List */}
         {filteredContent.length === 0 ? (
           <Card className="p-12 text-center bg-white dark:bg-gray-800">
             <div className="text-gray-500 dark:text-gray-400">
@@ -893,7 +892,7 @@ export default function SavedContent() {
             ))}
           </div>
         )}
-        {/* Results Summary */}{" "}
+        {/* Results Summary */}
         {filteredContent.length > 0 && (
           <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Showing {filteredContent.length} of {savedContent.length} saved

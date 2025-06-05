@@ -63,7 +63,7 @@ export default function RootLayout({
           href="/favicon-16x16.png"
         />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#14b8a6" />
-      </head>{" "}
+      </head>
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
           <ThemeProvider
