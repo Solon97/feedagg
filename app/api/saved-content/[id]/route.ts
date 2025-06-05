@@ -12,12 +12,13 @@ export async function GET(request: NextRequest, { params }: Context) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest, { params }: Context) {
       `
       )
       .eq("id", params.id)
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (error) {
@@ -57,12 +58,13 @@ export async function PUT(request: NextRequest, { params }: Context) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -76,7 +78,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
       .from("saved_content")
       .update(allowedUpdates)
       .eq("id", params.id)
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .select(
         `
         *,
@@ -109,12 +111,13 @@ export async function DELETE(request: NextRequest, { params }: Context) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -122,7 +125,7 @@ export async function DELETE(request: NextRequest, { params }: Context) {
       .from("saved_content")
       .delete()
       .eq("id", params.id)
-      .eq("user_id", session.user.id);
+      .eq("user_id", user.id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

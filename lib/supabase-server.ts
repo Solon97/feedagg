@@ -55,8 +55,19 @@ export async function createServerSupabaseClient() {
 export async function getServerSession() {
   const supabase = await createServerSupabaseClient();
   const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    return null;
+  }
+  
+  // Get session for backward compatibility with existing code
+  const {
     data: { session },
   } = await supabase.auth.getSession();
+  
   return session;
 }
 
@@ -75,10 +86,31 @@ export async function getUserProfile(userId: string) {
   return data;
 }
 
+// Helper function for secure authentication in API routes
+export async function authenticateUser() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    return { user: null, error: error?.message || "Unauthorized" };
+  }
+  
+  return { user, error: null };
+}
+
 export async function requireAuth() {
-  const session = await getServerSession();
-  if (!session?.user) {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  
+  if (error || !user) {
     throw new Error("Authentication required");
   }
-  return session;
+  
+  return { user };
 }

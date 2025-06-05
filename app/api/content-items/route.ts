@@ -6,12 +6,13 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
         content_sources!inner(user_id, name)
       `
       )
-      .eq("content_sources.user_id", session.user.id)
+      .eq("content_sources.user_id", user.id)
       .order("published_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);

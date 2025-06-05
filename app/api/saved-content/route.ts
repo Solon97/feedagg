@@ -6,12 +6,13 @@ export async function GET() {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,7 +24,7 @@ export async function GET() {
         content_item:content_items(*)
       `
       )
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .order("saved_at", { ascending: false });
 
     if (error) {
@@ -44,12 +45,13 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
       `
       )
       .eq("id", content_item_id)
-      .eq("content_sources.user_id", session.user.id)
+      .eq("content_sources.user_id", user.id)
       .single();
 
     if (contentError || !contentItem) {
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     const newSavedContent = {
-      user_id: session.user.id,
+      user_id: user.id,
       content_item_id,
       notes: notes || null,
       tags: tags || null,

@@ -5,18 +5,19 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getUser();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
     return NextResponse.json({
-      user: session?.user || null,
-      session: session,
+      user: user || null,
+      session: user ? { user } : null,
     });
   } catch (error) {
     console.error("Session check error:", error);

@@ -6,19 +6,20 @@ export async function GET() {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", session.user.id)
+      .eq("id", user.id)
       .single();
 
     if (error) {
@@ -39,12 +40,13 @@ export async function PUT(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -56,7 +58,7 @@ export async function PUT(request: NextRequest) {
     const { data: profile, error } = await supabase
       .from("profiles")
       .update(allowedUpdates)
-      .eq("id", session.user.id)
+      .eq("id", user.id)
       .select()
       .single();
 

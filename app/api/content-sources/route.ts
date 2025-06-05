@@ -6,19 +6,20 @@ export async function GET() {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: sources, error } = await supabase
       .from("content_sources")
       .select("*")
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -39,12 +40,13 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
+    // Use getUser() for secure authentication
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Add user_id to the source data
     const newSource = {
       ...sourceData,
-      user_id: session.user.id,
+      user_id: user.id,
     };
 
     const { data: source, error } = await supabase
