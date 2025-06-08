@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { MobileNav } from "./mobile-nav";
 import { ThemeToggle } from "./theme-toggle";
+import { UserProfileDisplay } from "./user-profile-display";
 import { useState, useEffect } from "react";
 import { useAuth } from "./auth-provider";
 
@@ -70,7 +71,7 @@ export function Navbar() {
               }`}
             >
               Saved Content
-            </a>
+            </a>{" "}
             <a
               href="/feeds"
               className={`font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 ${
@@ -81,28 +82,11 @@ export function Navbar() {
             >
               Feeds
             </a>
-            <a
-              href="/settings"
-              className={`font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 ${
-                isActive("/settings")
-                  ? "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 shadow-sm"
-                  : "text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
-            >
-              Settings{" "}
-            </a>
-          </nav>
+          </nav>{" "}
           <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            {user && (
-              <button
-                onClick={() => signOut()}
-                className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 font-medium hover:scale-105 active:scale-95 transform transition-transform"
-              >
-                Log out
-              </button>
-            )}
+            {user && <UserProfileDisplay variant="compact" />}
           </div>
         </div>
         {/* Mobile Navigation */}

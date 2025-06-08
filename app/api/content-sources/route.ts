@@ -1,10 +1,10 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createSupabaseServerClient } from "../../../lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
+import { ContentSourceRepositoryImpl } from "../../../src/infrastructure/supabase/content-source.repository.impl";
 
 export async function GET() {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -16,17 +16,18 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: sources, error } = await supabase
-      .from("content_sources")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    // Use repository for proper field mapping
+    const repository = new ContentSourceRepositoryImpl(supabase as any);
+    const result = await repository.findByUserId(user.id);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error.message },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ sources });
+    return NextResponse.json({ sources: result.data });
   } catch (error) {
     console.error("Content sources fetch error:", error);
     return NextResponse.json(
@@ -38,7 +39,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -60,30 +61,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add user_id to the source data
-    const newSource = {
-      ...sourceData,
-      user_id: user.id,
-    };
+    // Use repository for proper handling of two-table structure
+    const repository = new ContentSourceRepositoryImpl(supabase as any);
 
-    const { data: source, error } = await supabase
-      .from("content_sources")
-      .insert([newSource])
-      .select()
-      .single();
+    // Prepare data for repository (remove userId as it's handled internally)
+    const { userId, ...validSourceData } = sourceData;
 
-    if (error) {
+    const result = await repository.create({
+      ...validSourceData,
+      userId: user.id,
+    });
+
+    if (!result.success) {
       // Handle unique constraint violation
-      if (error.code === "23505") {
+      if (
+        result.error.message?.includes("already added") ||
+        result.error.message?.includes("unique")
+      ) {
         return NextResponse.json(
           { error: "You have already added this URL" },
           { status: 409 }
         );
       }
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: result.error.message },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ source }, { status: 201 });
+    return NextResponse.json({ source: result.data }, { status: 201 });
   } catch (error) {
     console.error("Content source creation error:", error);
     return NextResponse.json(

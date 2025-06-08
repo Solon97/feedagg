@@ -1,6 +1,6 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createSupabaseServerClient } from "../../../../lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
+import { ContentSourceRepositoryImpl } from "../../../../src/infrastructure/supabase/content-source.repository.impl";
 
 interface Context {
   params: {
@@ -10,7 +10,7 @@ interface Context {
 
 export async function GET(request: NextRequest, { params }: Context) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -22,24 +22,32 @@ export async function GET(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: source, error } = await supabase
-      .from("content_sources")
-      .select("*")
-      .eq("id", params.id)
-      .eq("user_id", user.id)
-      .single();
+    // Use repository for proper field mapping
+    const repository = new ContentSourceRepositoryImpl(supabase as any);
+    const result = await repository.findById(params.id);
 
-    if (error) {
-      if (error.code === "PGRST116") {
+    if (!result.success) {
+      if (result.error.message.includes("not found")) {
         return NextResponse.json(
           { error: "Content source not found" },
           { status: 404 }
         );
       }
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: result.error.message },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ source });
+    // Verify ownership
+    if (result.data?.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Content source not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ source: result.data });
   } catch (error) {
     console.error("Content source fetch error:", error);
     return NextResponse.json(
@@ -51,7 +59,7 @@ export async function GET(request: NextRequest, { params }: Context) {
 
 export async function PUT(request: NextRequest, { params }: Context) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -63,30 +71,36 @@ export async function PUT(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const updates = await request.json();
 
-    // Remove protected fields
-    const { id, user_id, created_at, ...allowedUpdates } = updates;
+    // Remove protected fields and client-side fields
+    const {
+      id: updateId,
+      user_id,
+      userId,
+      created_at,
+      ...allowedUpdates
+    } = updates;
 
-    const { data: source, error } = await supabase
-      .from("content_sources")
-      .update(allowedUpdates)
-      .eq("id", params.id)
-      .eq("user_id", user.id)
-      .select()
-      .single();
+    // Use repository for proper field mapping
+    const repository = new ContentSourceRepositoryImpl(supabase as any);
+    const result = await repository.update(id, allowedUpdates);
 
-    if (error) {
-      if (error.code === "PGRST116") {
+    if (!result.success) {
+      if (result.error.message.includes("not found")) {
         return NextResponse.json(
           { error: "Content source not found" },
           { status: 404 }
         );
       }
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: result.error.message },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ source });
+    return NextResponse.json({ source: result.data });
   } catch (error) {
     console.error("Content source update error:", error);
     return NextResponse.json(
@@ -98,7 +112,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
 
 export async function DELETE(request: NextRequest, { params }: Context) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -110,14 +124,21 @@ export async function DELETE(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { error } = await supabase
-      .from("content_sources")
-      .delete()
-      .eq("id", params.id)
-      .eq("user_id", user.id);
+    // Use repository for proper handling of two-table structure
+    const repository = new ContentSourceRepositoryImpl(supabase as any);
+    const result = await repository.delete(params.id);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (!result.success) {
+      if (result.error.message.includes("not found")) {
+        return NextResponse.json(
+          { error: "Content source not found" },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(
+        { error: result.error.message },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json({
@@ -125,6 +146,61 @@ export async function DELETE(request: NextRequest, { params }: Context) {
     });
   } catch (error) {
     console.error("Content source deletion error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: Context) {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    // Use getUser() for secure authentication
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const { action } = await request.json();
+
+    if (action === "toggle") {
+      // Use repository for proper field mapping
+      const repository = new ContentSourceRepositoryImpl(supabase as any);
+
+      // Get current source to toggle its status
+      const currentResult = await repository.findById(id);
+      if (!currentResult.success || !currentResult.data) {
+        return NextResponse.json(
+          { error: "Content source not found" },
+          { status: 404 }
+        );
+      }
+
+      // Toggle the status
+      const updateResult = await repository.update(id, {
+        isActive: !currentResult.data.isActive,
+      });
+
+      if (!updateResult.success) {
+        return NextResponse.json(
+          { error: updateResult.error.message },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({ source: updateResult.data });
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  } catch (error) {
+    console.error("Content source toggle error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

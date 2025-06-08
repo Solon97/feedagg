@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import { authEvents } from "@/lib/auth-events";
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +17,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   forgotPassword: (email: string) => Promise<{ error?: string }>;
   resetPassword: (password: string) => Promise<{ error?: string }>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,35 +27,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Check session on mount and periodically
+  // Initialize auth state using the event system
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await fetch("/api/auth/session", {
-          credentials: "include",
-        });
+    console.log("[AuthProvider] Initializing auth state");
 
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
+    // Subscribe to auth changes
+    const unsubscribe = authEvents.onAuthChange((newUser, eventType) => {
+      console.log(
+        "[AuthProvider] Auth state changed:",
+        newUser?.email || "signed out",
+        eventType ? `(${eventType})` : ""
+      );
+
+      setUser((prevUser) => {
+        const wasLoggedIn = prevUser !== null;
+        const isNowLoggedOut = newUser === null;
+
+        // If user was logged in and is now logged out via LOGOUT event from another tab
+        // redirect to login page
+        if (wasLoggedIn && isNowLoggedOut && eventType === "LOGOUT") {
+          console.log(
+            "[AuthProvider] User logged out from another tab, redirecting to auth page"
+          );
+          router.push("/auth");
         }
+
+        return newUser;
+      });
+      setLoading(false);
+    });
+
+    // Initial auth check
+    const checkInitialAuth = async () => {
+      try {
+        const currentUser = await authEvents.checkAuthStatus();
+        setUser(currentUser);
       } catch (error) {
-        console.error("Session check error:", error);
+        console.error("[AuthProvider] Initial auth check failed:", error);
         setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    checkInitialAuth();
 
-    // Check session periodically every 5 minutes
-    const interval = setInterval(checkSession, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+    return unsubscribe;
+  }, [router]); // Remove user from dependencies to avoid re-creating the listener
   const signIn = async (email: string, password: string) => {
     try {
       const response = await fetch("/api/auth/login", {
@@ -69,8 +89,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: data.error || "Login failed" };
       }
 
-      // Update user state with the returned user data
-      setUser(data.user);
+      // Force auth check to update state
+      await authEvents.checkAuthStatus(true);
 
       return {};
     } catch (error) {
@@ -108,22 +128,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Call backend logout API
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      // Clear user state immediately
-      setUser(null);
-
-      // Redirect to login page
+      await authEvents.signOut();
       router.push("/auth");
     } catch (error) {
-      console.error("Logout error:", error);
-      // Even if there's an error, clear state and redirect
+      console.error("Sign out error:", error);
+      // Even if the server call fails, clear local state
       setUser(null);
       router.push("/auth");
+    }
+  };
+
+  const refreshAuth = async () => {
+    try {
+      await authEvents.checkAuthStatus(true);
+    } catch (error) {
+      console.error("Refresh auth error:", error);
     }
   };
 
@@ -179,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     forgotPassword,
     resetPassword,
+    refreshAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

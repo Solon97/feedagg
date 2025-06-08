@@ -1,5 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { Database } from "@/lib/database.types";
 
@@ -36,7 +36,7 @@ export const createSupabaseServerClient = async () => {
 };
 
 // Admin client for server-side operations that require elevated permissions
-export const supabaseAdmin = createClient<Database>(
+export const supabaseAdmin = createSupabaseClient<Database>(
   supabaseUrl,
   supabaseServiceKey,
   {
@@ -58,16 +58,16 @@ export async function getServerSession() {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-  
+
   if (error || !user) {
     return null;
   }
-  
+
   // Get session for backward compatibility with existing code
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  
+
   return session;
 }
 
@@ -93,11 +93,11 @@ export async function authenticateUser() {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-  
+
   if (error || !user) {
     return { user: null, error: error?.message || "Unauthorized" };
   }
-  
+
   return { user, error: null };
 }
 
@@ -107,10 +107,10 @@ export async function requireAuth() {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-  
+
   if (error || !user) {
     throw new Error("Authentication required");
   }
-  
+
   return { user };
 }

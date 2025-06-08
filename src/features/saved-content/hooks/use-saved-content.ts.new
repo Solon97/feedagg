@@ -1,0 +1,445 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import {
+  SavedContentEntity,
+  CreateSavedContentParams,
+  UpdateSavedContentParams,
+} from "@/core/entities/saved-content.entity";
+import { AsyncState } from "@/shared/types/common.types";
+
+interface FindSavedContentQuery {
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
+  orderDirection?: "asc" | "desc";
+  isRead?: boolean;
+  isFavorite?: boolean;
+  tags?: string[];
+  searchTerm?: string;
+  contentItemId?: string;
+  savedAfter?: Date;
+  savedBefore?: Date;
+}
+
+interface SavedContentHookState extends AsyncState<SavedContentEntity[]> {
+  savedContent: SavedContentEntity[];
+}
+
+interface SavedContentActions {
+  saveContent: (
+    params: CreateSavedContentParams
+  ) => Promise<{ success: boolean; data?: SavedContentEntity; error?: string }>;
+  updateSavedContent: (
+    id: string,
+    params: UpdateSavedContentParams
+  ) => Promise<{ success: boolean; data?: SavedContentEntity; error?: string }>;
+  deleteSavedContent: (
+    id: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  markAsRead: (
+    id: string
+  ) => Promise<{ success: boolean; data?: SavedContentEntity; error?: string }>;
+  markAsUnread: (
+    id: string
+  ) => Promise<{ success: boolean; data?: SavedContentEntity; error?: string }>;
+  toggleFavorite: (
+    id: string
+  ) => Promise<{ success: boolean; data?: SavedContentEntity; error?: string }>;
+  addNotes: (
+    id: string,
+    notes: string
+  ) => Promise<{ success: boolean; data?: SavedContentEntity; error?: string }>;
+  addTags: (
+    id: string,
+    tags: string[]
+  ) => Promise<{ success: boolean; data?: SavedContentEntity; error?: string }>;
+  refresh: () => Promise<void>;
+}
+
+export function useSavedContent(
+  userId: string,
+  query?: FindSavedContentQuery
+): SavedContentHookState & SavedContentActions {
+  const [state, setState] = useState<SavedContentHookState>({
+    savedContent: [],
+    data: [],
+    isLoading: true,
+    error: null,
+  });
+
+  const fetchSavedContent = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      // Use Next.js API instead of use cases
+      const searchParams = new URLSearchParams();
+      searchParams.append('userId', userId);
+      if (query?.limit) searchParams.append('limit', query.limit.toString());
+      if (query?.offset) searchParams.append('offset', query.offset.toString());
+      if (query?.orderBy) searchParams.append('orderBy', query.orderBy);
+      if (query?.orderDirection) searchParams.append('orderDirection', query.orderDirection);
+      if (query?.isRead !== undefined) searchParams.append('isRead', query.isRead.toString());
+      if (query?.isFavorite !== undefined) searchParams.append('isFavorite', query.isFavorite.toString());
+      if (query?.tags) searchParams.append('tags', query.tags.join(','));
+      if (query?.searchTerm) searchParams.append('searchTerm', query.searchTerm);
+      if (query?.contentItemId) searchParams.append('contentItemId', query.contentItemId);
+      if (query?.savedAfter) searchParams.append('savedAfter', query.savedAfter.toISOString());
+      if (query?.savedBefore) searchParams.append('savedBefore', query.savedBefore.toISOString());
+
+      const response = await fetch(`/api/saved-content?${searchParams}`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch saved content");
+      }
+
+      const savedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent,
+        data: savedContent,
+        isLoading: false,
+      }));
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch saved content";
+      setState((prev) => ({
+        ...prev,
+        error: errorMessage,
+        isLoading: false,
+      }));
+    }
+  }, [userId, query]);
+
+  useEffect(() => {
+    fetchSavedContent();
+  }, [fetchSavedContent]);
+
+  const saveContent = async (params: CreateSavedContentParams) => {
+    try {
+      const response = await fetch('/api/saved-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...params,
+          userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save content");
+      }
+
+      const savedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: [savedContent, ...prev.savedContent],
+        data: [savedContent, ...(prev.data || [])],
+      }));
+
+      return { success: true, data: savedContent };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save content";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const updateSavedContent = async (
+    id: string,
+    params: UpdateSavedContentParams
+  ) => {
+    try {
+      const response = await fetch(`/api/saved-content/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...params,
+          userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update saved content");
+      }
+
+      const updatedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: prev.savedContent.map((item) =>
+          item.id === id ? updatedContent : item
+        ),
+        data: (prev.data || []).map((item) => (item.id === id ? updatedContent : item)),
+      }));
+
+      return { success: true, data: updatedContent };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to update saved content";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const deleteSavedContent = async (id: string) => {
+    try {
+      const response = await fetch(`/api/saved-content/${id}`, {
+        method: 'DELETE',
+        credentials: "include",
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete saved content");
+      }
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: prev.savedContent.filter((item) => item.id !== id),
+        data: (prev.data || []).filter((item) => item.id !== id),
+      }));
+
+      return { success: true };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to delete saved content";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    try {
+      const response = await fetch(`/api/saved-content/${id}/read`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark as read");
+      }
+
+      const updatedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: prev.savedContent.map((item) =>
+          item.id === id ? updatedContent : item
+        ),
+        data: (prev.data || []).map((item) => (item.id === id ? updatedContent : item)),
+      }));
+
+      return { success: true, data: updatedContent };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to mark as read";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const markAsUnread = async (id: string) => {
+    try {
+      const response = await fetch(`/api/saved-content/${id}/unread`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark as unread");
+      }
+
+      const updatedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: prev.savedContent.map((item) =>
+          item.id === id ? updatedContent : item
+        ),
+        data: (prev.data || []).map((item) => (item.id === id ? updatedContent : item)),
+      }));
+
+      return { success: true, data: updatedContent };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to mark as unread";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const toggleFavorite = async (id: string) => {
+    try {
+      const response = await fetch(`/api/saved-content/${id}/favorite`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to toggle favorite");
+      }
+
+      const updatedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: prev.savedContent.map((item) =>
+          item.id === id ? updatedContent : item
+        ),
+        data: (prev.data || []).map((item) => (item.id === id ? updatedContent : item)),
+      }));
+
+      return { success: true, data: updatedContent };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to toggle favorite";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const addNotes = async (id: string, notes: string) => {
+    try {
+      const response = await fetch(`/api/saved-content/${id}/notes`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({ userId, notes }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add notes");
+      }
+
+      const updatedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: prev.savedContent.map((item) =>
+          item.id === id ? updatedContent : item
+        ),
+        data: (prev.data || []).map((item) => (item.id === id ? updatedContent : item)),
+      }));
+
+      return { success: true, data: updatedContent };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to add notes";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const addTags = async (id: string, tags: string[]) => {
+    try {
+      const response = await fetch(`/api/saved-content/${id}/tags`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({ userId, tags }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add tags");
+      }
+
+      const updatedContent = await response.json();
+
+      setState((prev) => ({
+        ...prev,
+        savedContent: prev.savedContent.map((item) =>
+          item.id === id ? updatedContent : item
+        ),
+        data: (prev.data || []).map((item) => (item.id === id ? updatedContent : item)),
+      }));
+
+      return { success: true, data: updatedContent };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to add tags";
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const refresh = async () => {
+    await fetchSavedContent();
+  };
+
+  return {
+    ...state,
+    saveContent,
+    updateSavedContent,
+    deleteSavedContent,
+    markAsRead,
+    markAsUnread,
+    toggleFavorite,
+    addNotes,
+    addTags,
+    refresh,
+  };
+}
+
+// Specialized hooks for common use cases
+export function useFavoriteContent(userId: string) {
+  return useSavedContent(userId, {
+    isFavorite: true,
+    limit: 50,
+    orderBy: "savedAt",
+    orderDirection: "desc",
+  });
+}
+
+export function useUnreadContent(userId: string) {
+  return useSavedContent(userId, {
+    isRead: false,
+    limit: 50,
+    orderBy: "savedAt",
+    orderDirection: "desc",
+  });
+}
+
+export function useRecentlyReadContent(userId: string) {
+  return useSavedContent(userId, {
+    isRead: true,
+    limit: 20,
+    orderBy: "readAt",
+    orderDirection: "desc",
+  });
+}

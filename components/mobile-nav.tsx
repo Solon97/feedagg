@@ -6,17 +6,9 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { UserProfileDisplay } from "./user-profile-display";
 import { useAuth } from "./auth-provider";
-import {
-  Home,
-  Bookmark,
-  LogOut,
-  Settings,
-  Rss,
-  Link,
-  X,
-  Menu,
-} from "lucide-react";
+import { Home, Bookmark, Rss, Link, X, Menu } from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -36,12 +28,10 @@ export function MobileNav() {
   const { user, signOut } = useAuth();
 
   const isActive = (path: string) => pathname === path;
-
   const navItems: NavItem[] = [
     { href: "/news", label: "News", icon: Rss },
     { href: "/saved-content", label: "Saved Content", icon: Bookmark },
     { href: "/feeds", label: "Feeds", icon: Link },
-    { href: "/settings", label: "Settings", icon: Settings },
   ];
 
   // Handle escape key
@@ -254,24 +244,10 @@ export function MobileNav() {
                     );
                   })}
                 </div>{" "}
-              </nav>
+              </nav>{" "}
               {/* Footer */}
               <div className="border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800">
-                {user && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 h-12 rounded-xl transition-all duration-200"
-                    onClick={() => {
-                      closeMenu();
-                      signOut();
-                    }}
-                    tabIndex={isOpen ? 0 : -1}
-                    disabled={isAnimating}
-                  >
-                    <LogOut className="w-5 h-5 mr-4" />
-                    <span className="font-medium">Log out</span>
-                  </Button>
-                )}
+                {user && <UserProfileDisplay variant="full" />}
               </div>
             </div>
             {/* Swipe indicator */}
