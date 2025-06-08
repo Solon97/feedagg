@@ -23,8 +23,7 @@ export function DashboardContent() {
   const { user, isLoading: userLoading } = useCurrentUser();
 
   const { savedContent, isLoading: savedContentLoading } = useSavedContent(
-    user?.id || "",
-    { limit: 5 }
+    user?.id || ""
   );
 
   const { contentSources, isLoading: sourcesLoading } = useContentSources(
@@ -33,7 +32,7 @@ export function DashboardContent() {
   );
 
   const { contentItems: recentItems, isLoading: itemsLoading } =
-    useRecentContentItems(5);
+    useRecentContentItems(user?.id || "", 5);
 
   if (userLoading) {
     return <DashboardSkeleton />;

@@ -37,7 +37,7 @@ export class SavedContentRepositoryImpl implements SavedContentRepository {
       throw new Error(`Failed to find saved content: ${error.message}`);
     }
 
-    return this.mapToEntity(data);
+    return this.mapToEntity(data as unknown as SupabaseSavedContent);
   }
 
   async findByUserId(
@@ -105,7 +105,9 @@ export class SavedContentRepositoryImpl implements SavedContentRepository {
       throw new Error(`Failed to find saved content: ${error.message}`);
     }
 
-    return data.map((item) => this.mapToEntity(item));
+    return data.map((item) =>
+      this.mapToEntity(item as unknown as SupabaseSavedContent)
+    );
   }
 
   async findByUserIdAndContentItemId(
@@ -124,7 +126,7 @@ export class SavedContentRepositoryImpl implements SavedContentRepository {
       throw new Error(`Failed to find saved content: ${error.message}`);
     }
 
-    return this.mapToEntity(data);
+    return this.mapToEntity(data as unknown as SupabaseSavedContent);
   }
 
   async create(
@@ -143,7 +145,7 @@ export class SavedContentRepositoryImpl implements SavedContentRepository {
       throw new Error(`Failed to create saved content: ${error.message}`);
     }
 
-    return this.mapToEntity(createdData);
+    return this.mapToEntity(createdData as unknown as SupabaseSavedContent);
   }
 
   async update(
@@ -171,7 +173,7 @@ export class SavedContentRepositoryImpl implements SavedContentRepository {
       throw new Error(`Failed to update saved content: ${error.message}`);
     }
 
-    return this.mapToEntity(updatedData);
+    return this.mapToEntity(updatedData as unknown as SupabaseSavedContent);
   }
 
   async delete(id: string): Promise<void> {
@@ -205,7 +207,7 @@ export class SavedContentRepositoryImpl implements SavedContentRepository {
       throw new Error(`Failed to mark as read: ${error.message}`);
     }
 
-    return this.mapToEntity(updatedData);
+    return this.mapToEntity(updatedData as unknown as SupabaseSavedContent);
   }
 
   async toggleFavorite(id: string): Promise<SavedContentEntity> {
@@ -228,7 +230,7 @@ export class SavedContentRepositoryImpl implements SavedContentRepository {
       throw new Error(`Failed to toggle favorite: ${error.message}`);
     }
 
-    return this.mapToEntity(updatedData);
+    return this.mapToEntity(updatedData as unknown as SupabaseSavedContent);
   }
 
   async exists(userId: string, contentItemId: string): Promise<boolean> {

@@ -40,7 +40,6 @@ export class UrlValidationUseCases {
         type: result.type as "rss" | "youtube",
         error: result.error,
         rssUrl: result.rssUrl,
-        preview: result.preview,
       };
     } catch (error) {
       return {

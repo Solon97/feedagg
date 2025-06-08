@@ -1,12 +1,12 @@
 // Core Repositories Index - Centralized exports for all repository interfaces
-export type { UserRepository, UserQuery } from "./user.repository";
+export type { UserRepository, FindUsersQuery } from "./user.repository";
 export type {
   ContentSourceRepository,
-  ContentSourceQuery,
+  FindContentSourcesQuery,
 } from "./content-source.repository";
 export type {
   ContentItemRepository,
-  ContentItemQuery,
+  FindContentItemsQuery,
 } from "./content-item.repository";
 export type {
   SavedContentRepository,

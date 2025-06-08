@@ -17,12 +17,11 @@ import { ContentFilters } from "./content-filters";
 import { useFeedContent } from "../hooks/use-feed-content";
 import { useSaveContent } from "../hooks/use-save-content";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
-import type { ContentItem } from "@/core/entities/content-item.entity";
+import type { ContentItemEntity } from "@/core/entities/content-item.entity";
 
 export function NewsPageContent() {
-  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
-    null
-  );
+  const [selectedContent, setSelectedContent] =
+    useState<ContentItemEntity | null>(null);
   const [savedContentIds, setSavedContentIds] = useState<Set<string>>(
     new Set()
   );
@@ -39,9 +38,7 @@ export function NewsPageContent() {
     loadMore,
   } = useFeedContent();
 
-  const { saveContent, unsaveContent, toggleSave, isSaving } = useSaveContent(
-    user?.id || ""
-  );
+  const { saveContent, unsaveContent, toggleSave, isSaving } = useSaveContent();
 
   // Get unique types and sources for filters
   const availableTypes = Array.from(
@@ -58,9 +55,10 @@ export function NewsPageContent() {
     }
 
     const isCurrentlySaved = savedContentIds.has(contentId);
-    const success = await toggleSave(contentId);
 
-    if (success) {
+    try {
+      await toggleSave(contentId, user.id, isCurrentlySaved);
+
       setSavedContentIds((prev) => {
         const newSet = new Set(prev);
         if (isCurrentlySaved) {
@@ -72,12 +70,12 @@ export function NewsPageContent() {
         }
         return newSet;
       });
-    } else {
+    } catch (error) {
       toast.error("Failed to save content. Please try again.");
     }
   };
 
-  const handleOpenContent = (item: ContentItem) => {
+  const handleOpenContent = (item: ContentItemEntity) => {
     setSelectedContent(item);
   };
 

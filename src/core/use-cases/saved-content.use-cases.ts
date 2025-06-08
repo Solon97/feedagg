@@ -35,15 +35,11 @@ export class SavedContentUseCases {
     }
 
     // Validate content item exists
-    const contentItemResult = await this.contentItemRepository.findById(
+    const contentItem = await this.contentItemRepository.findById(
       params.contentItemId
     );
 
-    if (contentItemResult.isFailure()) {
-      throw contentItemResult.error;
-    }
-
-    if (!contentItemResult.value) {
+    if (!contentItem) {
       throw new NotFoundError("Content item not found");
     }
 
@@ -252,7 +248,7 @@ export class SavedContentUseCases {
   }
 
   async removeNotes(id: string, userId: string): Promise<SavedContentEntity> {
-    return this.updateSavedContent(id, userId, { notes: null });
+    return this.updateSavedContent(id, userId, { notes: undefined });
   }
 
   async addTags(

@@ -1,29 +1,28 @@
 import { createClient } from "@supabase/supabase-js";
-import { ContentItem } from "../../core/entities/content-item.entity";
+import {
+  ContentItemEntity,
+  CreateContentItemParams,
+  UpdateContentItemParams,
+  ContentItem,
+} from "../../core/entities/content-item.entity";
 import {
   ContentItemRepository,
-  ContentItemQuery,
+  FindContentItemsQuery,
 } from "../../core/repositories/content-item.repository";
-import {
-  Result,
-  ResultFactory,
-  RepositoryError,
-  NotFoundError,
-} from "../../core/errors/domain-errors";
+import { ErrorFactory } from "../../core/errors/domain-errors";
 
 interface SupabaseContentItem {
   id: string;
-  source_id: string;
+  feed_source_id: string; // NOT NULL after migration
   title: string;
-  description: string | null;
-  url: string;
-  image_url: string | null;
+  content: string | null;
+  summary: string | null;
   author: string | null;
-  published_at: string;
-  content_type: "article" | "video" | "podcast" | "other";
-  reading_time: number | null;
-  tags: string[];
-  metadata: Record<string, any> | null;
+  url: string;
+  published_at: string | null;
+  thumbnail_url: string | null;
+  read_time_minutes: number | null;
+  content_hash: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -31,9 +30,7 @@ interface SupabaseContentItem {
 export class ContentItemRepositoryImpl implements ContentItemRepository {
   constructor(private supabase: ReturnType<typeof createClient>) {}
 
-  async findById(
-    id: string
-  ): Promise<Result<ContentItem | null, RepositoryError>> {
+  async findById(id: string): Promise<ContentItemEntity | null> {
     try {
       const { data, error } = await this.supabase
         .from("content_items")
@@ -42,75 +39,113 @@ export class ContentItemRepositoryImpl implements ContentItemRepository {
         .single();
 
       if (error) {
-        if (error.code === "PGRST116") {
-          return ResultFactory.success(null);
-        }
-        return ResultFactory.failure(
-          new RepositoryError(`Failed to find content item: ${error.message}`)
-        );
+        if (error.code === "PGRST116") return null; // Not found
+        throw ErrorFactory.database("findById", error.message);
       }
 
-      const contentItem = this.mapToEntity(data);
-      return ResultFactory.success(contentItem);
+      return this.mapToEntity(data as unknown as SupabaseContentItem);
     } catch (error) {
-      return ResultFactory.failure(
-        new RepositoryError(`Unexpected error: ${error}`)
-      );
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("findById", "Unknown error");
     }
   }
 
-  async findMany(
-    query: ContentItemQuery
-  ): Promise<Result<ContentItem[], RepositoryError>> {
+  async findBySourceId(sourceId: string): Promise<ContentItemEntity[]> {
     try {
-      let supabaseQuery = this.supabase.from("content_items").select("*");
+      const { data, error } = await this.supabase
+        .from("content_items")
+        .select("*")
+        .eq("feed_source_id", sourceId)
+        .order("published_at", { ascending: false });
+
+      if (error) {
+        throw ErrorFactory.database("findBySourceId", error.message);
+      }
+
+      return data.map((item) =>
+        this.mapToEntity(item as unknown as SupabaseContentItem)
+      );
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("findBySourceId", "Unknown error");
+    }
+  }
+
+  async findByUserSources(
+    userId: string,
+    query?: FindContentItemsQuery
+  ): Promise<ContentItemEntity[]> {
+    try {
+      // First get user's feed source IDs
+      const { data: userSources, error: sourcesError } = await this.supabase
+        .from("user_feed_subscriptions")
+        .select("feed_source_id")
+        .eq("user_id", userId);
+
+      if (sourcesError) {
+        throw ErrorFactory.database("findByUserSources", sourcesError.message);
+      }
+
+      const sourceIds = userSources
+        .map((s) => s.feed_source_id)
+        .filter(Boolean);
+
+      if (sourceIds.length === 0) {
+        return [];
+      }
+
+      let supabaseQuery = this.supabase
+        .from("content_items")
+        .select("*")
+        .in("feed_source_id", sourceIds);
 
       // Apply filters
-      if (query.sourceId) {
-        supabaseQuery = supabaseQuery.eq("source_id", query.sourceId);
+      if (query?.sourceIds && query.sourceIds.length > 0) {
+        supabaseQuery = supabaseQuery.in("feed_source_id", query.sourceIds);
       }
 
-      if (query.contentType) {
-        supabaseQuery = supabaseQuery.eq("content_type", query.contentType);
+      if (query?.author) {
+        supabaseQuery = supabaseQuery.eq("author", query.author);
       }
 
-      if (query.tags && query.tags.length > 0) {
-        supabaseQuery = supabaseQuery.overlaps("tags", query.tags);
-      }
-
-      if (query.publishedAfter) {
+      if (query?.publishedAfter) {
         supabaseQuery = supabaseQuery.gte(
           "published_at",
           query.publishedAfter.toISOString()
         );
       }
 
-      if (query.publishedBefore) {
+      if (query?.publishedBefore) {
         supabaseQuery = supabaseQuery.lte(
           "published_at",
           query.publishedBefore.toISOString()
         );
       }
 
-      if (query.searchTerm) {
+      if (query?.searchTerm) {
         supabaseQuery = supabaseQuery.or(
-          `title.ilike.%${query.searchTerm}%,description.ilike.%${query.searchTerm}%,author.ilike.%${query.searchTerm}%`
+          `title.ilike.%${query.searchTerm}%,summary.ilike.%${query.searchTerm}%,author.ilike.%${query.searchTerm}%`
         );
       }
 
       // Apply sorting
-      const sortColumn = query.sortBy || "published_at";
-      const sortOrder = query.sortOrder || "desc";
+      const sortColumn =
+        query?.orderBy === "createdAt"
+          ? "created_at"
+          : query?.orderBy === "title"
+          ? "title"
+          : "published_at";
+      const sortOrder = query?.orderDirection || "desc";
       supabaseQuery = supabaseQuery.order(sortColumn, {
         ascending: sortOrder === "asc",
       });
 
       // Apply pagination
-      if (query.limit) {
+      if (query?.limit) {
         supabaseQuery = supabaseQuery.limit(query.limit);
       }
 
-      if (query.offset) {
+      if (query?.offset) {
         supabaseQuery = supabaseQuery.range(
           query.offset,
           query.offset + (query.limit || 50) - 1
@@ -120,48 +155,74 @@ export class ContentItemRepositoryImpl implements ContentItemRepository {
       const { data, error } = await supabaseQuery;
 
       if (error) {
-        return ResultFactory.failure(
-          new RepositoryError(`Failed to find content items: ${error.message}`)
-        );
+        throw ErrorFactory.database("findByUserSources", error.message);
       }
 
-      const contentItems = data.map((item) => this.mapToEntity(item));
-      return ResultFactory.success(contentItems);
-    } catch (error) {
-      return ResultFactory.failure(
-        new RepositoryError(`Unexpected error: ${error}`)
+      return data.map((item) =>
+        this.mapToEntity(item as unknown as SupabaseContentItem)
       );
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("findByUserSources", "Unknown error");
     }
   }
 
-  async save(
-    contentItem: ContentItem
-  ): Promise<Result<ContentItem, RepositoryError>> {
+  async create(
+    params: CreateContentItemParams & { id: string }
+  ): Promise<ContentItemEntity> {
     try {
-      const data = this.mapToSupabase(contentItem);
+      const entity = ContentItem.create(params);
+      const data = this.mapToSupabase(entity);
 
       const { data: savedData, error } = await this.supabase
         .from("content_items")
-        .upsert(data)
+        .insert(data)
         .select()
         .single();
 
       if (error) {
-        return ResultFactory.failure(
-          new RepositoryError(`Failed to save content item: ${error.message}`)
-        );
+        throw ErrorFactory.database("create", error.message);
       }
 
-      const savedContentItem = this.mapToEntity(savedData);
-      return ResultFactory.success(savedContentItem);
+      return this.mapToEntity(savedData as unknown as SupabaseContentItem);
     } catch (error) {
-      return ResultFactory.failure(
-        new RepositoryError(`Unexpected error: ${error}`)
-      );
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("create", "Unknown error");
     }
   }
 
-  async delete(id: string): Promise<Result<void, RepositoryError>> {
+  async update(
+    id: string,
+    params: UpdateContentItemParams
+  ): Promise<ContentItemEntity> {
+    try {
+      const current = await this.findById(id);
+      if (!current) {
+        throw ErrorFactory.notFound("Content item", id);
+      }
+
+      const updated = ContentItem.update(current, params);
+      const data = this.mapToSupabase(updated);
+
+      const { data: savedData, error } = await this.supabase
+        .from("content_items")
+        .update(data)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        throw ErrorFactory.database("update", error.message);
+      }
+
+      return this.mapToEntity(savedData as unknown as SupabaseContentItem);
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("update", "Unknown error");
+    }
+  }
+
+  async delete(id: string): Promise<void> {
     try {
       const { error } = await this.supabase
         .from("content_items")
@@ -169,140 +230,157 @@ export class ContentItemRepositoryImpl implements ContentItemRepository {
         .eq("id", id);
 
       if (error) {
-        return ResultFactory.failure(
-          new RepositoryError(`Failed to delete content item: ${error.message}`)
-        );
+        throw ErrorFactory.database("delete", error.message);
       }
-
-      return ResultFactory.success(undefined);
     } catch (error) {
-      return ResultFactory.failure(
-        new RepositoryError(`Unexpected error: ${error}`)
-      );
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("delete", "Unknown error");
     }
   }
 
-  async countBySource(
-    sourceId: string
-  ): Promise<Result<number, RepositoryError>> {
-    try {
-      const { count, error } = await this.supabase
-        .from("content_items")
-        .select("*", { count: "exact", head: true })
-        .eq("source_id", sourceId);
-
-      if (error) {
-        return ResultFactory.failure(
-          new RepositoryError(`Failed to count content items: ${error.message}`)
-        );
-      }
-
-      return ResultFactory.success(count || 0);
-    } catch (error) {
-      return ResultFactory.failure(
-        new RepositoryError(`Unexpected error: ${error}`)
-      );
-    }
-  }
-
-  async findByUrl(
-    url: string
-  ): Promise<Result<ContentItem | null, RepositoryError>> {
+  async findByContentHash(hash: string): Promise<ContentItemEntity | null> {
     try {
       const { data, error } = await this.supabase
         .from("content_items")
         .select("*")
-        .eq("url", url)
+        .eq("content_hash", hash)
         .single();
 
       if (error) {
-        if (error.code === "PGRST116") {
-          return ResultFactory.success(null);
-        }
-        return ResultFactory.failure(
-          new RepositoryError(
-            `Failed to find content item by URL: ${error.message}`
-          )
-        );
+        if (error.code === "PGRST116") return null; // Not found
+        throw ErrorFactory.database("findByContentHash", error.message);
       }
 
-      const contentItem = this.mapToEntity(data);
-      return ResultFactory.success(contentItem);
+      return this.mapToEntity(data as unknown as SupabaseContentItem);
     } catch (error) {
-      return ResultFactory.failure(
-        new RepositoryError(`Unexpected error: ${error}`)
-      );
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("findByContentHash", "Unknown error");
     }
   }
 
   async findRecent(
+    userId: string,
     limit: number = 20
-  ): Promise<Result<ContentItem[], RepositoryError>> {
+  ): Promise<ContentItemEntity[]> {
     try {
+      // First get user's feed source IDs
+      const { data: userSources, error: sourcesError } = await this.supabase
+        .from("user_feed_subscriptions")
+        .select("feed_source_id")
+        .eq("user_id", userId);
+
+      if (sourcesError) {
+        throw ErrorFactory.database("findRecent", sourcesError.message);
+      }
+
+      const sourceIds = userSources
+        .map((s) => s.feed_source_id)
+        .filter(Boolean);
+
+      if (sourceIds.length === 0) {
+        return [];
+      }
+
       const { data, error } = await this.supabase
         .from("content_items")
         .select("*")
+        .in("feed_source_id", sourceIds)
         .order("published_at", { ascending: false })
         .limit(limit);
 
       if (error) {
-        return ResultFactory.failure(
-          new RepositoryError(
-            `Failed to find recent content items: ${error.message}`
-          )
+        throw ErrorFactory.database("findRecent", error.message);
+      }
+
+      return data.map((item) =>
+        this.mapToEntity(item as unknown as SupabaseContentItem)
+      );
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("findRecent", "Unknown error");
+    }
+  }
+
+  async count(query?: FindContentItemsQuery): Promise<number> {
+    try {
+      let supabaseQuery = this.supabase
+        .from("content_items")
+        .select("*", { count: "exact", head: true });
+
+      // Apply same filters as findByUserSources
+      if (query?.sourceIds && query.sourceIds.length > 0) {
+        supabaseQuery = supabaseQuery.in("feed_source_id", query.sourceIds);
+      }
+
+      if (query?.author) {
+        supabaseQuery = supabaseQuery.eq("author", query.author);
+      }
+
+      if (query?.publishedAfter) {
+        supabaseQuery = supabaseQuery.gte(
+          "published_at",
+          query.publishedAfter.toISOString()
         );
       }
 
-      const contentItems = data.map((item) => this.mapToEntity(item));
-      return ResultFactory.success(contentItems);
+      if (query?.publishedBefore) {
+        supabaseQuery = supabaseQuery.lte(
+          "published_at",
+          query.publishedBefore.toISOString()
+        );
+      }
+
+      if (query?.searchTerm) {
+        supabaseQuery = supabaseQuery.or(
+          `title.ilike.%${query.searchTerm}%,summary.ilike.%${query.searchTerm}%,author.ilike.%${query.searchTerm}%`
+        );
+      }
+
+      const { count, error } = await supabaseQuery;
+
+      if (error) {
+        throw ErrorFactory.database("count", error.message);
+      }
+
+      return count || 0;
     } catch (error) {
-      return ResultFactory.failure(
-        new RepositoryError(`Unexpected error: ${error}`)
-      );
+      if (error instanceof Error) throw error;
+      throw ErrorFactory.database("count", "Unknown error");
     }
   }
 
-  private mapToEntity(data: SupabaseContentItem): ContentItem {
-    const result = ContentItem.create({
+  private mapToEntity(data: SupabaseContentItem): ContentItemEntity {
+    return ContentItem.create({
       id: data.id,
-      sourceId: data.source_id,
+      sourceId: data.feed_source_id, // Guaranteed to be non-null
       title: data.title,
-      description: data.description,
+      content: data.content || undefined,
+      excerpt: data.summary || undefined,
       url: data.url,
-      imageUrl: data.image_url,
-      author: data.author,
-      publishedAt: new Date(data.published_at),
-      contentType: data.content_type,
-      readingTime: data.reading_time,
-      tags: data.tags,
-      metadata: data.metadata,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
+      author: data.author || undefined,
+      publishedAt: data.published_at ? new Date(data.published_at) : new Date(),
+      imageUrl: data.thumbnail_url || undefined,
+      readingTime: data.read_time_minutes || undefined,
+      contentType: "article", // Default type, can be inferred from URL
+      tags: [], // No tags support in database yet, defaulting to empty array
     });
-
-    if (result.isFailure()) {
-      throw new Error(`Invalid content item data: ${result.error.message}`);
-    }
-
-    return result.value;
   }
 
   private mapToSupabase(
-    contentItem: ContentItem
+    entity: ContentItemEntity
   ): Omit<SupabaseContentItem, "created_at" | "updated_at"> {
     return {
-      id: contentItem.id,
-      source_id: contentItem.sourceId,
-      title: contentItem.title,
-      description: contentItem.description,
-      url: contentItem.url,
-      image_url: contentItem.imageUrl,
-      author: contentItem.author,
-      published_at: contentItem.publishedAt.toISOString(),
-      content_type: contentItem.contentType,
-      reading_time: contentItem.readingTime,
-      tags: contentItem.tags,
-      metadata: contentItem.metadata,
+      id: entity.id,
+      feed_source_id: entity.sourceId,
+      title: entity.title,
+      content: entity.content,
+      summary: entity.excerpt,
+      author: entity.author,
+      url: entity.url,
+      published_at: entity.publishedAt.toISOString(),
+      thumbnail_url: entity.imageUrl,
+      read_time_minutes: entity.readingTime,
+      content_hash: entity.contentHash,
     };
   }
 }

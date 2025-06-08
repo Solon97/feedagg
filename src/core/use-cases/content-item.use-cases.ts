@@ -1,7 +1,7 @@
 import { ContentItemEntity } from "../entities/content-item.entity";
 import {
   ContentItemRepository,
-  ContentItemQuery,
+  FindContentItemsQuery,
 } from "../repositories/content-item.repository";
 import {
   DomainError,
@@ -19,20 +19,21 @@ export class ContentItemUseCases {
 
     const result = await this.contentItemRepository.findById(id);
 
-    if (result.isFailure()) {
-      throw result.error;
-    }
-
-    if (!result.value) {
+    if (!result) {
       throw new NotFoundError("Content item not found");
     }
 
-    return result.value;
+    return result;
   }
 
-  async getContentItems(
-    query: ContentItemQuery = {}
+  async getContentItemsByUser(
+    userId: string,
+    query: FindContentItemsQuery = {}
   ): Promise<ContentItemEntity[]> {
+    if (!userId?.trim()) {
+      throw new ValidationError("User ID is required");
+    }
+
     // Validate query parameters
     if (query.limit && (query.limit < 1 || query.limit > 100)) {
       throw new ValidationError("Limit must be between 1 and 100");
@@ -50,104 +51,58 @@ export class ContentItemUseCases {
       }
     }
 
-    const result = await this.contentItemRepository.findMany(query);
-
-    if (result.isFailure()) {
-      throw result.error;
-    }
-
-    return result.value;
+    return await this.contentItemRepository.findByUserSources(userId, query);
   }
 
   async createContentItem(
-    contentItem: ContentItemEntity
+    params: {
+      sourceId: string;
+      title: string;
+      content?: string;
+      excerpt?: string;
+      url: string;
+      author?: string;
+      publishedAt: Date;
+      imageUrl?: string;
+    } & { id: string }
   ): Promise<ContentItemEntity> {
-    // Validate content item
-    if (!contentItem.title?.trim()) {
+    // Validate required fields
+    if (!params.title?.trim()) {
       throw new ValidationError("Content item title is required");
     }
 
-    if (!contentItem.url?.trim()) {
+    if (!params.url?.trim()) {
       throw new ValidationError("Content item URL is required");
     }
 
-    if (!contentItem.sourceId?.trim()) {
+    if (!params.sourceId?.trim()) {
       throw new ValidationError("Content source ID is required");
     }
 
-    // Check if content item with same URL already exists
-    const existingResult = await this.contentItemRepository.findByUrl(
-      contentItem.url
-    );
-
-    if (existingResult.isFailure()) {
-      throw existingResult.error;
-    }
-
-    if (existingResult.value) {
-      throw new ValidationError("Content item with this URL already exists");
-    }
-
-    // Save the content item
-    const result = await this.contentItemRepository.save(contentItem);
-
-    if (result.isFailure()) {
-      throw result.error;
-    }
-
-    return result.value;
+    return await this.contentItemRepository.create(params);
   }
 
   async updateContentItem(
-    contentItem: ContentItemEntity
+    id: string,
+    params: {
+      title?: string;
+      content?: string;
+      excerpt?: string;
+      author?: string;
+      imageUrl?: string;
+    }
   ): Promise<ContentItemEntity> {
-    // Validate content item exists
-    const existingResult = await this.contentItemRepository.findById(
-      contentItem.id
-    );
-
-    if (existingResult.isFailure()) {
-      throw existingResult.error;
+    if (!id?.trim()) {
+      throw new ValidationError("Content item ID is required");
     }
 
-    if (!existingResult.value) {
+    // Check if content item exists
+    const existing = await this.contentItemRepository.findById(id);
+    if (!existing) {
       throw new NotFoundError("Content item not found");
     }
 
-    // Validate required fields
-    if (!contentItem.title?.trim()) {
-      throw new ValidationError("Content item title is required");
-    }
-
-    if (!contentItem.url?.trim()) {
-      throw new ValidationError("Content item URL is required");
-    }
-
-    // Check if URL is being changed and if new URL already exists
-    if (contentItem.url !== existingResult.value.url) {
-      const urlCheckResult = await this.contentItemRepository.findByUrl(
-        contentItem.url
-      );
-
-      if (urlCheckResult.isFailure()) {
-        throw urlCheckResult.error;
-      }
-
-      if (urlCheckResult.value && urlCheckResult.value.id !== contentItem.id) {
-        throw new ValidationError(
-          "Another content item with this URL already exists"
-        );
-      }
-    }
-
-    // Save the updated content item
-    const result = await this.contentItemRepository.save(contentItem);
-
-    if (result.isFailure()) {
-      throw result.error;
-    }
-
-    return result.value;
+    return await this.contentItemRepository.update(id, params);
   }
 
   async deleteContentItem(id: string): Promise<void> {
@@ -156,22 +111,12 @@ export class ContentItemUseCases {
     }
 
     // Check if content item exists
-    const existingResult = await this.contentItemRepository.findById(id);
-
-    if (existingResult.isFailure()) {
-      throw existingResult.error;
-    }
-
-    if (!existingResult.value) {
+    const existing = await this.contentItemRepository.findById(id);
+    if (!existing) {
       throw new NotFoundError("Content item not found");
     }
 
-    // Delete the content item
-    const result = await this.contentItemRepository.delete(id);
-
-    if (result.isFailure()) {
-      throw result.error;
-    }
+    await this.contentItemRepository.delete(id);
   }
 
   async getContentItemsBySource(
@@ -182,41 +127,40 @@ export class ContentItemUseCases {
       throw new ValidationError("Source ID is required");
     }
 
-    const query: ContentItemQuery = {
-      sourceId,
-      limit: limit || 20,
-      sortBy: "published_at",
-      sortOrder: "desc",
-    };
+    if (limit && (limit < 1 || limit > 100)) {
+      throw new ValidationError("Limit must be between 1 and 100");
+    }
 
-    return this.getContentItems(query);
+    return await this.contentItemRepository.findBySourceId(sourceId);
   }
 
   async getRecentContentItems(
+    userId: string,
     limit: number = 20
   ): Promise<ContentItemEntity[]> {
+    if (!userId?.trim()) {
+      throw new ValidationError("User ID is required");
+    }
+
     if (limit < 1 || limit > 100) {
       throw new ValidationError("Limit must be between 1 and 100");
     }
 
-    const result = await this.contentItemRepository.findRecent(limit);
-
-    if (result.isFailure()) {
-      throw result.error;
-    }
-
-    return result.value;
+    return await this.contentItemRepository.findRecent(userId, limit);
   }
 
   async searchContentItems(
+    userId: string,
     searchTerm: string,
     options?: {
-      contentType?: string;
-      tags?: string[];
-      sourceId?: string;
+      sourceIds?: string[];
       limit?: number;
     }
   ): Promise<ContentItemEntity[]> {
+    if (!userId?.trim()) {
+      throw new ValidationError("User ID is required");
+    }
+
     if (!searchTerm?.trim()) {
       throw new ValidationError("Search term is required");
     }
@@ -227,87 +171,33 @@ export class ContentItemUseCases {
       );
     }
 
-    const query: ContentItemQuery = {
+    const query: FindContentItemsQuery = {
       searchTerm: searchTerm.trim(),
-      contentType: options?.contentType,
-      tags: options?.tags,
-      sourceId: options?.sourceId,
+      sourceIds: options?.sourceIds,
       limit: options?.limit || 20,
-      sortBy: "published_at",
-      sortOrder: "desc",
+      orderBy: "publishedAt",
+      orderDirection: "desc",
     };
 
-    return this.getContentItems(query);
+    return await this.contentItemRepository.findByUserSources(userId, query);
   }
 
-  async getContentItemsByTags(
-    tags: string[],
-    options?: {
-      limit?: number;
-      sourceId?: string;
-    }
-  ): Promise<ContentItemEntity[]> {
-    if (!tags?.length) {
-      throw new ValidationError("At least one tag is required");
+  async getContentItemsCount(
+    userId: string,
+    query?: FindContentItemsQuery
+  ): Promise<number> {
+    if (!userId?.trim()) {
+      throw new ValidationError("User ID is required");
     }
 
-    // Clean and validate tags
-    const cleanTags = tags
-      .map((tag) => tag.trim().toLowerCase())
-      .filter((tag) => tag.length > 0);
-
-    if (!cleanTags.length) {
-      throw new ValidationError("Valid tags are required");
-    }
-
-    const query: ContentItemQuery = {
-      tags: cleanTags,
-      sourceId: options?.sourceId,
-      limit: options?.limit || 20,
-      sortBy: "published_at",
-      sortOrder: "desc",
-    };
-
-    return this.getContentItems(query);
+    return await this.contentItemRepository.count(query);
   }
 
-  async getContentItemsCount(sourceId?: string): Promise<number> {
-    if (sourceId) {
-      if (!sourceId.trim()) {
-        throw new ValidationError("Source ID cannot be empty");
-      }
-
-      const result = await this.contentItemRepository.countBySource(sourceId);
-
-      if (result.isFailure()) {
-        throw result.error;
-      }
-
-      return result.value;
+  async getContentItemByHash(hash: string): Promise<ContentItemEntity | null> {
+    if (!hash?.trim()) {
+      throw new ValidationError("Content hash is required");
     }
 
-    // For total count, we can use findMany with no limit and count the results
-    // This is not the most efficient, but works for now
-    const result = await this.contentItemRepository.findMany({});
-
-    if (result.isFailure()) {
-      throw result.error;
-    }
-
-    return result.value.length;
-  }
-
-  async getContentItemByUrl(url: string): Promise<ContentItemEntity | null> {
-    if (!url?.trim()) {
-      throw new ValidationError("URL is required");
-    }
-
-    const result = await this.contentItemRepository.findByUrl(url);
-
-    if (result.isFailure()) {
-      throw result.error;
-    }
-
-    return result.value;
+    return await this.contentItemRepository.findByContentHash(hash);
   }
 }

@@ -40,11 +40,10 @@ export type Database = {
           content: string | null
           content_hash: string | null
           created_at: string
-          feed_source_id: string | null
+          feed_source_id: string
           id: string
           published_at: string | null
           read_time_minutes: number | null
-          source_id: string
           summary: string | null
           thumbnail_url: string | null
           title: string
@@ -56,11 +55,10 @@ export type Database = {
           content?: string | null
           content_hash?: string | null
           created_at?: string
-          feed_source_id?: string | null
+          feed_source_id: string
           id?: string
           published_at?: string | null
           read_time_minutes?: number | null
-          source_id: string
           summary?: string | null
           thumbnail_url?: string | null
           title: string
@@ -72,11 +70,10 @@ export type Database = {
           content?: string | null
           content_hash?: string | null
           created_at?: string
-          feed_source_id?: string | null
+          feed_source_id?: string
           id?: string
           published_at?: string | null
           read_time_minutes?: number | null
-          source_id?: string
           summary?: string | null
           thumbnail_url?: string | null
           title?: string
@@ -89,66 +86,6 @@ export type Database = {
             columns: ["feed_source_id"]
             isOneToOne: false
             referencedRelation: "feed_sources"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_items_source_id_fkey"
-            columns: ["source_id"]
-            isOneToOne: false
-            referencedRelation: "content_sources"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      content_sources: {
-        Row: {
-          category: string | null
-          created_at: string
-          description: string | null
-          fetch_frequency: number | null
-          id: string
-          is_active: boolean | null
-          last_fetched_at: string | null
-          name: string
-          source_type: string | null
-          updated_at: string
-          url: string
-          user_id: string
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          fetch_frequency?: number | null
-          id?: string
-          is_active?: boolean | null
-          last_fetched_at?: string | null
-          name: string
-          source_type?: string | null
-          updated_at?: string
-          url: string
-          user_id: string
-        }
-        Update: {
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          fetch_frequency?: number | null
-          id?: string
-          is_active?: boolean | null
-          last_fetched_at?: string | null
-          name?: string
-          source_type?: string | null
-          updated_at?: string
-          url?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "content_sources_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

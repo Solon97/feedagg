@@ -67,8 +67,6 @@ export class InfrastructureError extends DomainError {
 
 // Database errors
 export class DatabaseError extends InfrastructureError {
-  readonly code = "DATABASE_ERROR";
-
   constructor(operation: string, message: string, cause?: Error) {
     super(`Database ${operation} failed: ${message}`, cause);
   }
@@ -76,8 +74,6 @@ export class DatabaseError extends InfrastructureError {
 
 // Network errors
 export class NetworkError extends InfrastructureError {
-  readonly code = "NETWORK_ERROR";
-
   constructor(message: string, cause?: Error) {
     super(`Network error: ${message}`, cause);
   }

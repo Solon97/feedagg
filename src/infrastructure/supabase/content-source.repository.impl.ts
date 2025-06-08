@@ -167,7 +167,7 @@ export class ContentSourceRepositoryImpl implements ContentSourceRepository {
         `
           )
           .eq("user_id", params.userId)
-          .eq("feed_source_id", feedSource.id)
+          .eq("feed_source_id", (feedSource as { id: string }).id)
           .single();
 
       // If subscription already exists, return it (idempotent behavior)

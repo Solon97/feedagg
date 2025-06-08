@@ -27,8 +27,7 @@ export class GetContentSourcesByUserUseCase {
         return ResultFactory.failure(ErrorFactory.notFound("User", userId));
       }
 
-      const sources = await this.contentSourceRepository.findByUserId(userId);
-      return ResultFactory.success(sources);
+      return await this.contentSourceRepository.findByUserId(userId);
     } catch (error) {
       return ResultFactory.failure(
         ErrorFactory.database(
@@ -61,10 +60,7 @@ export class GetActiveContentSourcesByUserUseCase {
         return ResultFactory.failure(ErrorFactory.notFound("User", userId));
       }
 
-      const sources = await this.contentSourceRepository.findActiveByUserId(
-        userId
-      );
-      return ResultFactory.success(sources);
+      return await this.contentSourceRepository.findActiveByUserId(userId);
     } catch (error) {
       return ResultFactory.failure(
         ErrorFactory.database(
@@ -103,13 +99,11 @@ export class CreateContentSourceUseCase {
       // Generate unique ID (in real implementation, this would be handled by the repository)
       const id = crypto.randomUUID();
 
-      const source = await this.contentSourceRepository.create({
+      return await this.contentSourceRepository.create({
         ...params,
         id,
         userId,
       });
-
-      return ResultFactory.success(source);
     } catch (error) {
       return ResultFactory.failure(
         ErrorFactory.database(
@@ -146,11 +140,7 @@ export class UpdateContentSourceUseCase {
         );
       }
 
-      const updatedSource = await this.contentSourceRepository.update(
-        id,
-        params
-      );
-      return ResultFactory.success(updatedSource);
+      return await this.contentSourceRepository.update(id, params);
     } catch (error) {
       return ResultFactory.failure(
         ErrorFactory.database(

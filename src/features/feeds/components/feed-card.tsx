@@ -9,15 +9,14 @@ import {
   Trash2,
   RefreshCw,
   Rss,
-  Youtube,
   CheckCircle2,
   XCircle,
   Link,
   Settings,
   Calendar,
-  Tag,
   Pause,
   Play,
+  PlayCircle,
 } from "lucide-react";
 import type { ContentSourceEntity } from "../../../core/entities/content-source.entity";
 
@@ -45,7 +44,7 @@ export function FeedCard({
       url.includes("youtu.be")
     ) {
       return {
-        icon: Youtube,
+        icon: PlayCircle,
         color: "text-red-600",
         bgColor: "bg-red-100",
         label: "YouTube",
@@ -85,9 +84,9 @@ export function FeedCard({
 
   const getStatusIcon = (isActive: boolean) => {
     if (isActive) {
-      return <CheckCircle2 className="w-3 h-3" />;
+      return <CheckCircle2 className="w-3 h-3 text-green-600" />;
     }
-    return <XCircle className="w-3 h-3" />;
+    return <XCircle className="w-3 h-3 text-gray-400" />;
   };
 
   const feedTypeInfo = getFeedTypeInfo(feed.url, (feed as any).sourceType);
@@ -96,7 +95,7 @@ export function FeedCard({
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4 sm:p-6">
-        <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start justify-between space-x-4">
           <div className="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
             <div className="flex-shrink-0 pt-1">
               <div
@@ -109,28 +108,10 @@ export function FeedCard({
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex flex-col space-y-2 sm:flex-row sm:items-start sm:space-y-0 sm:space-x-3 mb-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate dark:text-white">
-                    {feed.name}
-                  </h3>
-                  <div className="flex items-center space-x-2 mt-1 sm:mt-0">
-                    <Badge
-                      className={`${getStatusColor(
-                        feed.isActive
-                      )} flex items-center space-x-1 w-fit text-xs`}
-                    >
-                      {getStatusIcon(feed.isActive)}
-                      <span className="capitalize">
-                        {feed.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      <Tag className="h-3 w-3 mr-1" />
-                      {feedTypeInfo.label}
-                    </Badge>
-                  </div>
-                </div>
+              <div className="mb-2">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate dark:text-white">
+                  {feed.name}
+                </h3>
               </div>
 
               {/* Category */}
@@ -161,6 +142,10 @@ export function FeedCard({
                 {/* Stats */}
                 <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 text-xs text-gray-500">
                   <div className="flex items-center space-x-1">
+                    {getStatusIcon(feed.isActive)}
+                    <span>{feed.isActive ? "Active" : "Inactive"}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
                     <Settings className="h-3 w-3" />
                     <span>0 items</span>
                   </div>
@@ -173,7 +158,8 @@ export function FeedCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-1 sm:space-x-2 sm:ml-4 flex-shrink-0">
+          {/* Action Buttons - Moved to top right */}
+          <div className="flex items-start space-x-1 sm:space-x-2 flex-shrink-0 pt-1">
             <Button
               variant="ghost"
               size="sm"

@@ -5,11 +5,20 @@ export interface ContentItemEntity {
   readonly title: string;
   readonly content: string | null;
   readonly excerpt: string | null;
+  readonly description: string | null; // For UI compatibility (alias for excerpt)
   readonly url: string;
   readonly author: string | null;
   readonly publishedAt: Date;
   readonly imageUrl: string | null;
   readonly contentHash: string;
+  readonly contentType:
+    | "article"
+    | "video"
+    | "podcast"
+    | "newsletter"
+    | "other";
+  readonly readingTime: number | null; // In minutes
+  readonly tags: string[] | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -23,6 +32,14 @@ export interface CreateContentItemParams {
   readonly author?: string;
   readonly publishedAt: Date;
   readonly imageUrl?: string;
+  readonly contentType?:
+    | "article"
+    | "video"
+    | "podcast"
+    | "newsletter"
+    | "other";
+  readonly readingTime?: number; // In minutes
+  readonly tags?: string[];
 }
 
 export interface UpdateContentItemParams {
@@ -31,6 +48,14 @@ export interface UpdateContentItemParams {
   readonly excerpt?: string;
   readonly author?: string;
   readonly imageUrl?: string;
+  readonly contentType?:
+    | "article"
+    | "video"
+    | "podcast"
+    | "newsletter"
+    | "other";
+  readonly readingTime?: number;
+  readonly tags?: string[];
 }
 
 // Content Item factory with validation
@@ -47,18 +72,24 @@ export class ContentItem {
     }
 
     const contentHash = this.generateContentHash(params.url, params.title);
+    const contentType = params.contentType || this.inferContentType(params.url);
+    const excerpt = params.excerpt || null;
 
     return {
       id: params.id,
       sourceId: params.sourceId,
       title: params.title.trim(),
       content: params.content || null,
-      excerpt: params.excerpt || null,
+      excerpt,
+      description: excerpt, // Alias for UI compatibility
       url: params.url,
       author: params.author || null,
       publishedAt: params.publishedAt,
       imageUrl: params.imageUrl || null,
       contentHash,
+      contentType,
+      readingTime: params.readingTime || null,
+      tags: params.tags || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -72,10 +103,15 @@ export class ContentItem {
       throw new Error("Title cannot be empty");
     }
 
+    const updatedExcerpt =
+      params.excerpt !== undefined ? params.excerpt : item.excerpt;
+
     return {
       ...item,
       ...params,
       title: params.title ? params.title.trim() : item.title,
+      excerpt: updatedExcerpt,
+      description: updatedExcerpt, // Keep description in sync with excerpt
       updatedAt: new Date(),
     };
   }
@@ -87,6 +123,34 @@ export class ContentItem {
     } catch {
       return false;
     }
+  }
+
+  private static inferContentType(
+    url: string
+  ): "article" | "video" | "podcast" | "newsletter" | "other" {
+    const urlLower = url.toLowerCase();
+
+    if (
+      urlLower.includes("youtube.com") ||
+      urlLower.includes("youtu.be") ||
+      urlLower.includes("vimeo.com")
+    ) {
+      return "video";
+    }
+
+    if (
+      urlLower.includes("podcast") ||
+      urlLower.includes("spotify.com") ||
+      urlLower.includes("soundcloud.com")
+    ) {
+      return "podcast";
+    }
+
+    if (urlLower.includes("newsletter") || urlLower.includes("substack.com")) {
+      return "newsletter";
+    }
+
+    return "article"; // Default
   }
 
   private static generateContentHash(url: string, title: string): string {

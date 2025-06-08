@@ -34,7 +34,8 @@ export class UseCaseFactory {
   constructor(dependencies: UseCaseDependencies) {
     this.userUseCases = new UserUseCases(dependencies.userRepository);
     this.contentSourceUseCases = new ContentSourceUseCases(
-      dependencies.contentSourceRepository
+      dependencies.contentSourceRepository,
+      dependencies.userRepository
     );
     this.contentItemUseCases = new ContentItemUseCases(
       dependencies.contentItemRepository

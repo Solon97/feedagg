@@ -10,13 +10,13 @@ import {
   BookmarkCheck,
   Heart,
 } from "lucide-react";
-import type { ContentItem } from "@/core/entities/content-item.entity";
+import type { ContentItemEntity } from "@/core/entities/content-item.entity";
 
 interface ContentItemCardProps {
-  item: ContentItem;
+  item: ContentItemEntity;
   isBookmarked?: boolean;
   onBookmarkToggle?: (itemId: string) => void;
-  onOpenContent?: (item: ContentItem) => void;
+  onOpenContent?: (item: ContentItemEntity) => void;
   isBookmarking?: boolean;
 }
 
@@ -89,7 +89,7 @@ export function ContentItemCard({
               <span>•</span>
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                {formatDate(item.publishedAt)}
+                {formatDate(item.publishedAt.toISOString())}
               </div>
               {item.readingTime && (
                 <>

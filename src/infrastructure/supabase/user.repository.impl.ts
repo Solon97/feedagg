@@ -132,15 +132,19 @@ export class SupabaseUserRepository implements UserRepository {
   private mapToEntity(
     data: Database["public"]["Tables"]["profiles"]["Row"]
   ): UserEntity {
+    const fullName = data.full_name;
+    const displayName = fullName || data.email;
+
     return {
       id: data.id,
       email: data.email,
-      fullName: data.full_name,
+      fullName,
+      displayName,
       avatarUrl: data.avatar_url,
       digestFrequency: data.digest_frequency as "daily" | "weekly" | "monthly",
-      digestTime: data.digest_time,
-      timezone: data.timezone,
-      isActive: data.is_active,
+      digestTime: data.digest_time || "09:00",
+      timezone: data.timezone || "UTC",
+      isActive: data.is_active ?? true,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
     };
