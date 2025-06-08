@@ -8,9 +8,7 @@ interface UseSavedContentReturn {
   error: string | null;
   refetch: () => Promise<void>;
   toggleRead: (id: string) => Promise<void>;
-  toggleFavorite: (
-    id: string
-  ) => Promise<{
+  toggleFavorite: (id: string) => Promise<{
     success: boolean;
     data?: { isFavorite: boolean };
     error?: string;
@@ -22,7 +20,11 @@ interface UseSavedContentReturn {
   markAsUnread: (
     id: string
   ) => Promise<{ success: boolean; data?: any; error?: string }>;
-  deleteSavedContent: (id: string) => Promise<void>;
+  deleteSavedContent: (id: string) => Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+  }>;
   refresh: () => Promise<void>;
 }
 
@@ -115,7 +117,15 @@ export function useSavedContent(userId?: string): UseSavedContentReturn {
   };
 
   const deleteSavedContent = async (id: string) => {
-    await deleteItem(id);
+    try {
+      await deleteItem(id);
+      return { success: true };
+    } catch (err) {
+      const error =
+        err instanceof Error ? err.message : "Failed to delete content";
+      setError(error);
+      return { success: false, error };
+    }
   };
 
   const refresh = async () => {

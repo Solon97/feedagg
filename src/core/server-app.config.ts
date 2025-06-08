@@ -1,6 +1,8 @@
 // Server-side Application Configuration - Clean Architecture for server only
 import { RepositoryFactory } from "../infrastructure/supabase";
 import { UseCaseFactory } from "./use-cases";
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "../../lib/database.types";
 
 // Environment configuration
 interface AppConfig {
@@ -18,10 +20,15 @@ class ServerApplication {
   private constructor(config: AppConfig) {
     this.config = config;
 
-    // Initialize repository factory
+    // Create typed Supabase client
+    const supabase = createClient<Database>(
+      config.supabaseUrl,
+      config.supabaseAnonKey
+    );
+
+    // Initialize repository factory with typed client
     this.repositoryFactory = new RepositoryFactory({
-      supabaseUrl: config.supabaseUrl,
-      supabaseAnonKey: config.supabaseAnonKey,
+      supabase: supabase,
     });
 
     // Initialize use case factory with repositories

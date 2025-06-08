@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ContentItemEntity } from "@/core/entities/content-item.entity";
-import { FindContentItemsQuery } from "@/core/repositories/content-item.repository";
 
 interface FeedFilters {
   contentTypes: string[];
@@ -21,10 +20,7 @@ interface UseFeedContentReturn {
   refreshContent: () => Promise<void>;
 }
 
-export function useFeedContent(
-  userId?: string,
-  initialFilters?: Partial<FindContentItemsQuery>
-): UseFeedContentReturn {
+export function useFeedContent(userId?: string): UseFeedContentReturn {
   const [contentItems, setContentItems] = useState<ContentItemEntity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,62 +33,89 @@ export function useFeedContent(
     sortBy: "newest",
   });
 
-  const updateFilters = (newFilters: Partial<FeedFilters>) => {
+  const updateFilters = useCallback((newFilters: Partial<FeedFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
-    setOffset(0); // Reset pagination when filters change
-  };
+    setOffset(0);
+  }, []);
 
-  const fetchContent = async (reset: boolean = false) => {
-    if (!userId) {
-      setContentItems([]);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      if (reset) {
-        setIsLoading(true);
-        setOffset(0);
-      }
-      setError(null);
-
-      const query: FindContentItemsQuery = {
-        ...initialFilters,
-        // Map from FeedFilters to FindContentItemsQuery
-        search: filters.searchQuery || undefined,
-        contentType:
-          filters.contentTypes.length > 0 ? filters.contentTypes[0] : undefined,
-        author: filters.sources.length > 0 ? filters.sources[0] : undefined,
-        limit: 20,
-        offset: reset ? 0 : offset,
-        orderBy: "publishedAt",
-        orderDirection: filters.sortBy === "oldest" ? "asc" : "desc",
-      };
-
-      // Since ContentItemUseCases expects repositories, we'll need to handle this differently
-      // For now, return empty array - this will be properly implemented when dependency injection is set up
-      const newItems: ContentItemEntity[] = [];
-
-      if (reset) {
-        setContentItems(newItems);
-      } else {
-        setContentItems((prev) => [...prev, ...newItems]);
+  const fetchContent = useCallback(
+    async (reset: boolean = false) => {
+      if (!userId) {
+        setContentItems([]);
+        setIsLoading(false);
+        return;
       }
 
-      setHasMore(newItems.length === query.limit);
-      setOffset((prev) => (reset ? 20 : prev + 20));
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch feed content"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        if (reset) {
+          setIsLoading(true);
+          setOffset(0);
+        }
+        setError(null);
 
-  const refetch = () => fetchContent(true);
-  const loadMore = () => fetchContent(false);
-  const refreshContent = () => fetchContent(true);
+        const searchParams = new URLSearchParams();
+        searchParams.append("limit", "20");
+        searchParams.append("offset", (reset ? 0 : offset).toString());
+
+        if (filters.searchQuery) {
+          searchParams.append("search", filters.searchQuery);
+        }
+
+        if (filters.contentTypes.length > 0) {
+          filters.contentTypes.forEach((type) => {
+            searchParams.append("contentType", type);
+          });
+        }
+
+        if (filters.sources.length > 0) {
+          filters.sources.forEach((source) => {
+            searchParams.append("author", source);
+          });
+        }
+
+        const orderDirection = filters.sortBy === "oldest" ? "asc" : "desc";
+        searchParams.append("orderBy", "publishedAt");
+        searchParams.append("orderDirection", orderDirection);
+
+        const response = await fetch(`/api/content-items?${searchParams}`, {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch content items");
+        }
+
+        const data = await response.json();
+        const newItems: ContentItemEntity[] = Array.isArray(data?.contentItems)
+          ? data.contentItems
+          : Array.isArray(data)
+          ? data
+          : [];
+
+        if (reset) {
+          setContentItems(newItems);
+        } else {
+          setContentItems((prev) =>
+            Array.isArray(prev) ? [...prev, ...newItems] : newItems
+          );
+        }
+
+        setHasMore(newItems.length === 20);
+        setOffset((prev) => (reset ? 20 : prev + 20));
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch feed content"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [userId, filters, offset]
+  );
+
+  const refetch = useCallback(() => fetchContent(true), [fetchContent]);
+  const loadMore = useCallback(() => fetchContent(false), [fetchContent]);
+  const refreshContent = useCallback(() => fetchContent(true), [fetchContent]);
 
   useEffect(() => {
     fetchContent(true);

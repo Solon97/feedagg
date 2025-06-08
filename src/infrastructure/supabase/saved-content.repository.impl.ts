@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "../../../lib/database.types";
 import {
   SavedContentEntity,
   CreateSavedContentParams,
@@ -23,7 +24,7 @@ interface SupabaseSavedContent {
 }
 
 export class SavedContentRepositoryImpl implements SavedContentRepository {
-  constructor(private supabase: ReturnType<typeof createClient>) {}
+  constructor(private supabase: SupabaseClient<Database>) {}
 
   async findById(id: string): Promise<SavedContentEntity | null> {
     const { data, error } = await this.supabase

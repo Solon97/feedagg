@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "../../../lib/database.types";
 import {
   ContentItemEntity,
   CreateContentItemParams,
@@ -28,7 +29,7 @@ interface SupabaseContentItem {
 }
 
 export class ContentItemRepositoryImpl implements ContentItemRepository {
-  constructor(private supabase: ReturnType<typeof createClient>) {}
+  constructor(private supabase: SupabaseClient<Database>) {}
 
   async findById(id: string): Promise<ContentItemEntity | null> {
     try {

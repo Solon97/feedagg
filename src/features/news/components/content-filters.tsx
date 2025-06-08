@@ -90,9 +90,9 @@ export function ContentFilters({
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
           <Select value={filters.sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -105,10 +105,15 @@ export function ContentFilters({
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="gap-2"
+            className="gap-2 flex-shrink-0"
           >
             <Filter className="h-4 w-4" />
-            Filters
+            <span className="hidden sm:inline">Filters</span>
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1">
+                {filters.contentTypes.length + filters.sources.length}
+              </Badge>
+            )}
             <ChevronDown
               className={`h-4 w-4 transition-transform ${
                 showFilters ? "rotate-180" : ""
@@ -119,14 +124,25 @@ export function ContentFilters({
           {onRefresh && (
             <Button
               variant="outline"
+              size="icon"
               onClick={onRefresh}
               disabled={isLoading}
-              className="gap-2"
+              className="flex-shrink-0"
             >
               <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               />
-              Refresh
+            </Button>
+          )}
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              onClick={clearAllFilters}
+              className="gap-1 flex-shrink-0"
+            >
+              <X className="h-4 w-4" />
+              <span className="hidden sm:inline">Clear</span>
             </Button>
           )}
         </div>

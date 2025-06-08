@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,12 +19,19 @@ import { useSaveContent } from "../hooks/use-save-content";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import type { ContentItemEntity } from "@/core/entities/content-item.entity";
 
+interface BookmarkState {
+  contentItemId: string;
+  savedContentId: string | null;
+  isSaved: boolean;
+}
+
 export function NewsPageContent() {
   const [selectedContent, setSelectedContent] =
     useState<ContentItemEntity | null>(null);
-  const [savedContentIds, setSavedContentIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [bookmarkStates, setBookmarkStates] = useState<
+    Map<string, BookmarkState>
+  >(new Map());
+  const [isLoadingBookmarks, setIsLoadingBookmarks] = useState(false);
 
   const { user } = useCurrentUser();
   const {
@@ -36,16 +43,66 @@ export function NewsPageContent() {
     refreshContent,
     hasMore,
     loadMore,
-  } = useFeedContent();
+  } = useFeedContent(user?.id);
 
-  const { saveContent, unsaveContent, toggleSave, isSaving } = useSaveContent();
+  // Ensure contentItems is always an array
+  const safeContentItems = Array.isArray(contentItems) ? contentItems : [];
+
+  const {
+    saveContent,
+    unsaveContent,
+    toggleSave,
+    getSavedContentByItemId,
+    isSaving,
+  } = useSaveContent();
+
+  // Load bookmark states for current content items
+  const loadBookmarkStates = useCallback(async () => {
+    if (!user || safeContentItems.length === 0) return;
+
+    setIsLoadingBookmarks(true);
+    const newStates = new Map<string, BookmarkState>();
+
+    try {
+      await Promise.all(
+        safeContentItems.map(async (item) => {
+          try {
+            const savedContentResponse = await getSavedContentByItemId(item.id);
+            newStates.set(item.id, {
+              contentItemId: item.id,
+              savedContentId: savedContentResponse.savedContentId,
+              isSaved: savedContentResponse.saved,
+            });
+          } catch (error) {
+            // If error fetching bookmark state, assume not saved
+            newStates.set(item.id, {
+              contentItemId: item.id,
+              savedContentId: null,
+              isSaved: false,
+            });
+          }
+        })
+      );
+
+      setBookmarkStates(newStates);
+    } catch (error) {
+      console.error("Failed to load bookmark states:", error);
+    } finally {
+      setIsLoadingBookmarks(false);
+    }
+  }, [user, safeContentItems, getSavedContentByItemId]);
+
+  // Load bookmark states when content items change
+  useEffect(() => {
+    loadBookmarkStates();
+  }, [loadBookmarkStates]);
 
   // Get unique types and sources for filters
   const availableTypes = Array.from(
-    new Set(contentItems.map((item) => item.contentType))
+    new Set(safeContentItems.map((item) => item.contentType))
   );
   const availableSources = Array.from(
-    new Set(contentItems.map((item) => item.author).filter(Boolean))
+    new Set(safeContentItems.map((item) => item.author).filter(Boolean))
   ) as string[];
 
   const handleBookmarkToggle = async (contentId: string) => {
@@ -54,22 +111,36 @@ export function NewsPageContent() {
       return;
     }
 
-    const isCurrentlySaved = savedContentIds.has(contentId);
+    const currentState = bookmarkStates.get(contentId) || {
+      contentItemId: contentId,
+      savedContentId: null,
+      isSaved: false,
+    };
 
     try {
-      await toggleSave(contentId, user.id, isCurrentlySaved);
+      const result = await toggleSave(
+        contentId,
+        currentState.isSaved,
+        currentState.savedContentId || undefined
+      );
 
-      setSavedContentIds((prev) => {
-        const newSet = new Set(prev);
-        if (isCurrentlySaved) {
-          newSet.delete(contentId);
-          toast.success("Content removed from saved items");
-        } else {
-          newSet.add(contentId);
-          toast.success("Content saved successfully");
-        }
-        return newSet;
+      // Update local state based on the result
+      setBookmarkStates((prev) => {
+        const newStates = new Map(prev);
+        newStates.set(contentId, {
+          contentItemId: contentId,
+          savedContentId:
+            result.action === "saved" ? result.savedContentId || null : null,
+          isSaved: result.action === "saved",
+        });
+        return newStates;
       });
+
+      if (result.action === "saved") {
+        toast.success("Content saved successfully");
+      } else {
+        toast.success("Content removed from saved items");
+      }
     } catch (error) {
       toast.error("Failed to save content. Please try again.");
     }
@@ -131,72 +202,88 @@ export function NewsPageContent() {
 
   return (
     <>
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Filters */}
-        <ContentFilters
-          filters={filters}
-          onFiltersChange={updateFilters}
-          availableTypes={availableTypes}
-          availableSources={availableSources}
-          onRefresh={refreshContent}
-          isLoading={isLoading}
-        />
-
-        {/* Content Grid */}
-        {contentItems.length === 0 && !isLoading ? (
-          <Card className="p-8 text-center">
-            <CardTitle className="mb-2">No Content Found</CardTitle>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-6 space-y-6">
+          {/* Header */}
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Latest News</h1>
             <p className="text-muted-foreground">
-              Try adjusting your filters or refresh the page to see more
-              content.
+              Stay updated with the latest content from your feeds
             </p>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {contentItems.map((item) => (
-              <ContentItemCard
-                key={item.id}
-                item={item}
-                isBookmarked={savedContentIds.has(item.id)}
-                onBookmarkToggle={handleBookmarkToggle}
-                onOpenContent={handleOpenContent}
-                isBookmarking={isSaving}
-              />
-            ))}
           </div>
-        )}
 
-        {/* Load More */}
-        {hasMore && (
-          <div className="text-center py-4">
-            <Button onClick={loadMore} disabled={isLoading} variant="outline">
-              {isLoading ? "Loading..." : "Load More"}
-            </Button>
-          </div>
-        )}
+          {/* Filters */}
+          <ContentFilters
+            filters={filters}
+            onFiltersChange={updateFilters}
+            availableTypes={availableTypes}
+            availableSources={availableSources}
+            onRefresh={refreshContent}
+            isLoading={isLoading}
+          />
 
-        {/* Loading State */}
-        {isLoading && contentItems.length === 0 && (
-          <div className="grid gap-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-4 bg-muted rounded w-3/4"></div>
-                  <div className="h-3 bg-muted rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-4">
-                    <div className="w-24 h-16 bg-muted rounded"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 bg-muted rounded"></div>
-                      <div className="h-3 bg-muted rounded w-4/5"></div>
+          {/* Content Grid */}
+          {safeContentItems.length === 0 && !isLoading ? (
+            <Card className="p-8 text-center">
+              <CardTitle className="mb-2">No Content Found</CardTitle>
+              <p className="text-muted-foreground mb-4">
+                Try adjusting your filters or refresh the page to see more
+                content.
+              </p>
+              <Button onClick={refreshContent} variant="outline">
+                Refresh Content
+              </Button>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {safeContentItems.map((item) => {
+                const bookmarkState = bookmarkStates.get(item.id);
+                return (
+                  <ContentItemCard
+                    key={item.id}
+                    item={item}
+                    isBookmarked={bookmarkState?.isSaved || false}
+                    onBookmarkToggle={handleBookmarkToggle}
+                    onOpenContent={handleOpenContent}
+                    isBookmarking={isSaving}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {/* Load More */}
+          {hasMore && safeContentItems.length > 0 && (
+            <div className="text-center py-6">
+              <Button onClick={loadMore} disabled={isLoading} variant="outline">
+                {isLoading ? "Loading..." : "Load More"}
+              </Button>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isLoading && safeContentItems.length === 0 && (
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-4">
+                      <div className="w-24 h-16 bg-muted rounded"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 bg-muted rounded"></div>
+                        <div className="h-3 bg-muted rounded w-4/5"></div>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content Detail Dialog */}
@@ -225,9 +312,19 @@ export function NewsPageContent() {
                       <span>{selectedContent.author || "Unknown"}</span>
                       <span>•</span>
                       <span>
-                        {new Date(
-                          selectedContent.publishedAt
-                        ).toLocaleDateString()}
+                        {(() => {
+                          try {
+                            const date =
+                              typeof selectedContent.publishedAt === "string"
+                                ? new Date(selectedContent.publishedAt)
+                                : selectedContent.publishedAt instanceof Date
+                                ? selectedContent.publishedAt
+                                : new Date();
+                            return date.toLocaleDateString();
+                          } catch (error) {
+                            return "Unknown date";
+                          }
+                        })()}
                       </span>
                       {selectedContent.readingTime && (
                         <>

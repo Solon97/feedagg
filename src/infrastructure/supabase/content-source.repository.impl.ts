@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "../../../lib/database.types";
 import {
   ContentSourceEntity,
   CreateContentSourceParams,
@@ -13,7 +14,7 @@ import {
 } from "../../core/errors/domain-errors";
 
 export class ContentSourceRepositoryImpl implements ContentSourceRepository {
-  constructor(private supabase: ReturnType<typeof createClient>) {}
+  constructor(private supabase: SupabaseClient<Database>) {}
 
   async findById(id: string): Promise<Result<ContentSourceEntity | null>> {
     try {

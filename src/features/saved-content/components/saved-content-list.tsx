@@ -78,7 +78,7 @@ export function SavedContentList({ userId }: SavedContentListProps) {
     toggleFavorite,
     deleteSavedContent,
     refresh,
-  } = useSavedContent(userId, query);
+  } = useSavedContent(userId);
 
   const handleMarkAsRead = async (id: string) => {
     const result = await markAsRead(id);

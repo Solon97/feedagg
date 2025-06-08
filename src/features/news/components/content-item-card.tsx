@@ -60,40 +60,129 @@ export function ContentItemCard({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const formatDate = (dateInput: string | Date | null | undefined) => {
+    try {
+      // Validação inicial mais robusta
+      if (!dateInput) {
+        console.warn("formatDate: No date input provided");
+        return "Unknown date";
+      }
 
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
-    return `${Math.ceil(diffDays / 365)} years ago`;
+      let date: Date;
+
+      // Conversão segura para Date
+      if (typeof dateInput === "string") {
+        date = new Date(dateInput);
+      } else if (dateInput instanceof Date) {
+        date = dateInput;
+      } else {
+        console.warn(
+          "formatDate: Invalid date type:",
+          typeof dateInput,
+          dateInput
+        );
+        return "Unknown date";
+      }
+
+      // Verificação adicional se date é válido antes de chamar getTime()
+      if (!date || !(date instanceof Date)) {
+        console.warn("formatDate: Date object creation failed");
+        return "Unknown date";
+      }
+
+      // Verificação específica para getTime() antes de usar
+      let timestamp: number;
+      try {
+        timestamp = date.getTime();
+        if (isNaN(timestamp)) {
+          console.warn("formatDate: Invalid timestamp from date:", date);
+          return "Unknown date";
+        }
+      } catch (error) {
+        console.error(
+          "formatDate: Error calling getTime():",
+          error,
+          "Date:",
+          date
+        );
+        return "Unknown date";
+      }
+
+      const now = new Date();
+      const nowTimestamp = now.getTime();
+      const diffTime = Math.abs(nowTimestamp - timestamp);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) return "Today";
+      if (diffDays === 1) return "Yesterday";
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+      if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
+      return `${Math.ceil(diffDays / 365)} years ago`;
+    } catch (error) {
+      console.error(
+        "formatDate: Unexpected error:",
+        error,
+        "Input:",
+        dateInput
+      );
+      return "Unknown date";
+    }
+  };
+
+  // Função auxiliar para formatação segura de data curta
+  const formatDateShort = (dateInput: string | Date | null | undefined) => {
+    try {
+      if (!dateInput) return "Unknown date";
+
+      let date: Date;
+      if (typeof dateInput === "string") {
+        date = new Date(dateInput);
+      } else if (dateInput instanceof Date) {
+        date = dateInput;
+      } else {
+        return "Unknown date";
+      }
+
+      if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+        return "Unknown date";
+      }
+
+      return date.toLocaleDateString();
+    } catch (error) {
+      console.error("formatDateShort: Error:", error, "Input:", dateInput);
+      return "Unknown date";
+    }
   };
 
   return (
     <Card
-      className="hover:shadow-md transition-shadow cursor-pointer"
+      className="hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary/50"
       onClick={handleCardClick}
     >
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg line-clamp-2 mb-2">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg leading-tight line-clamp-2 mb-2">
               {item.title}
             </CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="font-medium">{item.author || "Unknown"}</span>
-              <span>•</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+              <span className="font-medium truncate max-w-[150px]">
+                {item.author || "Unknown"}
+              </span>
+              <span className="hidden sm:inline">•</span>
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                {formatDate(item.publishedAt.toISOString())}
+                <span className="hidden sm:inline">
+                  {formatDate(item.publishedAt)}
+                </span>
+                <span className="sm:hidden">
+                  {formatDateShort(item.publishedAt)}
+                </span>
               </div>
               {item.readingTime && (
                 <>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {item.readingTime} min
@@ -102,12 +191,21 @@ export function ContentItemCard({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 ml-4">
-            <Badge variant="secondary" className={getTypeColor()}>
+          <div className="flex items-start gap-2 flex-shrink-0">
+            <Badge
+              variant="secondary"
+              className={`${getTypeColor()} hidden sm:flex`}
+            >
               <div className="flex items-center gap-1">
                 {getTypeIcon()}
-                {item.contentType}
+                <span className="capitalize">{item.contentType}</span>
               </div>
+            </Badge>
+            <Badge
+              variant="secondary"
+              className={`${getTypeColor()} sm:hidden p-1`}
+            >
+              {getTypeIcon()}
             </Badge>
             {onBookmarkToggle && (
               <Button
@@ -115,7 +213,7 @@ export function ContentItemCard({
                 size="sm"
                 onClick={handleBookmarkClick}
                 disabled={isBookmarking}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:bg-muted"
               >
                 {isBookmarked ? (
                   <BookmarkCheck className="h-4 w-4 text-primary" />
@@ -130,26 +228,28 @@ export function ContentItemCard({
       <CardContent className="pt-0">
         <div className="flex gap-4">
           {item.imageUrl && (
-            <img
-              src={item.imageUrl}
-              alt={item.title}
-              className="w-24 h-16 object-cover rounded-md flex-shrink-0"
-            />
+            <div className="w-20 h-14 sm:w-24 sm:h-16 flex-shrink-0">
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
           )}
-          <div className="flex-1">
-            <p className="text-sm text-muted-foreground line-clamp-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
               {item.description}
             </p>
             {item.tags && item.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {item.tags.slice(0, 3).map((tag, index) => (
+              <div className="flex flex-wrap gap-1">
+                {item.tags.slice(0, 2).map((tag, index) => (
                   <Badge key={index} variant="outline" className="text-xs">
                     {tag}
                   </Badge>
                 ))}
-                {item.tags.length > 3 && (
+                {item.tags.length > 2 && (
                   <Badge variant="outline" className="text-xs">
-                    +{item.tags.length - 3}
+                    +{item.tags.length - 2}
                   </Badge>
                 )}
               </div>

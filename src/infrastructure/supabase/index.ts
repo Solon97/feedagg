@@ -5,7 +5,8 @@ export { ContentItemRepositoryImpl } from "./content-item.repository.impl";
 export { SavedContentRepositoryImpl } from "./saved-content.repository.impl";
 
 // Repository factory for dependency injection
-import { createClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "../../../lib/database.types";
 import { SupabaseUserRepository } from "./user.repository.impl";
 import { ContentSourceRepositoryImpl } from "./content-source.repository.impl";
 import { ContentItemRepositoryImpl } from "./content-item.repository.impl";
@@ -19,19 +20,18 @@ import type {
 } from "@/core/repositories";
 
 export interface RepositoryConfig {
-  supabaseUrl: string;
-  supabaseAnonKey: string;
+  supabase: SupabaseClient<Database>;
 }
 
 export class RepositoryFactory {
-  private supabase: ReturnType<typeof createClient>;
+  private supabase: SupabaseClient<Database>;
   private userRepository: UserRepository;
   private contentSourceRepository: ContentSourceRepository;
   private contentItemRepository: ContentItemRepository;
   private savedContentRepository: SavedContentRepository;
 
   constructor(config: RepositoryConfig) {
-    this.supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+    this.supabase = config.supabase;
 
     // Initialize repositories
     this.userRepository = new SupabaseUserRepository(this.supabase);
