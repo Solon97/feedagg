@@ -110,36 +110,34 @@ export function FeedsPageContent() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="px-4 md:px-6 py-4 md:py-8 max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="mb-6">
-          <div className="flex flex-col gap-4 sm:gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                Feed Management
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-1 sm:mt-2 text-sm sm:text-base">
-                Manage your RSS feeds and YouTube channels
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <Button
-                onClick={() => setShowAddDialog(true)}
-                className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto px-4 py-2"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Feed
-              </Button>
-            </div>
-          </div>
-
-          {/* Statistics Cards */}
-          <FeedStats
-            totalFeeds={feeds.length}
-            activeFeeds={activeFeeds.length}
-            totalItems={totalItems}
-          />
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Feeds
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
+            Manage your RSS feeds and YouTube channels
+          </p>
         </div>
+
+        {/* Actions */}
+        <div className="mb-6">
+          <Button
+            onClick={() => setShowAddDialog(true)}
+            className="bg-teal-600 hover:bg-teal-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Feed
+          </Button>
+        </div>
+
+        {/* Statistics Cards */}
+        <FeedStats
+          totalFeeds={feeds.length}
+          activeFeeds={activeFeeds.length}
+          totalItems={totalItems}
+        />
 
         {/* Error Display */}
         {error && (
@@ -250,7 +248,7 @@ export function FeedsPageContent() {
             )}
           </DialogContent>
         </Dialog>
-      </div>
+      </main>
     </div>
   );
 }
