@@ -38,7 +38,6 @@ export function NewsSearchBar({
       <div className="flex gap-2">
         <Button
           variant="outline"
-          size="sm"
           onClick={onRefresh}
           disabled={isLoading}
           className="flex items-center gap-2"
@@ -49,7 +48,6 @@ export function NewsSearchBar({
 
         <Button
           variant={showFilters ? "default" : "outline"}
-          size="sm"
           onClick={onToggleFilters}
           className={`relative ${
             showFilters
