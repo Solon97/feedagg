@@ -189,7 +189,7 @@ export function MobileNav() {
                       id="mobile-menu-title"
                       className="font-semibold text-gray-900 dark:text-white text-lg"
                     >
-                      Digestly
+                      FeedAgg
                     </h2>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       Content Digest Platform{" "}

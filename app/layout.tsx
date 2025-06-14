@@ -8,21 +8,26 @@ import { AuthProvider } from "@/components/auth-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Digestly - Your Personal Content Digest",
+  title: "FeedAgg - Your Personal Feed Aggregator",
   description:
     "Create personalized email digests from your favorite content sources",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Digestly",
+    title: "FeedAgg",
   },
   formatDetection: {
     telephone: false,
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/icon.webp", type: "image/webp" },
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/icons/icon.webp",
+    shortcut: "/favicon.ico",
   },
   generator: "v0.dev",
 };
@@ -45,7 +50,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Digestly" />
+        <meta name="apple-mobile-web-app-title" content="FeedAgg" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#14b8a6" />
         <meta name="msapplication-tap-highlight" content="no" />

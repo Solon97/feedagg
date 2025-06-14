@@ -6,6 +6,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { UserProfileDisplay } from "./user-profile-display";
 import { useState, useEffect } from "react";
 import { useAuth } from "./auth-provider";
+import { Logo } from "./ui/logo";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -36,18 +37,13 @@ export function Navbar() {
       }`}
     >
       <div className="flex items-center justify-between max-w-7xl mx-auto">
+        {" "}
         {/* Logo */}
         <a
           href="/"
-          className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity duration-200 group"
+          className="hover:opacity-80 transition-opacity duration-200"
         >
-          {" "}
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-500 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200">
-            <div className="w-5 h-3 md:w-6 md:h-4 bg-white rounded-sm transform rotate-12 group-hover:rotate-6 transition-transform duration-200"></div>
-          </div>
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-200">
-            Digestly
-          </h1>
+          <Logo size="md" />
         </a>
         {/* Desktop Navigation */}{" "}
         <div className="hidden md:flex items-center gap-8">

@@ -41,7 +41,7 @@ export function DashboardContent() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <h2 className="text-xl font-semibold mb-2">Welcome to Digestly</h2>
+        <h2 className="text-xl font-semibold mb-2">Welcome to FeedAgg</h2>
         <p className="text-gray-600 mb-4">
           Please sign in to see your dashboard.
         </p>

@@ -1,4 +1,4 @@
--- Digestly Database Schema
+-- FeedAgg Database Schema
 -- Create tables for user management, content feeds, and saved content
 
 -- Enable necessary extensions

@@ -1,6 +1,6 @@
 {
-  "name": "Digestly - Personal Content Digest",
-  "short_name": "Digestly",
+  "name": "FeedAgg - Personal Content Digest",
+  "short_name": "FeedAgg",
   "description": "Create personalized email digests from your favorite content sources",
   "start_url": "/",
   "display": "standalone",
@@ -9,19 +9,28 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/icons/icon.webp",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/webp",
       "purpose": "maskable any"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/icons/icon.webp",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/webp",
       "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/logo-digestly.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
-  "categories": ["productivity", "news"],
+  "categories": [
+    "productivity",
+    "news"
+  ],
   "lang": "en",
   "dir": "ltr",
   "scope": "/",

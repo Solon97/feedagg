@@ -280,7 +280,7 @@ export function AuthPageContent() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Digestly
+            FeedAgg
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Your intelligent content companion
@@ -548,7 +548,7 @@ export function AuthPageContent() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
-                    {isLogin ? "New to Digestly?" : "Already have an account?"}
+                    {isLogin ? "New to FeedAgg?" : "Already have an account?"}
                   </span>
                 </div>
               </div>
