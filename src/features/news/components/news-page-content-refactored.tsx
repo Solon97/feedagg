@@ -69,12 +69,14 @@ export function NewsPageContent() {
     updateHookFilters({
       contentTypes: filters.contentTypes,
       sources: filters.sources,
+      categories: filters.categories,
       searchQuery: debouncedSearchQuery,
       sortBy: filters.sortBy,
     });
   }, [
     filters.contentTypes,
     filters.sources,
+    filters.categories,
     debouncedSearchQuery,
     filters.sortBy,
     updateHookFilters,

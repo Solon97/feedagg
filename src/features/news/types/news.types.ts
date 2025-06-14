@@ -6,8 +6,6 @@ export interface SimpleFilters {
   contentTypes: string[];
   sources: string[];
   categories: string[];
-  minReadTime?: number;
-  maxReadTime?: number | null;
   sortBy: "newest" | "oldest" | "popular";
 }
 
@@ -16,14 +14,6 @@ export interface QuickFilter {
   label: string;
   icon: React.ComponentType<any>;
   filter: Partial<SimpleFilters>;
-  description: string;
-}
-
-export interface ReadingTimeRange {
-  id: string;
-  label: string;
-  minTime: number;
-  maxTime: number | null;
   description: string;
 }
 

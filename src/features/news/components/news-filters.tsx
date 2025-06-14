@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Filter, FileText, Video, Clock } from "lucide-react";
+import { X, Filter, FileText, Video } from "lucide-react";
 import type { NewsFiltersProps } from "../types/news.types";
-import { READING_TIME_RANGES } from "../constants/news.constants";
 
 export function NewsFilters({
   filters,
@@ -34,32 +33,6 @@ export function NewsFilters({
       ? filters.categories.filter((c) => c !== category)
       : [...filters.categories, category];
     onFiltersChange({ categories: newCategories });
-  };
-
-  const handleReadingTimeChange = (value: string) => {
-    if (value === "any") {
-      onFiltersChange({
-        minReadTime: undefined,
-        maxReadTime: undefined,
-      });
-    } else {
-      const range = READING_TIME_RANGES.find((r) => r.id === value);
-      if (range) {
-        onFiltersChange({
-          minReadTime: range.minTime,
-          maxReadTime: range.maxTime,
-        });
-      }
-    }
-  };
-
-  const getCurrentReadingTimeId = () => {
-    const current = READING_TIME_RANGES.find(
-      (range) =>
-        range.minTime === filters.minReadTime &&
-        range.maxTime === filters.maxReadTime
-    );
-    return current?.id || "any";
   };
 
   return (
@@ -165,45 +138,6 @@ export function NewsFilters({
             </div>
           </div>
         )}
-
-        {/* Reading Time */}
-        <div>
-          <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Reading Time
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant={
-                getCurrentReadingTimeId() === "any" ? "default" : "outline"
-              }
-              className={`cursor-pointer ${
-                getCurrentReadingTimeId() === "any"
-                  ? "bg-teal-600 hover:bg-teal-700 text-white border-teal-600"
-                  : "hover:border-teal-600 hover:text-teal-600 dark:hover:text-teal-400"
-              }`}
-              onClick={() => handleReadingTimeChange("any")}
-            >
-              <Clock className="h-3 w-3 mr-1" />
-              Any duration
-            </Badge>
-            {READING_TIME_RANGES.map((range) => (
-              <Badge
-                key={range.id}
-                variant={
-                  getCurrentReadingTimeId() === range.id ? "default" : "outline"
-                }
-                className={`cursor-pointer ${
-                  getCurrentReadingTimeId() === range.id
-                    ? "bg-teal-600 hover:bg-teal-700 text-white border-teal-600"
-                    : "hover:border-teal-600 hover:text-teal-600 dark:hover:text-teal-400"
-                }`}
-                onClick={() => handleReadingTimeChange(range.id)}
-              >
-                {range.label}
-              </Badge>
-            ))}
-          </div>
-        </div>
 
         {/* Active Filters Summary */}
         {hasActiveFilters && (

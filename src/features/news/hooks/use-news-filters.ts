@@ -1,14 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
-import type {
-  SimpleFilters,
-  QuickFilter,
-  ReadingTimeRange,
-} from "../types/news.types";
-import {
-  DEFAULT_FILTERS,
-  QUICK_FILTERS,
-  READING_TIME_RANGES,
-} from "../constants/news.constants";
+import type { SimpleFilters, QuickFilter } from "../types/news.types";
+import { DEFAULT_FILTERS, QUICK_FILTERS } from "../constants/news.constants";
 
 interface UseNewsFiltersProps {
   contentSources: any[];
@@ -28,13 +20,23 @@ export function useNewsFilters({
       // Always show Articles and Videos options
       const types = ["article", "video"];
 
-      // Use active feed sources instead of content item authors
+      // Use active feed sources and actual authors from content items
       const activeSources = Array.from(
         new Set(
           contentSources
             .filter((source) => source.isActive)
             .map((source) => source.name)
         )
+      );
+
+      // Get unique authors from actual content items (now properly populated)
+      const authorsFromItems = Array.from(
+        new Set(safeContentItems.map((item) => item.author).filter(Boolean))
+      );
+
+      // Combine both sources for complete list
+      const allSources = Array.from(
+        new Set([...activeSources, ...authorsFromItems])
       );
 
       // Get real categories from user's feed subscriptions
@@ -44,7 +46,7 @@ export function useNewsFilters({
 
       return {
         availableTypes: types,
-        availableSources: activeSources,
+        availableSources: allSources,
         availableCategories: categories,
       };
     }, [safeContentItems, contentSources]);
@@ -55,9 +57,7 @@ export function useNewsFilters({
       filters.contentTypes.length > 0 ||
       filters.sources.length > 0 ||
       filters.categories.length > 0 ||
-      filters.searchQuery.length > 0 ||
-      (filters.minReadTime && filters.minReadTime > 0) ||
-      (filters.maxReadTime && filters.maxReadTime < 60),
+      filters.searchQuery.length > 0,
     [filters]
   );
 
@@ -83,31 +83,28 @@ export function useNewsFilters({
       );
     }
 
+    // Sources filter - simplified to use author field primarily
     if (filters.sources.length > 0) {
-      filtered = filtered.filter(
-        (item) => item.author && filters.sources.includes(item.author)
-      );
+      filtered = filtered.filter((item) => {
+        // Check if item author matches any selected source
+        if (item.author && filters.sources.includes(item.author)) {
+          return true;
+        }
+        return false;
+      });
     }
 
+    // Categories filter - this should work with the API now
     if (filters.categories.length > 0) {
       filtered = filtered.filter((item) => {
         const itemSource = contentSources.find(
-          (source) => source.name === item.author
+          (source) => source.id === item.sourceId || source.name === item.author
         );
         return (
           itemSource &&
           itemSource.category &&
           filters.categories.includes(itemSource.category)
         );
-      });
-    }
-
-    if (filters.minReadTime || filters.maxReadTime) {
-      filtered = filtered.filter((item) => {
-        const readTime = item.readingTime || 5; // Default to 5 minutes
-        if (filters.minReadTime && readTime < filters.minReadTime) return false;
-        if (filters.maxReadTime && readTime > filters.maxReadTime) return false;
-        return true;
       });
     }
 
@@ -210,41 +207,6 @@ export function useNewsFilters({
     [filters]
   );
 
-  const applyReadingTimeRange = useCallback((range: ReadingTimeRange) => {
-    setFilters((prev) => {
-      // Check if this range is already active
-      const isCurrentlyActive =
-        prev.minReadTime === range.minTime &&
-        prev.maxReadTime === range.maxTime;
-
-      if (isCurrentlyActive) {
-        // Remove the reading time filter if it's already active
-        return {
-          ...prev,
-          minReadTime: undefined,
-          maxReadTime: undefined,
-        };
-      } else {
-        // Apply the new reading time range
-        return {
-          ...prev,
-          minReadTime: range.minTime,
-          maxReadTime: range.maxTime,
-        };
-      }
-    });
-  }, []);
-
-  const isReadingTimeRangeActive = useCallback(
-    (range: ReadingTimeRange): boolean => {
-      return (
-        filters.minReadTime === range.minTime &&
-        filters.maxReadTime === range.maxTime
-      );
-    },
-    [filters.minReadTime, filters.maxReadTime]
-  );
-
   const removeFilter = useCallback(
     (
       type: "contentType" | "source" | "category" | "search",
@@ -293,11 +255,8 @@ export function useNewsFilters({
     availableCategories,
     hasActiveFilters,
     quickFilters: QUICK_FILTERS,
-    readingTimeRanges: READING_TIME_RANGES,
     applyQuickFilter,
     isQuickFilterActive,
-    applyReadingTimeRange,
-    isReadingTimeRangeActive,
     removeFilter,
     clearFilters,
   };

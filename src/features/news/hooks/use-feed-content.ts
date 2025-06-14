@@ -4,6 +4,7 @@ import { ContentItemEntity } from "@/core/entities/content-item.entity";
 interface FeedFilters {
   contentTypes: string[];
   sources: string[];
+  categories: string[];
   searchQuery: string;
   sortBy: "newest" | "oldest" | "popular";
 }
@@ -29,6 +30,7 @@ export function useFeedContent(userId?: string): UseFeedContentReturn {
   const [filters, setFilters] = useState<FeedFilters>({
     contentTypes: [],
     sources: [],
+    categories: [],
     searchQuery: "",
     sortBy: "newest",
   });
@@ -70,6 +72,12 @@ export function useFeedContent(userId?: string): UseFeedContentReturn {
         if (filters.sources.length > 0) {
           filters.sources.forEach((source) => {
             searchParams.append("author", source);
+          });
+        }
+
+        if (filters.categories.length > 0) {
+          filters.categories.forEach((category) => {
+            searchParams.append("category", category);
           });
         }
 

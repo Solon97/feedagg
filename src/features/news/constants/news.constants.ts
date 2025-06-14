@@ -1,5 +1,5 @@
 import { Video, FileText, Star, TrendingUp } from "lucide-react";
-import type { QuickFilter, ReadingTimeRange } from "../types/news.types";
+import type { QuickFilter } from "../types/news.types";
 
 // Quick filters configuration
 export const QUICK_FILTERS: QuickFilter[] = [
@@ -30,31 +30,6 @@ export const QUICK_FILTERS: QuickFilter[] = [
     icon: TrendingUp,
     filter: { sortBy: "popular" },
     description: "Show popular content",
-  },
-];
-
-// Reading time ranges configuration
-export const READING_TIME_RANGES: ReadingTimeRange[] = [
-  {
-    id: "short",
-    label: "Short",
-    minTime: 0,
-    maxTime: 5,
-    description: "0-5 minutes",
-  },
-  {
-    id: "medium",
-    label: "Medium",
-    minTime: 5,
-    maxTime: 15,
-    description: "5-15 minutes",
-  },
-  {
-    id: "long",
-    label: "Long",
-    minTime: 15,
-    maxTime: null,
-    description: "15+ minutes",
   },
 ];
 
