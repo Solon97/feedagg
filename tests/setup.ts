@@ -17,22 +17,21 @@ let globalSupabaseClient: ReturnType<typeof createClient> | null = null;
 
 beforeAll(() => {
   // Configure test environment variables
-  process.env.NEXT_PUBLIC_SUPABASE_URL =
-    process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+  process.env.SUPABASE_URL = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  process.env.SUPABASE_ANON_KEY =
+    process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
   // Set test environment (using type assertion to bypass read-only restriction)
   (process.env as any).NODE_ENV = "test";
 
   // Initialize singleton Supabase client
   globalSupabaseClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
   );
 
   console.log("🧪 Test environment configured");
-  console.log(`📡 Supabase URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`);
+  console.log(`📡 Supabase URL: ${process.env.SUPABASE_URL}`);
 });
 
 afterAll(async () => {
