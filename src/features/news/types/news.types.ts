@@ -21,11 +21,13 @@ export interface BookmarkState {
   contentItemId: string;
   savedContentId: string | null;
   isSaved: boolean;
+  isSaving?: boolean;
 }
 
 export interface NewsContentCardProps {
   item: ContentItemEntity;
   isBookmarked: boolean;
+  isSaving?: boolean;
   onBookmarkToggle: (id: string) => void;
   onContentSelect: (item: ContentItemEntity) => void;
 }

@@ -21,6 +21,7 @@ interface NewsContentGridProps {
   hasActiveFilters: boolean;
   onClearFilters: () => void;
   onRefresh: () => void;
+  savingStates?: Set<string>;
 }
 
 export function NewsContentGrid({
@@ -35,6 +36,7 @@ export function NewsContentGrid({
   hasActiveFilters,
   onClearFilters,
   onRefresh,
+  savingStates = new Set(),
 }: NewsContentGridProps) {
   // Error state
   if (error) {
@@ -63,12 +65,14 @@ export function NewsContentGrid({
         {contentItems.map((item) => {
           const bookmarkState = bookmarkStates.get(item.id);
           const isBookmarked = bookmarkState?.isSaved || false;
+          const isSaving = bookmarkState?.isSaving || savingStates.has(item.id);
 
           return (
             <NewsContentCard
               key={item.id}
               item={item}
               isBookmarked={isBookmarked}
+              isSaving={isSaving}
               onBookmarkToggle={onBookmarkToggle}
               onContentSelect={onContentSelect}
             />

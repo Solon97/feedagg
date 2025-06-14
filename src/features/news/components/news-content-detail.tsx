@@ -53,23 +53,29 @@ export function NewsContentDetail({
               <span className="text-sm font-medium text-teal-600 dark:text-teal-400">
                 {content.author || "Unknown"}
               </span>
-              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-                <Clock className="h-4 w-4" />
-                <span>
-                  {content.readingTime ? `${content.readingTime} min` : "5 min"}
-                </span>
-              </div>
+              {content.readingTime && (
+                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                  <Clock className="h-4 w-4" />
+                  <span>{content.readingTime} min</span>
+                </div>
+              )}
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               {content.title}
             </h1>
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  Published {new Date(content.publishedAt).toLocaleDateString()}
-                </span>
-              </div>
+              {content.publishedAt &&
+              new Date(content.publishedAt).getFullYear() > 1970 ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    Published{" "}
+                    {new Date(content.publishedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              ) : (
+                <div></div>
+              )}
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"

@@ -1,10 +1,9 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export async function GET() {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -43,7 +42,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -64,22 +63,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if content item exists and user has access to it
+    // Check if content item exists
     const { data: contentItem, error: contentError } = await supabase
       .from("content_items")
-      .select(
-        `
-        *,
-        content_sources!inner(user_id)
-      `
-      )
+      .select("id")
       .eq("id", content_item_id)
-      .eq("content_sources.user_id", user.id)
       .single();
 
     if (contentError || !contentItem) {
+      console.error("Content item not found:", contentError);
       return NextResponse.json(
-        { error: "Content item not found or access denied" },
+        { error: "Content item not found" },
         { status: 404 }
       );
     }
@@ -94,12 +88,7 @@ export async function POST(request: NextRequest) {
     const { data: savedContent, error } = await supabase
       .from("saved_content")
       .insert([newSavedContent])
-      .select(
-        `
-        *,
-        content_item:content_items(*)
-      `
-      )
+      .select("*")
       .single();
 
     if (error) {
@@ -113,7 +102,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ savedContent }, { status: 201 });
+    return NextResponse.json(savedContent, { status: 201 });
   } catch (error) {
     console.error("Save content error:", error);
     return NextResponse.json(

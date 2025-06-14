@@ -82,10 +82,13 @@ export function useSaveContent(): UseSaveContentReturn {
           throw new Error(errorData.error || "Failed to save content");
         }
 
-        return await response.json();
+        const result = await response.json();
+        console.log("Content saved successfully:", result);
+        return result;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to save content";
+        console.error("Save content error:", err);
         setError(errorMessage);
         throw err;
       } finally {
@@ -109,9 +112,12 @@ export function useSaveContent(): UseSaveContentReturn {
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to unsave content");
         }
+
+        console.log("Content unsaved successfully");
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to unsave content";
+        console.error("Unsave content error:", err);
         setError(errorMessage);
         throw err;
       } finally {

@@ -6,14 +6,15 @@ import {
   Calendar,
   Bookmark,
   BookmarkCheck,
-  Play,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import type { NewsContentCardProps } from "../types/news.types";
 
 export function NewsContentCard({
   item,
   isBookmarked,
+  isSaving = false,
   onBookmarkToggle,
   onContentSelect,
 }: NewsContentCardProps) {
@@ -58,11 +59,6 @@ export function NewsContentCard({
             </div>
           </div>
         </div>
-        {item.contentType === "video" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-t-lg">
-            <Play className="h-12 w-12 text-white drop-shadow-lg" />
-          </div>
-        )}
         <Badge
           variant={item.contentType === "video" ? "destructive" : "secondary"}
           className="absolute top-3 left-3 text-xs font-medium"
@@ -72,17 +68,22 @@ export function NewsContentCard({
         <Button
           variant="secondary"
           size="sm"
+          disabled={isSaving}
           className={`absolute top-3 right-3 h-8 w-8 p-0 ${
             isBookmarked
               ? "bg-teal-500 hover:bg-teal-600 text-white"
               : "bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-          }`}
+          } ${isSaving ? "opacity-70" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
-            onBookmarkToggle(item.id);
+            if (!isSaving) {
+              onBookmarkToggle(item.id);
+            }
           }}
         >
-          {isBookmarked ? (
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : isBookmarked ? (
             <BookmarkCheck className="h-4 w-4" />
           ) : (
             <Bookmark className="h-4 w-4" />
@@ -95,12 +96,12 @@ export function NewsContentCard({
             <span className="font-medium text-teal-600 dark:text-teal-400">
               {item.author || "Unknown"}
             </span>
-            <div className="flex items-center gap-2">
-              <Clock className="h-3 w-3" />
-              <span>
-                {item.readingTime ? `${item.readingTime} min` : "5 min"}
-              </span>
-            </div>
+            {item.readingTime && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-3 w-3" />
+                <span>{item.readingTime} min</span>
+              </div>
+            )}
           </div>
           <h3
             className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors cursor-pointer"
@@ -112,10 +113,15 @@ export function NewsContentCard({
             {item.description || item.excerpt}
           </p>
           <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <Calendar className="h-3 w-3" />
-              <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
-            </div>
+            {item.publishedAt &&
+            new Date(item.publishedAt).getFullYear() > 1970 ? (
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <Calendar className="h-3 w-3" />
+                <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
+              </div>
+            ) : (
+              <div></div>
+            )}
             <Button
               variant="ghost"
               size="sm"

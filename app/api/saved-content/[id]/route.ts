@@ -1,16 +1,15 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 interface Context {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, { params }: Context) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -22,6 +21,8 @@ export async function GET(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const { data: savedContent, error } = await supabase
       .from("saved_content")
       .select(
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest, { params }: Context) {
         content_item:content_items(*)
       `
       )
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("user_id", user.id)
       .single();
 
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest, { params }: Context) {
 
 export async function PUT(request: NextRequest, { params }: Context) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -68,6 +69,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id: paramId } = await params;
     const updates = await request.json();
 
     // Remove protected fields
@@ -77,7 +79,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
     const { data: savedContent, error } = await supabase
       .from("saved_content")
       .update(allowedUpdates)
-      .eq("id", params.id)
+      .eq("id", paramId)
       .eq("user_id", user.id)
       .select(
         `
@@ -109,7 +111,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
 
 export async function DELETE(request: NextRequest, { params }: Context) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseServerClient();
 
     // Use getUser() for secure authentication
     const {
@@ -121,10 +123,12 @@ export async function DELETE(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const { error } = await supabase
       .from("saved_content")
       .delete()
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("user_id", user.id);
 
     if (error) {

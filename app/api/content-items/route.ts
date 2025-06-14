@@ -56,11 +56,17 @@ export async function GET(request: NextRequest) {
       .map((s: any) => s.feed_source_id)
       .filter(Boolean);
 
-    // Build query for content items
+    // Build query for content items with saved status
     let query = supabase
       .from("content_items")
-      .select("*")
+      .select(
+        `
+        *,
+        saved_content!left(id, user_id)
+      `
+      )
       .in("feed_source_id", sourceIds)
+      .eq("saved_content.user_id", user.id)
       .range(offset, offset + limit - 1);
 
     // Apply source filter by name if provided
@@ -163,6 +169,12 @@ export async function GET(request: NextRequest) {
           contentHash: item.content_hash,
           createdAt: item.created_at,
           updatedAt: item.updated_at,
+          // Add saved content information
+          isSaved: Boolean(item.saved_content && item.saved_content.length > 0),
+          savedContentId:
+            item.saved_content && item.saved_content.length > 0
+              ? item.saved_content[0].id
+              : null,
         };
       }) || [];
 

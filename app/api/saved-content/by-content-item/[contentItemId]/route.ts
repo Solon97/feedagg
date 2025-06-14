@@ -3,9 +3,9 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { SavedContentRepositoryImpl } from "@/src/infrastructure/supabase/saved-content.repository.impl";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     contentItemId: string;
-  };
+  }>;
 }
 
 /**
@@ -28,7 +28,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { contentItemId } = params;
+    const { contentItemId } = await params;
 
     if (!contentItemId) {
       return NextResponse.json(

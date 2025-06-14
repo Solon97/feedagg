@@ -21,6 +21,9 @@ export interface ContentItemEntity {
   readonly tags: string[] | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+  // Saved content properties for optimization
+  readonly isSaved?: boolean;
+  readonly savedContentId?: string | null;
 }
 
 export interface CreateContentItemParams {

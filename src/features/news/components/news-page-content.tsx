@@ -38,12 +38,13 @@ export function NewsPageContent() {
   const safeContentItems = Array.isArray(contentItems) ? contentItems : [];
 
   // Custom hooks for state management
-  const { bookmarkStates, handleBookmarkToggle } = useBookmarkManager({
-    user,
-    contentItems: safeContentItems,
-    getSavedContentByItemId,
-    toggleSave,
-  });
+  const { bookmarkStates, handleBookmarkToggle, savingStates } =
+    useBookmarkManager({
+      user,
+      contentItems: safeContentItems,
+      getSavedContentByItemId,
+      toggleSave,
+    });
 
   const {
     filters,
@@ -166,6 +167,7 @@ export function NewsPageContent() {
           hasActiveFilters={Boolean(hasActiveFilters)}
           onClearFilters={clearFilters}
           onRefresh={refreshContent}
+          savingStates={savingStates}
         />
       </main>
     </div>
