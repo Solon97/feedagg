@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { RouteGuard } from "@/components/route-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -834,161 +835,168 @@ export default function SettingsPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar />
+    <RouteGuard>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navbar />
 
-      <main className="px-4 md:px-6 py-4 md:py-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Settings
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Manage your account settings and preferences
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardContent className="p-4">
-                <nav className="space-y-2">
-                  {sections.map((section) => {
-                    const Icon = section.icon;
-                    const isActive = activeSection === section.id;
-                    return (
-                      <button
-                        key={section.id}
-                        onClick={() => setActiveSection(section.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-left ${
-                          isActive
-                            ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-700"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span className="font-medium">{section.label}</span>
-                      </button>
-                    );
-                  })}
-                </nav>
-              </CardContent>
-            </Card>
+        <main className="px-4 md:px-6 py-4 md:py-8 max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Settings
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Manage your account settings and preferences
+            </p>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {(() => {
-                    const section = sections.find(
-                      (s) => s.id === activeSection
-                    );
-                    const Icon = section?.icon || User;
-                    return (
-                      <>
-                        <Icon className="w-5 h-5" />
-                        {section?.label}
-                      </>
-                    );
-                  })()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {renderContent()}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Sidebar Navigation */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardContent className="p-4">
+                  <nav className="space-y-2">
+                    {sections.map((section) => {
+                      const Icon = section.icon;
+                      const isActive = activeSection === section.id;
+                      return (
+                        <button
+                          key={section.id}
+                          onClick={() => setActiveSection(section.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-left ${
+                            isActive
+                              ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-700"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="font-medium">{section.label}</span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Save Button */}
-                <div className="flex items-center justify-between pt-6 border-t">
-                  <div className="flex items-center gap-2">
-                    {saveStatus === "success" && (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        <span className="text-sm">
-                          Settings saved successfully
-                        </span>
-                      </div>
-                    )}
-                    {saveStatus === "error" && (
-                      <div className="flex items-center gap-2 text-red-600">
-                        <AlertCircle className="w-4 h-4" />
-                        <span className="text-sm">Failed to save settings</span>
-                      </div>
-                    )}
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {(() => {
+                      const section = sections.find(
+                        (s) => s.id === activeSection
+                      );
+                      const Icon = section?.icon || User;
+                      return (
+                        <>
+                          <Icon className="w-5 h-5" />
+                          {section?.label}
+                        </>
+                      );
+                    })()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {renderContent()}
+
+                  {/* Save Button */}
+                  <div className="flex items-center justify-between pt-6 border-t">
+                    <div className="flex items-center gap-2">
+                      {saveStatus === "success" && (
+                        <div className="flex items-center gap-2 text-green-600">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-sm">
+                            Settings saved successfully
+                          </span>
+                        </div>
+                      )}
+                      {saveStatus === "error" && (
+                        <div className="flex items-center gap-2 text-red-600">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="text-sm">
+                            Failed to save settings
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <Button
+                      onClick={handleSave}
+                      disabled={isLoading}
+                      className="bg-teal-600 hover:bg-teal-700 text-white h-12 px-6"
+                    >
+                      {isLoading ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
                   </div>
-
-                  <Button
-                    onClick={handleSave}
-                    disabled={isLoading}
-                    className="bg-teal-600 hover:bg-teal-700 text-white h-12 px-6"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
 
-        {/* Export Data Dialog */}
-        <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Export Your Data</DialogTitle>
-              <DialogDescription>
-                Download a copy of your personal data and settings. This will
-                include your profile information, preferences, and digest
-                configurations.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowExportDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleExportData}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export Data
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          {/* Export Data Dialog */}
+          <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Export Your Data</DialogTitle>
+                <DialogDescription>
+                  Download a copy of your personal data and settings. This will
+                  include your profile information, preferences, and digest
+                  configurations.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowExportDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleExportData}
+                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Data
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
-        {/* Delete Account Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Account</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your
-                account and remove all your data from our servers.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white">
-                Delete Account
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </main>
-    </div>
+          {/* Delete Account Dialog */}
+          <AlertDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove all your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white">
+                  Delete Account
+                </AlertDialogAction>
+              </AlertDialogFooter>{" "}
+            </AlertDialogContent>
+          </AlertDialog>
+        </main>
+      </div>
+    </RouteGuard>
   );
 }

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
@@ -12,6 +12,17 @@ interface Props {
 
 const SavedContentDetailPage = async ({ params: { id } }: Props) => {
   const supabase = createServerComponentClient({ cookies });
+
+  // Check authentication
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    redirect("/auth?redirect=" + encodeURIComponent(`/saved-content/${id}`));
+  }
+
   const { data: savedContent, error } = await supabase
     .from("saved_content")
     .select(

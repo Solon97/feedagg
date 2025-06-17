@@ -30,6 +30,27 @@ const publicRoutes = [
   "/api/validate-url",
 ];
 
+function checkAuthentication(request: NextRequest): boolean {
+  const cookies = request.cookies;
+
+  // Check for standard Supabase authentication cookies
+  const sbAccessToken = cookies.get("sb-access-token")?.value;
+  const sbRefreshToken = cookies.get("sb-refresh-token")?.value;
+
+  // Validate that we have both access and refresh tokens for a complete session
+  const isAuthenticated = !!(sbAccessToken && sbRefreshToken);
+
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[Middleware] Auth check:`, {
+      hasAccessToken: !!sbAccessToken,
+      hasRefreshToken: !!sbRefreshToken,
+      isAuthenticated,
+    });
+  }
+
+  return isAuthenticated;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -43,57 +64,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check if user is authenticated by looking for Supabase session cookies
-  const accessToken =
-    request.cookies.get("sb-access-token")?.value ||
-    request.cookies.get("supabase-access-token")?.value ||
-    request.cookies.get("sb-localhost-auth-token")?.value;
-
-  const refreshToken =
-    request.cookies.get("sb-refresh-token")?.value ||
-    request.cookies.get("supabase-refresh-token")?.value ||
-    request.cookies.get("sb-localhost-refresh-token")?.value;
-
-  // More reliable authentication check - look for standard Supabase cookie names
-  const sbAccessToken = request.cookies.get("sb-access-token")?.value;
-  const sbRefreshToken = request.cookies.get("sb-refresh-token")?.value;
-
-  // Check for development/localhost specific auth tokens
-  const sbDevAuthToken =
-    request.cookies.get("sb-127-auth-token")?.value ||
-    request.cookies.get("sb-localhost-auth-token")?.value;
-
-  // Check for any auth token existence
-  const hasAuthTokens = !!(
-    accessToken ||
-    refreshToken ||
-    sbAccessToken ||
-    sbRefreshToken ||
-    sbDevAuthToken
-  );
-
-  // For more accurate check, also look for common Supabase cookie patterns
-  const cookieNames = request.cookies.getAll().map((cookie) => cookie.name);
-  const hasSupabaseCookies = cookieNames.some(
-    (name) =>
-      name.includes("supabase") ||
-      name.startsWith("sb-") ||
-      name.includes("auth-token")
-  );
-
-  // Authentication check - accept either production tokens or development tokens
-  const isAuthenticated = hasAuthTokens && hasSupabaseCookies;
-
+  const isAuthenticated = checkAuthentication(request);
   // Debug logging in development
   if (process.env.NODE_ENV === "development") {
     console.log(`[Middleware] ${pathname}`);
-    console.log(`  - Cookies found:`, cookieNames);
-    console.log(`  - Auth tokens:`, {
-      accessToken: !!accessToken,
-      refreshToken: !!refreshToken,
-      sbDevAuthToken: !!sbDevAuthToken,
-    });
-    console.log(`  - Supabase cookies:`, hasSupabaseCookies);
     console.log(`  - Is authenticated:`, isAuthenticated);
   }
 
@@ -112,7 +86,7 @@ export async function middleware(request: NextRequest) {
 
   // Handle auth route logic first
   if (isAuthRoute) {
-    // If user is definitely authenticated, redirect to dashboard
+    // If user is authenticated, redirect to dashboard
     if (isAuthenticated) {
       const redirectUrl = request.nextUrl.searchParams.get("redirect");
       const targetUrl =
@@ -123,14 +97,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle protected routes
+  // Handle protected routes - redirect to auth if not authenticated
   if (isProtectedRoute && !isAuthenticated) {
     const authUrl = new URL("/auth", request.url);
     // Add redirect query param to redirect back after login
     authUrl.searchParams.set("redirect", pathname);
 
     if (process.env.NODE_ENV === "development") {
-      console.log(`  - Redirecting to: ${authUrl.toString()}`);
+      console.log(
+        `  - Redirecting unauthenticated user to: ${authUrl.toString()}`
+      );
     }
 
     return NextResponse.redirect(authUrl);
@@ -144,6 +120,7 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  // Allow access to public routes and authenticated users to protected routes
   return NextResponse.next();
 }
 
