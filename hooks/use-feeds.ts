@@ -113,14 +113,18 @@ export function useFeedItems() {
           order: params.order || "desc",
         })
         console.log(response)
+
+        // A resposta é um array diretamente, não um objeto com propriedades
+        const items = Array.isArray(response) ? response : []
+
         if (params.reset || params.offset === 0) {
-          setItems(response || [])
+          setItems(items)
         } else {
-          setItems((prev) => [...prev, ...(response || [])])
+          setItems((prev) => [...prev, ...items])
         }
 
-        setTotal(response.total || 0)
-        setHasMore((response || []).length === (params.limit || 20))
+        setTotal(items.length)
+        setHasMore(items.length === (params.limit || 20))
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch feed items")
       } finally {
