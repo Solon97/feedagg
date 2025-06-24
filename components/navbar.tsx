@@ -26,8 +26,9 @@ export function Navbar() {
     }
   }
 
-  const getInitials = (name: string) => {
-    return (name?.charAt(0) || "U").toUpperCase()
+  const getFirstLetter = (name: string) => {
+    if (!name) return "U"
+    return name.charAt(0).toUpperCase()
   }
 
   const navItems = [
@@ -76,8 +77,8 @@ export function Navbar() {
                       src={user?.user_metadata?.avatar_url || "/placeholder.svg"}
                       alt={user?.user_metadata?.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-lg border-2 border-teal-300/50">
-                      {user?.user_metadata?.full_name ? getInitials(user.user_metadata.full_name) : "U"}
+                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg shadow-lg ring-2 ring-white/20">
+                      {user?.user_metadata?.full_name ? getFirstLetter(user.user_metadata.full_name) : "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -89,8 +90,8 @@ export function Navbar() {
                       src={user?.user_metadata?.avatar_url || "/placeholder.svg"}
                       alt={user?.user_metadata?.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-xl">
-                      {user?.user_metadata?.full_name ? getInitials(user.user_metadata.full_name) : "U"}
+                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-xl shadow-lg">
+                      {user?.user_metadata?.full_name ? getFirstLetter(user.user_metadata.full_name) : "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col space-y-1 leading-none">
