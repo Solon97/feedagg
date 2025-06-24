@@ -40,17 +40,14 @@ class ApiService {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
+        // try json, fall back to text – Render sometimes gives plain-text
+        const errBody =
+          (await response
+            .clone()
+            .json()
+            .catch(async () => ({ error: await response.text() }))) || {}
 
-        // Enhanced error with debug info
-        const error = new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
-
-        // Add debug info to error for development
-        if (process.env.NODE_ENV === "development" && errorData.debug) {
-          console.error("API Error Debug Info:", errorData.debug)
-        }
-
-        throw error
+        throw new Error(`${response.status} ${response.statusText}: ${errBody.error || JSON.stringify(errBody)}`)
       }
 
       return response.json()
@@ -77,8 +74,8 @@ class ApiService {
     } = {},
   ) {
     const searchParams = new URLSearchParams()
+    searchParams.set("offset", (params.offset ?? 0).toString()) // ← always
     if (params.limit) searchParams.set("limit", params.limit.toString())
-    if (params.offset) searchParams.set("offset", params.offset.toString())
     if (params.sort) searchParams.set("sort", params.sort)
     if (params.order) searchParams.set("order", params.order)
 
