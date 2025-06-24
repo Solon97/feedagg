@@ -24,7 +24,7 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
     })
   }
 
-  const truncateContent = (content: string, maxLength = 150) => {
+  const truncateContent = (content: string, maxLength = 120) => {
     if (content.length <= maxLength) return content
     return content.slice(0, maxLength) + "..."
   }
@@ -46,12 +46,12 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
   return (
     <Link href={`/item/${item.id}`} onClick={handleClick}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-slate-800/50 border-slate-700/50 hover:border-slate-600">
-        <CardContent className="p-6">
-          <div className="flex gap-4">
-            {/* Thumbnail */}
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex gap-3 sm:gap-4">
+            {/* Thumbnail - otimizado para mobile */}
             {item.thumbnail && (
               <div className="flex-shrink-0">
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-slate-700">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-slate-700">
                   <img
                     src={item.thumbnail || "/placeholder.svg"}
                     alt={item.title}
@@ -62,35 +62,39 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                   />
                   {isYouTube && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Play className="w-6 h-6 text-white" />
+                      <Play className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Content */}
+            {/* Content - otimizado para mobile */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="font-semibold text-white text-lg leading-tight line-clamp-2">{item.title}</h3>
-                <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
+                <h3 className="font-semibold text-white text-base sm:text-lg leading-tight line-clamp-2 pr-2">
+                  {item.title}
+                </h3>
+                <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
               </div>
 
-              {/* Content Preview */}
+              {/* Content Preview - ajustado para mobile */}
               {item.content && (
-                <p className="text-gray-300 text-sm mb-3 line-clamp-3">{truncateContent(stripHtml(item.content))}</p>
+                <p className="text-gray-300 text-xs sm:text-sm mb-3 line-clamp-2 sm:line-clamp-3">
+                  {truncateContent(stripHtml(item.content), window.innerWidth < 640 ? 100 : 150)}
+                </p>
               )}
 
-              {/* Metadata */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50">
+              {/* Metadata - layout responsivo */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
                     {item.feed.name}
                   </Badge>
                 </div>
-                <div className="flex items-center text-gray-400 text-sm">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {formatDate(item.published_at)}
+                <div className="flex items-center text-gray-400 text-xs sm:text-sm">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="truncate">{formatDate(item.published_at)}</span>
                 </div>
               </div>
             </div>

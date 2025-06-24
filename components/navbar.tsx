@@ -50,10 +50,10 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Navegação + User Menu - tudo à direita */}
-          <div className="flex items-center space-x-6">
-            {/* Navigation Links - agora à direita */}
-            <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Navigation + User Menu */}
+          <div className="hidden md:flex items-center space-x-6">
+            {/* Navigation Links - desktop */}
+            <div className="flex items-center space-x-4">
               {navItems.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
@@ -68,7 +68,47 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* User Menu */}
+            {/* User Menu - desktop */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-lg shadow-lg ring-2 ring-teal-300/30">
+                      {user?.user_metadata?.full_name
+                        ? getFirstLetter(user.user_metadata.full_name)
+                        : getFirstLetter(user?.email || "User")}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64 bg-slate-800 border-slate-700" align="end">
+                <div className="flex items-center justify-start gap-3 p-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-xl shadow-lg">
+                      {user?.user_metadata?.full_name
+                        ? getFirstLetter(user.user_metadata.full_name)
+                        : getFirstLetter(user?.email || "User")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium text-white text-sm">{user?.user_metadata?.full_name || "User"}</p>
+                    <p className="text-xs text-gray-400 truncate max-w-[180px]">{user?.email}</p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator className="bg-slate-700" />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-gray-300 hover:text-white hover:bg-slate-700 cursor-pointer m-1"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Mobile User Menu - apenas avatar */}
+          <div className="md:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -108,19 +148,19 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation - melhorada */}
-        <div className="md:hidden">
-          <div className="flex items-center justify-between pt-4 pb-4 border-t border-slate-700">
-            <div className="flex space-x-1">
+        {/* Mobile Navigation - barra fixa inferior */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-800/95 backdrop-blur-sm border-t border-slate-700/50 z-50">
+          <div className="flex items-center justify-center">
+            <div className="flex space-x-1 p-2">
               {navItems.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex flex-col items-center space-y-1 px-6 py-3 rounded-lg text-xs font-medium transition-colors min-w-[80px] ${
                     pathname === href ? "bg-teal-600 text-white" : "text-gray-300 hover:text-white hover:bg-slate-700"
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-5 h-5" />
                   <span>{label}</span>
                 </Link>
               ))}
