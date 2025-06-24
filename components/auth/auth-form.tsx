@@ -42,7 +42,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     const { error } = await action()
 
     if (error) setError(error.message)
-    else if (mode === "login") router.push("/dashboard")
+    else if (mode === "login") router.push("/")
     else alert("Registration successful! Please check your inbox to confirm your email.")
 
     setLoading(false)
