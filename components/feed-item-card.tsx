@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, ExternalLink, Play } from "lucide-react"
+import { useSelectedItem } from "@/contexts/selected-item-context"
 import type { FeedItem } from "@/types/api"
 
 interface FeedItemCardProps {
@@ -11,6 +12,8 @@ interface FeedItemCardProps {
 }
 
 export function FeedItemCard({ item }: FeedItemCardProps) {
+  const { setSelectedItem } = useSelectedItem()
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -36,11 +39,12 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
   // Detectar se é YouTube pela URL
   const isYouTube = item.url.includes("youtube.com") || item.url.includes("youtu.be")
 
-  // Serializar dados do item para passar via URL
-  const itemData = encodeURIComponent(JSON.stringify(item))
+  const handleClick = () => {
+    setSelectedItem(item)
+  }
 
   return (
-    <Link href={`/item/${item.id}?data=${itemData}`}>
+    <Link href={`/item/${item.id}`} onClick={handleClick}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-slate-800/50 border-slate-700/50 hover:border-slate-600">
         <CardContent className="p-6">
           <div className="flex gap-4">
