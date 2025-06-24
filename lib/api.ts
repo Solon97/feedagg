@@ -42,10 +42,7 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(
-        `API request failed: ${response.status} ${response.statusText}`,
-        errorData
-      );
+
       throw new Error(
         errorData.error || `HTTP ${response.status}: ${response.statusText}`
       );
