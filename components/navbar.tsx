@@ -27,12 +27,7 @@ export function Navbar() {
   }
 
   const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
+    return (name.split(" ")[0]?.[0] || "U").toUpperCase()
   }
 
   const navItems = [
@@ -81,7 +76,7 @@ export function Navbar() {
                       src={user?.user_metadata?.avatar_url || "/placeholder.svg"}
                       alt={user?.user_metadata?.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-teal-600 text-white">
+                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-lg border-2 border-teal-300/50">
                       {user?.user_metadata?.full_name ? (
                         getInitials(user.user_metadata.full_name)
                       ) : (
@@ -98,7 +93,7 @@ export function Navbar() {
                       src={user?.user_metadata?.avatar_url || "/placeholder.svg"}
                       alt={user?.user_metadata?.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-teal-600 text-white">
+                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold">
                       {user?.user_metadata?.full_name ? (
                         getInitials(user.user_metadata.full_name)
                       ) : (
@@ -109,9 +104,6 @@ export function Navbar() {
                   <div className="flex flex-col space-y-1 leading-none">
                     <p className="font-medium text-white text-sm">{user?.user_metadata?.full_name || "User"}</p>
                     <p className="text-xs text-gray-400 truncate max-w-[180px]">{user?.email}</p>
-                    <p className="text-xs text-teal-400">
-                      Member since {new Date(user?.created_at || "").toLocaleDateString()}
-                    </p>
                   </div>
                 </div>
                 <DropdownMenuSeparator className="bg-slate-700" />
