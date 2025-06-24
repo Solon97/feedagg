@@ -72,7 +72,7 @@ export default function DashboardPage() {
           {items.length > 0 && (
             <div className="space-y-8">
               {items.map((item, index) => (
-                <div key={item.id} className={index > 0 ? "mt-8" : ""}>
+                <div key={item.id}>
                   <FeedItemCard item={item} />
                 </div>
               ))}
