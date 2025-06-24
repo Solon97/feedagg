@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Trash2, Download } from "lucide-react"
+import { useDevelopment } from "@/hooks/use-development"
 
 interface LogEntry {
   id: string
@@ -24,12 +25,7 @@ interface LogEntry {
 export function DevLogger() {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [filter, setFilter] = useState<string>("all")
-  const [isVisible, setIsVisible] = useState(false)
-
-  // Only show in development
-  useEffect(() => {
-    setIsVisible(process.env.NODE_ENV === "development")
-  }, [])
+  const isDevelopment = useDevelopment()
 
   const clearLogs = () => {
     setLogs([])
@@ -67,7 +63,8 @@ export function DevLogger() {
     }
   }
 
-  if (!isVisible) return null
+  // Só renderizar em desenvolvimento
+  if (!isDevelopment) return null
 
   return (
     <div className="fixed bottom-4 right-4 w-96 max-h-96 z-50">
