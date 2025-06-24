@@ -48,7 +48,7 @@ export async function withApiLogging<T>(
           "Content-Type": "application/json",
         },
       })
-      console.log(token)
+      
       if (!testResponse.ok) {
         const duration = Date.now() - startTime
         logger.apiResponse(method, endpoint, 401, duration, requestId)
