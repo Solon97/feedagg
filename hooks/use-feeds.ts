@@ -112,15 +112,14 @@ export function useFeedItems() {
           sort: params.sort || "published_at",
           order: params.order || "desc",
         })
-
+        console.log(response)
         if (params.reset || params.offset === 0) {
           setItems(response || [])
         } else {
           setItems((prev) => [...prev, ...(response || [])])
         }
 
-        // Como a API retorna apenas um array, vamos calcular o total baseado no que temos
-        setTotal(params.reset ? (response || []).length : items.length + (response || []).length)
+        setTotal(response.total || 0)
         setHasMore((response || []).length === (params.limit || 20))
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch feed items")
