@@ -73,7 +73,7 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg shadow-lg ring-2 ring-white/20">
+                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-lg shadow-lg ring-2 ring-teal-300/30">
                       {user?.user_metadata?.full_name
                         ? getFirstLetter(user.user_metadata.full_name)
                         : getFirstLetter(user?.email || "User")}
@@ -84,7 +84,7 @@ export function Navbar() {
               <DropdownMenuContent className="w-64 bg-slate-800 border-slate-700" align="end">
                 <div className="flex items-center justify-start gap-3 p-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-xl shadow-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-xl shadow-lg">
                       {user?.user_metadata?.full_name
                         ? getFirstLetter(user.user_metadata.full_name)
                         : getFirstLetter(user?.email || "User")}
