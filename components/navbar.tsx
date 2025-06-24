@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Home, Rss, LogOut, User } from "lucide-react"
+import { Home, Rss, LogOut } from "lucide-react"
 
 export function Navbar() {
   const { user, signOut } = useAuth()
@@ -27,7 +27,7 @@ export function Navbar() {
   }
 
   const getInitials = (name: string) => {
-    return (name.split(" ")[0]?.[0] || "U").toUpperCase()
+    return (name?.charAt(0) || "U").toUpperCase()
   }
 
   const navItems = [
@@ -77,11 +77,7 @@ export function Navbar() {
                       alt={user?.user_metadata?.full_name || "User"}
                     />
                     <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-lg border-2 border-teal-300/50">
-                      {user?.user_metadata?.full_name ? (
-                        getInitials(user.user_metadata.full_name)
-                      ) : (
-                        <User className="h-4 w-4" />
-                      )}
+                      {user?.user_metadata?.full_name ? getInitials(user.user_metadata.full_name) : "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -93,12 +89,8 @@ export function Navbar() {
                       src={user?.user_metadata?.avatar_url || "/placeholder.svg"}
                       alt={user?.user_metadata?.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold">
-                      {user?.user_metadata?.full_name ? (
-                        getInitials(user.user_metadata.full_name)
-                      ) : (
-                        <User className="h-5 w-5" />
-                      )}
+                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-xl">
+                      {user?.user_metadata?.full_name ? getInitials(user.user_metadata.full_name) : "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col space-y-1 leading-none">
