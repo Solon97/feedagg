@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,9 +26,9 @@ export function Navbar() {
     }
   }
 
-  const getFirstLetter = (name: string) => {
-    if (!name) return "U"
-    return name.charAt(0).toUpperCase()
+  const getFirstLetter = (text: string) => {
+    if (!text) return "U"
+    return text.charAt(0).toUpperCase()
   }
 
   const navItems = [
@@ -73,12 +73,10 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={user?.user_metadata?.avatar_url || "/placeholder.svg"}
-                      alt={user?.user_metadata?.full_name || "User"}
-                    />
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg shadow-lg ring-2 ring-white/20">
-                      {user?.user_metadata?.full_name ? getFirstLetter(user.user_metadata.full_name) : "U"}
+                      {user?.user_metadata?.full_name
+                        ? getFirstLetter(user.user_metadata.full_name)
+                        : getFirstLetter(user?.email || "User")}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -86,12 +84,10 @@ export function Navbar() {
               <DropdownMenuContent className="w-64 bg-slate-800 border-slate-700" align="end">
                 <div className="flex items-center justify-start gap-3 p-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage
-                      src={user?.user_metadata?.avatar_url || "/placeholder.svg"}
-                      alt={user?.user_metadata?.full_name || "User"}
-                    />
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-xl shadow-lg">
-                      {user?.user_metadata?.full_name ? getFirstLetter(user.user_metadata.full_name) : "U"}
+                      {user?.user_metadata?.full_name
+                        ? getFirstLetter(user.user_metadata.full_name)
+                        : getFirstLetter(user?.email || "User")}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col space-y-1 leading-none">
