@@ -83,11 +83,6 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                   <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50">
                     {item.feed.name}
                   </Badge>
-                  {isYouTube && (
-                    <Badge variant="outline" className="border-red-700/50 text-red-400">
-                      YouTube
-                    </Badge>
-                  )}
                 </div>
                 <div className="flex items-center text-gray-400 text-sm">
                   <Calendar className="w-4 h-4 mr-1" />
