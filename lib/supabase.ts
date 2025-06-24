@@ -1,8 +1,32 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+/**
+ * Reads env vars safely on both the server and the browser.
+ */
+const getPublicEnv = (key: string): string | undefined => {
+  const supabaseEnvs: any = {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  };
+  if (supabaseEnvs[key]) {
+    return supabaseEnvs[key];
+  }
+  // Vite-style or other bundlers
+  if (typeof import.meta !== "undefined" && import.meta.env?.[key]) {
+    // @ts-ignore – import.meta typing varies by bundler
+    return import.meta.env[key];
+  }
+  // Nothing found
+  return undefined;
+};
 
+const supabaseUrl = getPublicEnv("NEXT_PUBLIC_SUPABASE_URL");
+const supabaseAnonKey = getPublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+console.log(
+  `Supabase URL: ${supabaseUrl ? "loaded" : "not set"}, Supabase Anon Key: ${
+    supabaseAnonKey ? "loaded" : "not set"
+  }`
+);
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
     [
