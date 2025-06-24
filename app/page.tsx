@@ -70,14 +70,16 @@ export default function DashboardPage() {
 
           {/* Feed Items */}
           {items.length > 0 && (
-            <div className="space-y-6">
-              {items.map((item) => (
-                <FeedItemCard key={item.id} item={item} />
+            <div className="space-y-8">
+              {items.map((item, index) => (
+                <div key={item.id} className={index > 0 ? "mt-8" : ""}>
+                  <FeedItemCard item={item} />
+                </div>
               ))}
 
               {/* Load More Button */}
               {hasMore && (
-                <div className="text-center pt-6">
+                <div className="text-center pt-8">
                   <Button
                     onClick={loadMore}
                     disabled={loading}
