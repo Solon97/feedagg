@@ -1,14 +1,12 @@
 "use client"
-
-import type React from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import type { FeedItem } from "../types"
 
 interface Props {
   item: FeedItem
 }
 
-const FeedItemCard: React.FC<Props> = ({ item }) => {
+export function FeedItemCard({ item }: Props) {
   const router = useRouter()
 
   // Adicione esta função no início do componente, após as importações
@@ -45,4 +43,5 @@ const FeedItemCard: React.FC<Props> = ({ item }) => {
   )
 }
 
+// (optional) still allow default import
 export default FeedItemCard
