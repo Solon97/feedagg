@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
-import { FeedItemCard } from "@/components/feed-item-card"
+import { ExpandableFeedItemCard } from "@/components/expandable-feed-item-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useFeedItems } from "@/hooks/use-feeds"
@@ -72,7 +72,7 @@ export default function DashboardPage() {
           {items.length > 0 && (
             <div className="space-y-4">
               {items.map((item) => (
-                <FeedItemCard key={item.id} item={item} />
+                <ExpandableFeedItemCard key={item.id} item={item} />
               ))}
 
               {/* Load More Button */}

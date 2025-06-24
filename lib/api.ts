@@ -41,7 +41,7 @@ class ApiService {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
     }
-    
+
     return response.json()
   }
 
@@ -61,10 +61,6 @@ class ApiService {
     if (params.order) searchParams.set("order", params.order)
 
     return this.makeRequest<any>(`/feeds/user-feed-items?${searchParams}`)
-  }
-
-  async getFeedItem(feedItemId: string) {
-    return this.makeRequest<any>(`/feeds/feed-item/${feedItemId}`)
   }
 
   // Feeds Management
