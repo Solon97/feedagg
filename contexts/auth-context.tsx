@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { supabase } from "@/lib/supabase"
 import type { AuthContextType, AuthUser } from "@/types/auth"
 import type { Session } from "@supabase/supabase-js"
+import { logger } from "@/lib/logger"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      logger.info("User registration attempt", { email })
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -48,43 +50,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         },
       })
+
+      if (error) {
+        logger.warn("User registration failed", { email, error: error.message })
+      } else {
+        logger.info("User registration successful", { email })
+      }
+
       return { error }
-    } catch (error) {
+    } catch (error: any) {
+      logger.error("User registration error", { email, error: error.message })
       return { error }
     }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
+      logger.info("User login attempt", { email })
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+
+      if (error) {
+        logger.warn("User login failed", { email, error: error.message })
+      } else {
+        logger.info("User login successful", { email })
+      }
+
       return { error }
-    } catch (error) {
+    } catch (error: any) {
+      logger.error("User login error", { email, error: error.message })
       return { error }
     }
   }
 
   const signInWithGoogle = async () => {
     try {
+      logger.info("Google OAuth attempt")
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/`,
         },
       })
+
+      if (error) {
+        logger.warn("Google OAuth failed", { error: error.message })
+      } else {
+        logger.info("Google OAuth initiated")
+      }
+
       return { error }
-    } catch (error) {
+    } catch (error: any) {
+      logger.error("Google OAuth error", { error: error.message })
       return { error }
     }
   }
 
   const signOut = async () => {
     try {
+      logger.info("User logout attempt", { userId: user?.id })
       const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        logger.warn("User logout failed", { userId: user?.id, error: error.message })
+      } else {
+        logger.info("User logout successful", { userId: user?.id })
+      }
+
       return { error }
-    } catch (error) {
+    } catch (error: any) {
+      logger.error("User logout error", { userId: user?.id, error: error.message })
       return { error }
     }
   }
