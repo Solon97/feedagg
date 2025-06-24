@@ -31,7 +31,8 @@ export async function GET(request: NextRequest) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || "Failed to fetch feed items")
     }
-    console.log(response.json())
-    return response.json()
+    const response = response.json()
+    console.log(response)
+    return response
   })
 }
