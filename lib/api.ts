@@ -1,7 +1,5 @@
 import { supabase } from "./supabase"
 
-const API_BASE_URL = "https://rss-feed-processor.onrender.com"
-
 class ApiService {
   private async getAuthToken(): Promise<string | null> {
     const {
@@ -17,7 +15,7 @@ class ApiService {
       throw new Error("No authentication token available")
     }
 
-    const url = `${API_BASE_URL}${endpoint}`
+    const url = `/api${endpoint}`
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -29,7 +27,7 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`)
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
     }
 
     return response.json()
@@ -50,41 +48,41 @@ class ApiService {
     if (params.sort) searchParams.set("sort", params.sort)
     if (params.order) searchParams.set("order", params.order)
 
-    return this.makeRequest<any>(`/feed/user-feed-items?${searchParams}`)
+    return this.makeRequest<any>(`/feeds/user-feed-items?${searchParams}`)
   }
 
   async getFeedItem(feedItemId: string) {
-    return this.makeRequest<any>(`/feed/feed-item/${feedItemId}`)
+    return this.makeRequest<any>(`/feeds/feed-item/${feedItemId}`)
   }
 
   // Feeds Management
   async getUserFeeds() {
-    return this.makeRequest<any>("/feed/user-feeds")
+    return this.makeRequest<any>("/feeds/user-feeds")
   }
 
   async validateFeed(url: string) {
-    return this.makeRequest<any>("/feed/validate", {
+    return this.makeRequest<any>("/feeds/validate", {
       method: "POST",
       body: JSON.stringify({ url }),
     })
   }
 
   async subscribeFeed(url: string) {
-    return this.makeRequest<any>("/feed/subscribe", {
+    return this.makeRequest<any>("/feeds/subscribe", {
       method: "POST",
       body: JSON.stringify({ url }),
     })
   }
 
   async updateFeedStatus(feedId: string, status: "active" | "inactive") {
-    return this.makeRequest<any>(`/feed/user-feeds/${feedId}/status`, {
+    return this.makeRequest<any>(`/feeds/user-feeds/${feedId}/status`, {
       method: "PUT",
       body: JSON.stringify({ status }),
     })
   }
 
   async deleteFeed(feedId: string) {
-    return this.makeRequest<any>(`/feed/user-feeds/${feedId}`, {
+    return this.makeRequest<any>(`/feeds/user-feeds/${feedId}`, {
       method: "DELETE",
     })
   }
