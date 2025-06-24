@@ -31,7 +31,7 @@ export default function DashboardPage() {
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Your Feed</h1>
               <p className="text-gray-400">
-                {total > 0 ? `${total} items from your subscribed feeds` : "No items yet"}
+                {items.length > 0 ? `${items.length} items from your subscribed feeds` : "No items yet"}
               </p>
             </div>
             <Button onClick={handleRefresh} disabled={refreshing} className="bg-teal-600 hover:bg-teal-700">
