@@ -26,6 +26,13 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
     return content.slice(0, maxLength) + "..."
   }
 
+  const stripHtml = (html: string) => {
+    // Remove HTML tags and decode HTML entities
+    const tmp = document.createElement("div")
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ""
+  }
+
   // Detectar se é YouTube pela URL
   const isYouTube = item.url.includes("youtube.com") || item.url.includes("youtu.be")
 
@@ -67,7 +74,7 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
 
               {/* Content Preview */}
               {item.content && (
-                <p className="text-gray-300 text-sm mb-3 line-clamp-3">{truncateContent(item.content)}</p>
+                <p className="text-gray-300 text-sm mb-3 line-clamp-3">{truncateContent(stripHtml(item.content))}</p>
               )}
 
               {/* Metadata */}
