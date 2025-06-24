@@ -40,7 +40,7 @@ class ApiService {
       },
     });
 
-    if ("ok" in response && !response.ok) {
+    if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error(
         `API request failed: ${response.status} ${response.statusText}`,

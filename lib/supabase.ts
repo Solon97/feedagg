@@ -22,11 +22,7 @@ const getPublicEnv = (key: string): string | undefined => {
 
 const supabaseUrl = getPublicEnv("NEXT_PUBLIC_SUPABASE_URL");
 const supabaseAnonKey = getPublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-console.log(
-  `Supabase URL: ${supabaseUrl ? "loaded" : "not set"}, Supabase Anon Key: ${
-    supabaseAnonKey ? "loaded" : "not set"
-  }`
-);
+
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
     [
