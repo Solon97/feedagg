@@ -2,9 +2,22 @@ import { supabase } from "./supabase"
 
 class ApiService {
   private async getAuthToken(): Promise<string | null> {
+    // Wait for session to be ready
+    await new Promise((resolve) => {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "INITIAL_SESSION") {
+          subscription.unsubscribe()
+          resolve(session)
+        }
+      })
+    })
+
     const {
       data: { session },
     } = await supabase.auth.getSession()
+
     return session?.access_token || null
   }
 

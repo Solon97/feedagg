@@ -1,13 +1,10 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js"
+import { createClient } from "@supabase/supabase-js"
 
 /**
  * Reads env vars safely on both the server and the browser.
- * next-lite injects public envs on `process.env`; older toolchains may inject on
- * `import.meta.env`.  We fall back to either location so the code never executes
- * before they exist.
  */
 const getPublicEnv = (key: string): string | undefined => {
-  // On the server / next-lite preview
+  // On the server / Next.js preview
   if (typeof process !== "undefined" && process.env?.[key]) {
     return process.env[key]
   }
@@ -24,11 +21,6 @@ const supabaseUrl = getPublicEnv("NEXT_PUBLIC_SUPABASE_URL")
 const supabaseAnonKey = getPublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  /**
-   * Give a descriptive error instead of letting `createClient` throw a generic one.
-   * This shows up in the console and the browser, guiding the developer to add
-   * the required env vars.
-   */
   throw new Error(
     [
       "Supabase client initialisation failed.",
@@ -41,14 +33,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-/**
- * Singleton pattern – one client per browser tab.
- */
-let _client: SupabaseClient | undefined
+// Create a single instance for client-side usage
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+})
 
-export const supabase = (() => {
-  if (!_client) {
-    _client = createClient(supabaseUrl, supabaseAnonKey)
+// Create a separate instance for server-side usage with service role key
+export const createServerSupabaseClient = () => {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for server-side operations")
   }
-  return _client
-})()
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+}

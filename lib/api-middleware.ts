@@ -1,11 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import { createServerSupabaseClient } from "./supabase"
 import { logger } from "./logger"
 import { randomUUID } from "crypto"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export interface ApiContext {
   requestId: string
@@ -41,6 +37,9 @@ export async function withApiLogging<T>(
 
     const token = authHeader.split(" ")[1]
 
+    // Create server-side Supabase client
+    const supabase = createServerSupabaseClient()
+
     // Verify token with Supabase
     const {
       data: { user },
@@ -51,6 +50,15 @@ export async function withApiLogging<T>(
       const duration = Date.now() - startTime
       logger.apiResponse(method, endpoint, 401, duration, requestId)
       logger.authEvent("Invalid token", user?.id, requestId, false)
+      logger.error(
+        "Token validation failed",
+        {
+          error: authError?.message,
+          tokenLength: token.length,
+          tokenPrefix: token.substring(0, 20) + "...",
+        },
+        { requestId },
+      )
 
       return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }

@@ -16,8 +16,13 @@ interface LogEntry {
 }
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === "development"
-  private isProduction = process.env.NODE_ENV === "production"
+  private get isDevelopment() {
+    return typeof window === "undefined" ? process.env.NODE_ENV === "development" : false
+  }
+
+  private get isProduction() {
+    return typeof window === "undefined" ? process.env.NODE_ENV === "production" : false
+  }
 
   private formatLog(entry: LogEntry): string {
     const { timestamp, level, message, requestId, userId, endpoint, method, statusCode, duration, data } = entry
@@ -46,37 +51,34 @@ class Logger {
 
     const formattedMessage = this.formatLog(entry)
 
+    // Add [SERVER] prefix for server-side logs
+    const prefix = typeof window === "undefined" ? "[SERVER]\t" : ""
+
     // Console logging
     switch (level) {
       case "error":
-        console.error(formattedMessage, data ? { data } : "")
+        console.error(prefix + formattedMessage, data ? { data } : "")
         break
       case "warn":
-        console.warn(formattedMessage, data ? { data } : "")
+        console.warn(prefix + formattedMessage, data ? { data } : "")
         break
       case "debug":
         if (this.isDevelopment) {
-          console.debug(formattedMessage, data ? { data } : "")
+          console.debug(prefix + formattedMessage, data ? { data } : "")
         }
         break
       default:
-        console.log(formattedMessage, data ? { data } : "")
+        console.log(prefix + formattedMessage, data ? { data } : "")
     }
 
-    // In production, you could send logs to external services like:
-    // - Vercel Analytics
-    // - DataDog
-    // - LogRocket
-    // - Sentry
+    // In production, you could send logs to external services
     if (this.isProduction && level === "error") {
-      // Example: Send to external logging service
       this.sendToExternalService(entry)
     }
   }
 
   private async sendToExternalService(entry: LogEntry) {
     // Example implementation for external logging
-    // You can replace this with your preferred logging service
     try {
       // await fetch('https://your-logging-service.com/logs', {
       //   method: 'POST',
