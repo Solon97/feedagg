@@ -1,6 +1,5 @@
 import type { NextRequest } from "next/server"
 import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware"
-import { ApiError } from "@/lib/errors"
 
 const API_BASE_URL = "https://rss-feed-processor.onrender.com"
 
@@ -27,12 +26,12 @@ export async function GET(request: NextRequest) {
       },
       requestId,
     )
-
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new ApiError(response.status, errorData.message || "Failed to fetch feed items", errorData)
+      throw new Error(errorData.message || "Failed to fetch feed items")
     }
-
+    
     return response.json()
   })
 }

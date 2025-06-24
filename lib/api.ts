@@ -28,40 +28,21 @@ class ApiService {
     }
 
     const url = `/api${endpoint}`
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    })
 
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          ...options.headers,
-        },
-      })
-
-      if (!response.ok) {
-        // try json, fall back to text – Render sometimes gives plain-text
-        const errBody =
-          (await response
-            .clone()
-            .json()
-            .catch(async () => ({ error: await response.text() }))) || {}
-
-        throw new Error(`${response.status} ${response.statusText}: ${errBody.error || JSON.stringify(errBody)}`)
-      }
-
-      return response.json()
-    } catch (error: any) {
-      // Enhanced error logging
-      console.error("API Request failed:", {
-        endpoint,
-        method: options.method || "GET",
-        error: error.message,
-        stack: error.stack,
-      })
-
-      throw error
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
     }
+    
+    return response.json()
   }
 
   // Feed Items
@@ -74,8 +55,8 @@ class ApiService {
     } = {},
   ) {
     const searchParams = new URLSearchParams()
-    searchParams.set("offset", (params.offset ?? 0).toString()) // ← always
     if (params.limit) searchParams.set("limit", params.limit.toString())
+    if (params.offset) searchParams.set("offset", params.offset.toString())
     if (params.sort) searchParams.set("sort", params.sort)
     if (params.order) searchParams.set("order", params.order)
 
@@ -116,17 +97,6 @@ class ApiService {
     return this.makeRequest<any>(`/feeds/user-feeds/${feedId}`, {
       method: "DELETE",
     })
-  }
-
-  // Debug method for development
-  async healthCheck() {
-    try {
-      const response = await fetch("/api/health")
-      return response.json()
-    } catch (error) {
-      console.error("Health check failed:", error)
-      throw error
-    }
   }
 }
 
