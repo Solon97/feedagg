@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
 /**
  * Reads env vars safely on both the server and the browser.
@@ -33,23 +33,46 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-// Create a single instance for client-side usage
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-})
+// Global client instance for browser
+let _browserClient: SupabaseClient | undefined
 
-// Create a separate instance for server-side usage with service role key
+// Create browser client (singleton)
+export const supabase = (() => {
+  if (typeof window === "undefined") {
+    // Server-side: create a new instance each time with anon key
+    return createClient(supabaseUrl!, supabaseAnonKey!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  }
+
+  // Browser-side: use singleton
+  if (!_browserClient) {
+    _browserClient = createClient(supabaseUrl!, supabaseAnonKey!, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
+  }
+  return _browserClient
+})()
+
+// Server-side client with service role (for API routes only)
 export const createServerSupabaseClient = () => {
+  if (typeof window !== "undefined") {
+    throw new Error("createServerSupabaseClient should only be used on the server")
+  }
+
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceRoleKey) {
     throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for server-side operations")
   }
 
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return createClient(supabaseUrl!, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createServerSupabaseClient } from "./supabase"
 import { logger } from "./logger"
 import { randomUUID } from "crypto"
 
@@ -9,6 +8,8 @@ export interface ApiContext {
   token: string
   startTime: number
 }
+
+const API_BASE_URL = "https://rss-feed-processor.onrender.com"
 
 export async function withApiLogging<T>(
   request: NextRequest,
@@ -37,38 +38,46 @@ export async function withApiLogging<T>(
 
     const token = authHeader.split(" ")[1]
 
-    // Create server-side Supabase client
-    const supabase = createServerSupabaseClient()
+    // Instead of validating with Supabase here, let's validate by making a test call to the external API
+    // This way we use the same validation logic as the external API
+    try {
+      const testResponse = await fetch(`${API_BASE_URL}/feed/user-feeds`, {
+        method: "HEAD", // Use HEAD to avoid getting data, just test auth
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
 
-    // Verify token with Supabase
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token)
+      if (!testResponse.ok) {
+        const duration = Date.now() - startTime
+        logger.apiResponse(method, endpoint, 401, duration, requestId)
+        logger.authEvent("Token validation failed with external API", undefined, requestId, false)
+        logger.error(
+          "Token validation failed",
+          {
+            status: testResponse.status,
+            statusText: testResponse.statusText,
+            tokenLength: token.length,
+            tokenPrefix: token.substring(0, 20) + "...",
+          },
+          { requestId },
+        )
 
-    if (authError || !user) {
+        return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
+      }
+
+      logger.authEvent("Token validated with external API", undefined, requestId, true)
+    } catch (validationError: any) {
       const duration = Date.now() - startTime
       logger.apiResponse(method, endpoint, 401, duration, requestId)
-      logger.authEvent("Invalid token", user?.id, requestId, false)
-      logger.error(
-        "Token validation failed",
-        {
-          error: authError?.message,
-          tokenLength: token.length,
-          tokenPrefix: token.substring(0, 20) + "...",
-        },
-        { requestId },
-      )
-
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+      logger.error("Token validation error", { error: validationError.message }, { requestId })
+      return NextResponse.json({ error: "Token validation failed" }, { status: 401 })
     }
-
-    logger.authEvent("Token validated", user.id, requestId, true)
 
     // Create context
     const context: ApiContext = {
       requestId,
-      userId: user.id,
       token,
       startTime,
     }
@@ -77,7 +86,7 @@ export async function withApiLogging<T>(
     const result = await handler(context)
 
     const duration = Date.now() - startTime
-    logger.apiResponse(method, endpoint, 200, duration, requestId, user.id)
+    logger.apiResponse(method, endpoint, 200, duration, requestId)
 
     return NextResponse.json(result)
   } catch (error: any) {

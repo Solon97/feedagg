@@ -2,23 +2,22 @@ import { supabase } from "./supabase"
 
 class ApiService {
   private async getAuthToken(): Promise<string | null> {
-    // Wait for session to be ready
-    await new Promise((resolve) => {
+    try {
       const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === "INITIAL_SESSION") {
-          subscription.unsubscribe()
-          resolve(session)
-        }
-      })
-    })
+        data: { session },
+        error,
+      } = await supabase.auth.getSession()
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      if (error) {
+        console.error("Error getting session:", error)
+        return null
+      }
 
-    return session?.access_token || null
+      return session?.access_token || null
+    } catch (error) {
+      console.error("Error in getAuthToken:", error)
+      return null
+    }
   }
 
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

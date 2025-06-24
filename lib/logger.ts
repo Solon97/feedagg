@@ -17,15 +17,25 @@ interface LogEntry {
 
 class Logger {
   private get isDevelopment() {
-    return typeof window === "undefined" ? process.env.NODE_ENV === "development" : false
+    // Only check NODE_ENV on server side
+    if (typeof window === "undefined") {
+      return process.env.NODE_ENV === "development"
+    }
+    // On client side, assume development if localhost
+    return typeof window !== "undefined" && window.location.hostname === "localhost"
   }
 
   private get isProduction() {
-    return typeof window === "undefined" ? process.env.NODE_ENV === "production" : false
+    // Only check NODE_ENV on server side
+    if (typeof window === "undefined") {
+      return process.env.NODE_ENV === "production"
+    }
+    // On client side, assume production if not localhost
+    return typeof window !== "undefined" && window.location.hostname !== "localhost"
   }
 
   private formatLog(entry: LogEntry): string {
-    const { timestamp, level, message, requestId, userId, endpoint, method, statusCode, duration, data } = entry
+    const { timestamp, level, message, requestId, userId, endpoint, method, statusCode, duration } = entry
 
     let logMessage = `[${timestamp}] ${level.toUpperCase()}`
 
@@ -78,8 +88,8 @@ class Logger {
   }
 
   private async sendToExternalService(entry: LogEntry) {
-    // Example implementation for external logging
     try {
+      // Example implementation for external logging
       // await fetch('https://your-logging-service.com/logs', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
