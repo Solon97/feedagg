@@ -81,8 +81,8 @@ export default function ItemPage({ params }: ItemPageProps) {
       <ProtectedRoute>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <Navbar />
-          <div className="max-w-6xl mx-auto px-4 py-8">
-            <div className="animate-pulse space-y-6">
+          <div className="w-full md:max-w-6xl md:mx-auto px-0 md:px-4 py-6 lg:py-8">
+            <div className="animate-pulse space-y-6 px-4 md:px-0">
               <div className="flex justify-between">
                 <div className="h-8 bg-slate-700 rounded w-24"></div>
                 <div className="h-8 bg-slate-700 rounded w-32"></div>
@@ -107,7 +107,7 @@ export default function ItemPage({ params }: ItemPageProps) {
       <ProtectedRoute>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <Navbar />
-          <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="w-full md:max-w-6xl md:mx-auto px-4 py-8">
             <Card className="bg-red-900/20 border-red-700/50">
               <CardContent className="p-8 text-center">
                 <h2 className="text-xl font-semibold text-red-300 mb-2">Error Loading Content</h2>
@@ -132,20 +132,20 @@ export default function ItemPage({ params }: ItemPageProps) {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <Navbar />
 
-        <div className="max-w-6xl mx-auto px-4 py-6 lg:py-8">
-          {/* Top Navigation Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="w-full md:max-w-6xl md:mx-auto px-0 md:px-4 py-6 lg:py-8">
+          {/* Top Navigation Bar - Now Horizontal */}
+          <div className="flex items-center justify-between gap-3 mb-6 px-4 md:px-0">
             <Button
               onClick={() => router.back()}
               variant="outline"
-              className="border-slate-600 text-gray-300 hover:bg-slate-700 w-fit"
+              className="border-slate-600 text-gray-300 hover:bg-slate-700 flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Feed
             </Button>
 
-            <a href={item.url} target="_blank" rel="noopener noreferrer">
-              <Button className="bg-teal-600 hover:bg-teal-700 w-fit">
+            <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+              <Button className="bg-teal-600 hover:bg-teal-700">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 {isYouTube ? "Watch on YouTube" : "Read Original"}
               </Button>
@@ -155,7 +155,7 @@ export default function ItemPage({ params }: ItemPageProps) {
           {/* Main Content */}
           <div className="space-y-6">
             {/* Header */}
-            <div className="space-y-4">
+            <div className="space-y-4 px-4 md:px-0">
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">{item.title}</h1>
 
               {/* Metadata Bar */}
@@ -181,12 +181,14 @@ export default function ItemPage({ params }: ItemPageProps) {
               </div>
             </div>
 
-            <Separator className="bg-slate-700" />
+            <div className="px-4 md:px-0">
+              <Separator className="bg-slate-700" />
+            </div>
 
             {/* Media Content */}
             {youtubeVideoId && (
               <div className="space-y-4">
-                <div className="aspect-video rounded-lg overflow-hidden bg-slate-900 shadow-2xl">
+                <div className="aspect-video bg-slate-900 shadow-2xl overflow-hidden md:rounded-lg">
                   <iframe
                     src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1`}
                     title={item.title}
@@ -201,7 +203,7 @@ export default function ItemPage({ params }: ItemPageProps) {
             {/* Non-YouTube Thumbnail */}
             {!isYouTube && item.thumbnail && (
               <div className="space-y-4">
-                <div className="rounded-lg overflow-hidden bg-slate-900 shadow-2xl">
+                <div className="bg-slate-900 shadow-2xl overflow-hidden md:rounded-lg">
                   <img
                     src={item.thumbnail || "/placeholder.svg"}
                     alt={item.title}
@@ -215,45 +217,50 @@ export default function ItemPage({ params }: ItemPageProps) {
             )}
 
             {/* Content */}
-            <Card className="bg-slate-800/30 border-slate-700/50">
-              <CardContent className="p-6 lg:p-8">
-                {isYouTube ? (
-                  /* YouTube Description with Show More/Less */
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white mb-4">Description</h3>
-                    <div className="prose prose-invert prose-lg max-w-none">
-                      <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                        {showFullDescription ? item.content : truncateDescription(item.content)}
+            <div className="px-4 md:px-0">
+              <Card className="bg-slate-800/30 border-slate-700/50 border-x-0 md:border-x rounded-none md:rounded-lg">
+                <CardContent className="p-6 lg:p-8">
+                  {isYouTube ? (
+                    /* YouTube Description with Show More/Less */
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-white mb-4">Description</h3>
+                      <div className="prose prose-invert prose-lg max-w-none">
+                        <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                          {showFullDescription ? item.content : truncateDescription(item.content)}
+                        </div>
                       </div>
+                      {item.content.length > 300 && (
+                        <Button
+                          variant="ghost"
+                          onClick={() => setShowFullDescription(!showFullDescription)}
+                          className="text-teal-400 hover:text-teal-300 hover:bg-slate-700/50 p-0 h-auto font-normal"
+                        >
+                          {showFullDescription ? (
+                            <>
+                              <ChevronUp className="w-4 h-4 mr-1" />
+                              Show Less
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="w-4 h-4 mr-1" />
+                              Show More
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
-                    {item.content.length > 300 && (
-                      <Button
-                        variant="ghost"
-                        onClick={() => setShowFullDescription(!showFullDescription)}
-                        className="text-teal-400 hover:text-teal-300 hover:bg-slate-700/50 p-0 h-auto font-normal"
-                      >
-                        {showFullDescription ? (
-                          <>
-                            <ChevronUp className="w-4 h-4 mr-1" />
-                            Show Less
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="w-4 h-4 mr-1" />
-                            Show More
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  /* Article Content with Full HTML */
-                  <div className="prose prose-invert prose-lg max-w-none">
-                    <div className="text-gray-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.content }} />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  ) : (
+                    /* Article Content with Full HTML */
+                    <div className="prose prose-invert prose-lg max-w-none">
+                      <div
+                        className="text-gray-300 leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: item.content }}
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
