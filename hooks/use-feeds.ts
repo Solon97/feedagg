@@ -112,7 +112,7 @@ export function useFeedItems() {
           sort: params.sort || "published_at",
           order: params.order || "desc",
         })
-
+        console.log(response.data)
         if (params.reset || params.offset === 0) {
           setItems(response.data || [])
         } else {
