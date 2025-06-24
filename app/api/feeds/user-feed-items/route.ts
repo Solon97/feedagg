@@ -26,9 +26,7 @@ export async function GET(request: NextRequest) {
       },
       requestId,
     )
-    console.log("url", apiUrl)
-    console.log("token", token)
-    throw new Error(JSON.stringify(response.json()))
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || "Failed to fetch feed items")
