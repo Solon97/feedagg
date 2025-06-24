@@ -1,33 +1,32 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function HomePage() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     if (!loading) {
       if (user) {
-        // Authenticated user - redirect to news page
-        router.replace("/news");
+        router.push("/dashboard")
       } else {
-        // Non-authenticated user - redirect to auth page
-        router.replace("/auth");
+        router.push("/auth/login")
       }
     }
-  }, [router, user, loading]);
+  }, [user, loading, router])
 
-  // Show loading while checking authentication
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
-      </div>
-    );
-  }
-
-  return null;
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Card className="w-96">
+        <CardContent className="flex items-center justify-center p-6">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-2">Redirecting...</span>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
