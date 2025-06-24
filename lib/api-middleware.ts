@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { logger } from "./logger"
 import { apiDiagnostics } from "./api-diagnostics"
 import { randomUUID } from "crypto"
+import { ApiError } from "@/lib/errors"
 
 export interface ApiContext {
   requestId: string
@@ -185,26 +186,22 @@ export async function withApiLogging<T>(
     const duration = Date.now() - startTime
 
     apiDiagnostics.log(requestId, "REQUEST_ERROR", false, undefined, error, duration)
-
     logger.apiError(method, endpoint, error, requestId)
-    logger.apiResponse(method, endpoint, 500, duration, requestId)
 
-    // Enhanced error response for debugging
-    const errorResponse = {
-      error: error.message || "Internal server error",
-      requestId,
-      debug:
-        process.env.NODE_ENV === "development"
-          ? {
-              stack: error.stack,
-              name: error.name,
-              cause: error.cause,
-              diagnostics: apiDiagnostics.getDiagnostics(requestId),
-            }
-          : undefined,
+    // ↳ Preserve status & message when we threw ApiError inside a route/handler
+    if (error instanceof ApiError) {
+      logger.apiResponse(method, endpoint, error.status, duration, requestId)
+      return NextResponse.json(
+        {
+          error: error.message,
+          debug: process.env.NODE_ENV === "development" ? { payload: error.payload, requestId } : undefined,
+        },
+        { status: error.status },
+      )
     }
 
-    return NextResponse.json(errorResponse, { status: 500 })
+    logger.apiResponse(method, endpoint, 500, duration, requestId)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
