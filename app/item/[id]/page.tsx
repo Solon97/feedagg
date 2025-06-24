@@ -217,50 +217,45 @@ export default function ItemPage({ params }: ItemPageProps) {
             )}
 
             {/* Content */}
-            <div className="px-4 md:px-0">
-              <Card className="bg-slate-800/30 border-slate-700/50 border-x-0 md:border-x rounded-none md:rounded-lg">
-                <CardContent className="p-6 lg:p-8">
-                  {isYouTube ? (
-                    /* YouTube Description with Show More/Less */
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-white mb-4">Description</h3>
-                      <div className="prose prose-invert prose-lg max-w-none">
-                        <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                          {showFullDescription ? item.content : truncateDescription(item.content)}
-                        </div>
-                      </div>
-                      {item.content.length > 300 && (
-                        <Button
-                          variant="ghost"
-                          onClick={() => setShowFullDescription(!showFullDescription)}
-                          className="text-teal-400 hover:text-teal-300 hover:bg-slate-700/50 p-0 h-auto font-normal"
-                        >
-                          {showFullDescription ? (
-                            <>
-                              <ChevronUp className="w-4 h-4 mr-1" />
-                              Show Less
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="w-4 h-4 mr-1" />
-                              Show More
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  ) : (
-                    /* Article Content with Full HTML */
+            <Card className="bg-slate-800/30 border-slate-700/50 border-x-0 md:border-x rounded-none md:rounded-lg">
+              <CardContent className="p-4 md:p-6 lg:p-8">
+                {isYouTube ? (
+                  /* YouTube Description with Show More/Less */
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Description</h3>
                     <div className="prose prose-invert prose-lg max-w-none">
-                      <div
-                        className="text-gray-300 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: item.content }}
-                      />
+                      <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {showFullDescription ? item.content : truncateDescription(item.content)}
+                      </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                    {item.content.length > 300 && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => setShowFullDescription(!showFullDescription)}
+                        className="text-teal-400 hover:text-teal-300 hover:bg-slate-700/50 p-0 h-auto font-normal"
+                      >
+                        {showFullDescription ? (
+                          <>
+                            <ChevronUp className="w-4 h-4 mr-1" />
+                            Show Less
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4 mr-1" />
+                            Show More
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  /* Article Content with Full HTML */
+                  <div className="prose prose-invert prose-lg max-w-none">
+                    <div className="text-gray-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.content }} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
