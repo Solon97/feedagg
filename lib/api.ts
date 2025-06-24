@@ -41,7 +41,7 @@ class ApiService {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
     }
-    console.log(JSON.stringify(response))
+    
     return response.json()
   }
 
