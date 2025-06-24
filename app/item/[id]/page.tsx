@@ -7,6 +7,7 @@ import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { apiService } from "@/lib/api"
 import { ArrowLeft, ExternalLink, Calendar, Play } from "lucide-react"
 import type { FeedItem } from "@/types/api"
 
@@ -24,20 +25,36 @@ export default function ItemPage({ params }: ItemPageProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    try {
-      const itemData = searchParams.get("data")
-      if (itemData) {
-        const decodedItem = JSON.parse(decodeURIComponent(itemData))
-        setItem(decodedItem)
-      } else {
-        setError("Item data not found")
+    const fetchItem = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        // Tentar obter dados da URL primeiro
+        const dataParam = searchParams.get("data")
+        if (dataParam) {
+          try {
+            const itemData = JSON.parse(decodeURIComponent(dataParam))
+            setItem(itemData)
+            setLoading(false)
+            return
+          } catch (e) {
+            console.warn("Failed to parse item data from URL, falling back to API call")
+          }
+        }
+
+        // Fallback para chamada da API se não houver dados na URL
+        const response = await apiService.getFeedItem(params.id)
+        setItem(response.data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch item")
+      } finally {
+        setLoading(false)
       }
-    } catch (err) {
-      setError("Failed to load item data")
-    } finally {
-      setLoading(false)
     }
-  }, [searchParams])
+
+    fetchItem()
+  }, [params.id, searchParams])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -52,10 +69,6 @@ export default function ItemPage({ params }: ItemPageProps) {
   const getYouTubeVideoId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
     return match ? match[1] : null
-  }
-
-  const getFeedType = (feedUrl: string): "blog" | "youtube" => {
-    return feedUrl.includes("youtube.com") ? "youtube" : "blog"
   }
 
   if (loading) {
@@ -106,8 +119,9 @@ export default function ItemPage({ params }: ItemPageProps) {
     )
   }
 
-  const feedType = getFeedType(item.feed.url)
-  const youtubeVideoId = feedType === "youtube" ? getYouTubeVideoId(item.url) : null
+  // Detectar se é YouTube
+  const isYouTube = item.url.includes("youtube.com") || item.url.includes("youtu.be")
+  const youtubeVideoId = isYouTube ? getYouTubeVideoId(item.url) : null
 
   return (
     <ProtectedRoute>
@@ -134,7 +148,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                   <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
                     <Button variant="outline" size="sm" className="border-slate-600">
                       <ExternalLink className="w-4 h-4 mr-2" />
-                      {feedType === "youtube" ? "Watch on YouTube" : "Read Original"}
+                      {isYouTube ? "Watch on YouTube" : "Read Original"}
                     </Button>
                   </a>
                 </div>
@@ -148,7 +162,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                   <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50">
                     {item.feed.name}
                   </Badge>
-                  {feedType === "youtube" && (
+                  {isYouTube && (
                     <Badge variant="outline" className="border-red-700/50 text-red-400">
                       <Play className="w-3 h-3 mr-1" />
                       YouTube
@@ -173,7 +187,7 @@ export default function ItemPage({ params }: ItemPageProps) {
               )}
 
               {/* Thumbnail for non-YouTube content */}
-              {item.thumbnail && feedType !== "youtube" && (
+              {item.thumbnail && !isYouTube && (
                 <div className="mb-8">
                   <img
                     src={item.thumbnail || "/placeholder.svg"}

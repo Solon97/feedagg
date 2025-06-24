@@ -1,47 +1,96 @@
 "use client"
-import { useRouter } from "next/navigation"
-import type { FeedItem } from "../types"
 
-interface Props {
+import Link from "next/link"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, ExternalLink, Play } from "lucide-react"
+import type { FeedItem } from "@/types/api"
+
+interface FeedItemCardProps {
   item: FeedItem
 }
 
-export function FeedItemCard({ item }: Props) {
-  const router = useRouter()
-
-  // Adicione esta função no início do componente, após as importações
-  const getFeedType = (feedUrl: string): "blog" | "youtube" => {
-    return feedUrl.includes("youtube.com") ? "youtube" : "blog"
+export function FeedItemCard({ item }: FeedItemCardProps) {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
   }
 
-  // Substitua a função handleClick por:
-  const handleClick = () => {
-    // Encode os dados do item para passar via URL
-    const itemData = encodeURIComponent(JSON.stringify(item))
-    router.push(`/item/${item.id}?data=${itemData}`)
+  const truncateContent = (content: string, maxLength = 150) => {
+    if (content.length <= maxLength) return content
+    return content.slice(0, maxLength) + "..."
   }
+
+  // Detectar se é YouTube pela URL
+  const isYouTube = item.url.includes("youtube.com") || item.url.includes("youtu.be")
+
+  // Serializar dados do item para passar via URL
+  const itemData = encodeURIComponent(JSON.stringify(item))
 
   return (
-    <div key={item.id} className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="p-4">
-        <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
-        <p className="mt-2 text-gray-600">{item.description}</p>
-        <div className="mt-3 flex justify-between items-center">
-          <span className="text-sm text-gray-500">
-            {item.feed && item.feed.name ? item.feed.name : "Unknown Source"} - {getFeedType(item.feed.url)}
-          </span>
-          <button
-            onClick={handleClick}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="button"
-          >
-            Read More
-          </button>
-        </div>
-      </div>
-    </div>
+    <Link href={`/item/${item.id}?data=${itemData}`}>
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-slate-800/50 border-slate-700/50 hover:border-slate-600">
+        <CardContent className="p-6">
+          <div className="flex gap-4">
+            {/* Thumbnail */}
+            {item.thumbnail && (
+              <div className="flex-shrink-0">
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-slate-700">
+                  <img
+                    src={item.thumbnail || "/placeholder.svg"}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none"
+                    }}
+                  />
+                  {isYouTube && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Play className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="font-semibold text-white text-lg leading-tight line-clamp-2">{item.title}</h3>
+                <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
+              </div>
+
+              {/* Content Preview */}
+              {item.content && (
+                <p className="text-gray-300 text-sm mb-3 line-clamp-3">{truncateContent(item.content)}</p>
+              )}
+
+              {/* Metadata */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50">
+                    {item.feed.name}
+                  </Badge>
+                  {isYouTube && (
+                    <Badge variant="outline" className="border-red-700/50 text-red-400">
+                      YouTube
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center text-gray-400 text-sm">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  {formatDate(item.published_at)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   )
 }
-
-// (optional) still allow default import
-export default FeedItemCard

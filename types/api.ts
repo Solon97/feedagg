@@ -2,9 +2,9 @@ export interface FeedItem {
   id: string
   title: string
   content: string
+  published_at: string
   url: string
   thumbnail?: string
-  published_at: string
   created_at: string
   feed: {
     id: string
