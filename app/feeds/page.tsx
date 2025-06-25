@@ -20,9 +20,20 @@ export default function FeedsPage() {
   const [validating, setValidating] = useState(false)
   const [validationResult, setValidationResult] = useState<any>(null)
   const [subscribing, setSubscribing] = useState(false)
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
   const debouncedUrl = useDebounce(newFeedUrl, 500)
+
+  // Auto-hide messages after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
 
   // Validate feed URL when debounced URL changes
   useEffect(() => {
@@ -70,15 +81,24 @@ export default function FeedsPage() {
   }
 
   const handleToggleStatus = async (subscription: UserFeedSubscription) => {
+    const feedId = subscription.feed.id
     const newStatus = !subscription.is_active
-    const result = await updateFeedStatus(subscription.feed.id, newStatus)
-    if (result.success) {
-      setMessage({
-        type: "success",
-        text: `Subscription ${newStatus ? "activated" : "deactivated"} successfully!`,
-      })
-    } else {
-      setMessage({ type: "error", text: result.error || "Failed to update subscription status" })
+
+    try {
+      setUpdatingStatus(feedId)
+      const result = await updateFeedStatus(feedId, newStatus)
+      if (result.success) {
+        setMessage({
+          type: "success",
+          text: `Subscription ${newStatus ? "activated" : "deactivated"} successfully!`,
+        })
+      } else {
+        setMessage({ type: "error", text: result.error || "Failed to update subscription status" })
+      }
+    } catch (err) {
+      setMessage({ type: "error", text: "Failed to update subscription status" })
+    } finally {
+      setUpdatingStatus(null)
     }
   }
 
@@ -221,6 +241,8 @@ export default function FeedsPage() {
             <div className="space-y-4">
               {feeds.map((subscription: UserFeedSubscription) => {
                 const feed = subscription.feed
+                const isUpdating = updatingStatus === feed.id
+
                 return (
                   <Card key={feed.id} className="bg-slate-800/50 border-slate-700/50">
                     <CardContent className="p-6">
@@ -259,8 +281,15 @@ export default function FeedsPage() {
                             variant="outline"
                             size="sm"
                             className="border-slate-600"
+                            disabled={isUpdating}
                           >
-                            {subscription.is_active ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+                            {isUpdating ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : subscription.is_active ? (
+                              <PowerOff className="w-4 h-4" />
+                            ) : (
+                              <Power className="w-4 h-4" />
+                            )}
                           </Button>
                           <Button
                             onClick={() => handleDelete(subscription)}
