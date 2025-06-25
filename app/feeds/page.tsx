@@ -253,14 +253,16 @@ export default function FeedsPage() {
                               <Power className="w-4 h-4" />
                             )}
                           </Button>
-                          <Button
-                            onClick={() => handleDelete(subscription)}
-                            variant="outline"
-                            size="sm"
-                            className="border-red-700/50 text-red-400 hover:bg-red-900/20"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {!subscription.is_active && (
+                            <Button
+                              onClick={() => handleDelete(subscription)}
+                              variant="outline"
+                              size="sm"
+                              className="border-red-700/50 text-red-400 hover:bg-red-900/20"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
