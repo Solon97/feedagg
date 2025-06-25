@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, ExternalLink, Play } from "lucide-react"
+import { Calendar, ExternalLink } from "lucide-react"
 import { useSelectedItem } from "@/contexts/selected-item-context"
 import type { FeedItem } from "@/types/api"
 
@@ -60,11 +60,6 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                       e.currentTarget.style.display = "none"
                     }}
                   />
-                  {isYouTube && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Play className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                  )}
                 </div>
               </div>
             )}
