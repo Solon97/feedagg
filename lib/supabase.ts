@@ -1,22 +1,81 @@
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables");
+/**
+ * Reads env vars safely on both the server and the browser.
+ */
+const getPublicEnv = (key: string): string | undefined => {
+  // On the server / Next.js preview
+  if (typeof process !== "undefined" && process.env?.[key]) {
+    return process.env[key]
+  }
+  // Vite-style or other bundlers
+  if (typeof import.meta !== "undefined" && import.meta.env?.[key]) {
+    // @ts-ignore – import.meta typing varies by bundler
+    return import.meta.env[key]
+  }
+  // Nothing found
+  return undefined
 }
 
-// Client-side Supabase client
-// WARNING: This should NOT be used by frontend components directly!
-// Frontend should only call Next.js API routes for Clean Architecture compliance
-export const createSupabaseClient = () => {
-  console.warn(
-    "⚠️  WARNING: Direct Supabase client usage detected in frontend!\n" +
-      "This violates Clean Architecture principles.\n" +
-      "Frontend components should only call Next.js API routes.\n" +
-      "Consider using API routes instead of direct Supabase calls."
-  );
+const supabaseUrl = getPublicEnv("NEXT_PUBLIC_SUPABASE_URL")
+const supabaseAnonKey = getPublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
-};
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    [
+      "Supabase client initialisation failed.",
+      "Ensure the following public environment variables are present:",
+      "- NEXT_PUBLIC_SUPABASE_URL",
+      "- NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "",
+      "You can add them in `.env.local` or via the Vercel project settings.",
+    ].join("\n"),
+  )
+}
+
+// Global client instance for browser
+let _browserClient: SupabaseClient | undefined
+
+// Create browser client (singleton)
+export const supabase = (() => {
+  if (typeof window === "undefined") {
+    // Server-side: create a new instance each time with anon key
+    return createClient(supabaseUrl!, supabaseAnonKey!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  }
+
+  // Browser-side: use singleton
+  if (!_browserClient) {
+    _browserClient = createClient(supabaseUrl!, supabaseAnonKey!, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
+  }
+  return _browserClient
+})()
+
+// Server-side client with service role (for API routes only)
+export const createServerSupabaseClient = () => {
+  if (typeof window !== "undefined") {
+    throw new Error("createServerSupabaseClient should only be used on the server")
+  }
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for server-side operations")
+  }
+
+  return createClient(supabaseUrl!, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+}
