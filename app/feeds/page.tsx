@@ -9,59 +9,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useFeeds } from "@/hooks/use-feeds"
-import { useDebounce } from "@/hooks/use-debounce"
-import { apiService } from "@/lib/api"
-import { Plus, Trash2, Power, PowerOff, CheckCircle, XCircle, Loader2, Rss, Youtube } from "lucide-react"
+import { Plus, Trash2, Power, PowerOff, CheckCircle, Loader2, Rss, Youtube } from "lucide-react"
 import type { UserFeedSubscription } from "@/types/api"
 
 export default function FeedsPage() {
   const { feeds, loading, error, refetch, subscribeFeed, updateFeedStatus, deleteFeed } = useFeeds()
   const [newFeedUrl, setNewFeedUrl] = useState("")
-  const [validating, setValidating] = useState(false)
-  const [validationResult, setValidationResult] = useState<any>(null)
   const [subscribing, setSubscribing] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
-  const debouncedUrl = useDebounce(newFeedUrl, 500)
-
-  // Auto-hide messages after 3 seconds
+  // Auto-hide messages after 5 seconds
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
         setMessage(null)
-      }, 3000)
+      }, 5000)
       return () => clearTimeout(timer)
     }
   }, [message])
 
-  // Validate feed URL when debounced URL changes
-  useEffect(() => {
-    const validateUrl = async () => {
-      if (!debouncedUrl.trim()) {
-        setValidationResult(null)
-        return
-      }
-
-      try {
-        setValidating(true)
-        const result = await apiService.validateFeed(debouncedUrl)
-        setValidationResult(result)
-      } catch (err) {
-        setValidationResult({
-          valid: false,
-          message: err instanceof Error ? err.message : "Failed to validate feed",
-        })
-      } finally {
-        setValidating(false)
-      }
-    }
-
-    validateUrl()
-  }, [debouncedUrl])
-
   const handleSubscribe = async () => {
-    if (!newFeedUrl.trim() || !validationResult?.valid) return
+    if (!newFeedUrl.trim()) return
 
     try {
       setSubscribing(true)
@@ -69,12 +38,12 @@ export default function FeedsPage() {
       if (result.success) {
         setMessage({ type: "success", text: "Feed subscribed successfully!" })
         setNewFeedUrl("")
-        setValidationResult(null)
       } else {
         setMessage({ type: "error", text: result.error || "Failed to subscribe to feed" })
       }
     } catch (err) {
-      setMessage({ type: "error", text: "Failed to subscribe to feed" })
+      const errorMessage = err instanceof Error ? err.message : "Failed to subscribe to feed"
+      setMessage({ type: "error", text: errorMessage })
     } finally {
       setSubscribing(false)
     }
@@ -124,6 +93,15 @@ export default function FeedsPage() {
     })
   }
 
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -167,41 +145,25 @@ export default function FeedsPage() {
                     value={newFeedUrl}
                     onChange={(e) => setNewFeedUrl(e.target.value)}
                     className="bg-slate-700/50 border-slate-600 text-white placeholder:text-gray-400"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newFeedUrl.trim() && isValidUrl(newFeedUrl.trim()) && !subscribing) {
+                        handleSubscribe()
+                      }
+                    }}
                   />
                 </div>
                 <Button
                   onClick={handleSubscribe}
-                  disabled={!validationResult?.valid || subscribing}
-                  className="bg-teal-600 hover:bg-teal-700"
+                  disabled={!newFeedUrl.trim() || !isValidUrl(newFeedUrl.trim()) || subscribing}
+                  className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50"
                 >
                   {subscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                   {subscribing ? "Adding..." : "Add Feed"}
                 </Button>
               </div>
-
-              {/* Validation Status */}
-              {(validating || validationResult) && (
-                <div className="flex items-center gap-2 text-sm">
-                  {validating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                      <span className="text-gray-400">Validating feed...</span>
-                    </>
-                  ) : validationResult?.valid ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span className="text-green-400">
-                        Valid {validationResult.feed_type} feed: {validationResult.title}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-4 h-4 text-red-400" />
-                      <span className="text-red-400">{validationResult?.message || "Invalid feed URL"}</span>
-                    </>
-                  )}
-                </div>
-              )}
+              <p className="text-sm text-gray-400">
+                Enter a valid RSS feed URL or YouTube channel URL. The feed will be validated when you add it.
+              </p>
             </CardContent>
           </Card>
 

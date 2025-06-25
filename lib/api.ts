@@ -73,13 +73,6 @@ class ApiService {
     return this.makeRequest<any>("/feeds/user-feeds")
   }
 
-  async validateFeed(url: string) {
-    return this.makeRequest<any>("/feeds/validate", {
-      method: "POST",
-      body: JSON.stringify({ url }),
-    })
-  }
-
   async subscribeFeed(url: string) {
     return this.makeRequest<any>("/feeds/subscribe", {
       method: "POST",
