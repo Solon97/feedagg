@@ -75,7 +75,17 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                 <h3 className="font-semibold text-white text-base sm:text-lg leading-tight line-clamp-2 pr-2">
                   {item.title}
                 </h3>
-                <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    window.open(item.url, "_blank", "noopener,noreferrer")
+                  }}
+                  className="flex-shrink-0 p-1 rounded hover:bg-slate-700/50 transition-colors"
+                  title="Open original content"
+                >
+                  <ExternalLink className="w-4 h-4 text-gray-400 hover:text-white" />
+                </button>
               </div>
 
               {/* Content Preview - ajustado para mobile */}
