@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Home, Rss, LogOut, Menu, X } from "lucide-react"
+import { Home, Rss, LogOut, Menu } from "lucide-react"
 
 export function Navbar() {
   const { user, signOut } = useAuth()
@@ -125,17 +125,7 @@ export function Navbar() {
               </SheetTrigger>
               <SheetContent side="right" className="w-80 bg-slate-800 border-slate-700">
                 <SheetHeader className="border-b border-slate-700 pb-4">
-                  <div className="flex items-center justify-between">
-                    <SheetTitle className="text-white text-lg font-semibold">Menu</SheetTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-gray-400 hover:text-white hover:bg-slate-700"
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
-                  </div>
+                  <SheetTitle className="text-white text-lg font-semibold text-left">Menu</SheetTitle>
                 </SheetHeader>
 
                 <div className="py-6 space-y-6">
