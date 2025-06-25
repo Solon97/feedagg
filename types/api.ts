@@ -13,6 +13,20 @@ export interface FeedItem {
   }
 }
 
+export interface UserFeedSubscription {
+  feed_id: string
+  is_active: boolean
+  created_at: string
+  feed: {
+    id: string
+    name: string
+    url: string
+    status: "active" | "error" | "inactive"
+    created_at: string
+    last_fetched_at?: string
+  }
+}
+
 export interface Feed {
   id: string
   name: string

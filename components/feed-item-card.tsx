@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, ExternalLink, Play } from "lucide-react"
+import { Calendar, ExternalLink } from "lucide-react"
 import { useSelectedItem } from "@/contexts/selected-item-context"
 import type { FeedItem } from "@/types/api"
 
@@ -36,6 +36,13 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
     return tmp.textContent || tmp.innerText || ""
   }
 
+  const getFeedType = (url: string) => {
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      return "YouTube"
+    }
+    return "RSS"
+  }
+
   // Detectar se é YouTube pela URL
   const isYouTube = item.url.includes("youtube.com") || item.url.includes("youtu.be")
 
@@ -60,11 +67,6 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                       e.currentTarget.style.display = "none"
                     }}
                   />
-                  {isYouTube && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Play className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -75,7 +77,17 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                 <h3 className="font-semibold text-white text-base sm:text-lg leading-tight line-clamp-2 pr-2">
                   {item.title}
                 </h3>
-                <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    window.open(item.url, "_blank", "noopener,noreferrer")
+                  }}
+                  className="flex-shrink-0 p-1 rounded hover:bg-slate-700/50 transition-colors"
+                  title="Open original content"
+                >
+                  <ExternalLink className="w-4 h-4 text-gray-400 hover:text-white" />
+                </button>
               </div>
 
               {/* Content Preview - ajustado para mobile */}
@@ -90,6 +102,16 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
                     {item.feed.name}
+                  </Badge>
+                  <Badge
+                    variant="secondary"
+                    className={`text-xs ${
+                      getFeedType(item.url) === "YouTube"
+                        ? "bg-red-900/30 text-red-400 border-red-700/50"
+                        : "bg-orange-900/30 text-orange-400 border-orange-700/50"
+                    }`}
+                  >
+                    {getFeedType(item.url)}
                   </Badge>
                 </div>
                 <div className="flex items-center text-gray-400 text-xs sm:text-sm">

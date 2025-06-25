@@ -34,7 +34,7 @@ export function useFeeds() {
     async (url: string) => {
       try {
         await apiService.subscribeFeed(url)
-        await fetchFeeds() // Refresh the list
+        await fetchFeeds() // Refresh the list only for new subscriptions
         return { success: true }
       } catch (err) {
         return {
@@ -46,37 +46,41 @@ export function useFeeds() {
     [fetchFeeds],
   )
 
-  const updateFeedStatus = useCallback(
-    async (feedId: string, status: "active" | "inactive") => {
-      try {
-        await apiService.updateFeedStatus(feedId, status)
-        await fetchFeeds() // Refresh the list
-        return { success: true }
-      } catch (err) {
-        return {
-          success: false,
-          error: err instanceof Error ? err.message : "Failed to update feed status",
-        }
-      }
-    },
-    [fetchFeeds],
-  )
+  const updateFeedStatus = useCallback(async (feedId: string, isActive: boolean) => {
+    try {
+      await apiService.updateFeedStatus(feedId, isActive)
 
-  const deleteFeed = useCallback(
-    async (feedId: string) => {
-      try {
-        await apiService.deleteFeed(feedId)
-        await fetchFeeds() // Refresh the list
-        return { success: true }
-      } catch (err) {
-        return {
-          success: false,
-          error: err instanceof Error ? err.message : "Failed to delete feed",
-        }
+      // Update local state instead of refetching
+      setFeeds((prevFeeds) =>
+        prevFeeds.map((subscription) =>
+          subscription.feed.id === feedId ? { ...subscription, is_active: isActive } : subscription,
+        ),
+      )
+
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to update feed status",
       }
-    },
-    [fetchFeeds],
-  )
+    }
+  }, [])
+
+  const deleteFeed = useCallback(async (feedId: string) => {
+    try {
+      await apiService.deleteFeed(feedId)
+
+      // Remove from local state instead of refetching
+      setFeeds((prevFeeds) => prevFeeds.filter((subscription) => subscription.feed.id !== feedId))
+
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to delete feed",
+      }
+    }
+  }, [])
 
   useEffect(() => {
     fetchFeeds()

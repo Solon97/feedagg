@@ -36,12 +36,14 @@ export default function DashboardPage() {
             </div>
             <Button
               onClick={handleRefresh}
-              disabled={refreshing}
-              className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto"
+              disabled={refreshing || loading}
+              className="bg-teal-600 hover:bg-teal-700 disabled:bg-teal-800 disabled:opacity-50 w-full sm:w-auto transition-all duration-200"
               size="sm"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-              Refresh
+              <RefreshCw
+                className={`w-4 h-4 mr-2 transition-transform duration-500 ${refreshing ? "animate-spin" : ""}`}
+              />
+              {refreshing ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
 

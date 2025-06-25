@@ -73,13 +73,6 @@ class ApiService {
     return this.makeRequest<any>("/feeds/user-feeds")
   }
 
-  async validateFeed(url: string) {
-    return this.makeRequest<any>("/feeds/validate", {
-      method: "POST",
-      body: JSON.stringify({ url }),
-    })
-  }
-
   async subscribeFeed(url: string) {
     return this.makeRequest<any>("/feeds/subscribe", {
       method: "POST",
@@ -87,10 +80,10 @@ class ApiService {
     })
   }
 
-  async updateFeedStatus(feedId: string, status: "active" | "inactive") {
+  async updateFeedStatus(feedId: string, isActive: boolean) {
     return this.makeRequest<any>(`/feeds/user-feeds/${feedId}/status`, {
       method: "PUT",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ is_active: isActive }),
     })
   }
 
