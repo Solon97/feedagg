@@ -70,8 +70,8 @@ export default function FeedsPage() {
   }
 
   const handleToggleStatus = async (subscription: UserFeedSubscription) => {
-    const newStatus = subscription.is_active ? false : true
-    const result = await updateFeedStatus(subscription.feed.id, newStatus ? "active" : "inactive")
+    const newStatus = !subscription.is_active
+    const result = await updateFeedStatus(subscription.feed.id, newStatus)
     if (result.success) {
       setMessage({
         type: "success",
