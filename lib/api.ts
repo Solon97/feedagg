@@ -87,10 +87,10 @@ class ApiService {
     })
   }
 
-  async updateFeedStatus(feedId: string, status: "active" | "inactive") {
+  async updateFeedStatus(feedId: string, isActive: boolean) {
     return this.makeRequest<any>(`/feeds/user-feeds/${feedId}/status`, {
       method: "PUT",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ is_active: isActive }),
     })
   }
 
