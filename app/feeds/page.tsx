@@ -12,7 +12,7 @@ import { useFeeds } from "@/hooks/use-feeds"
 import { useDebounce } from "@/hooks/use-debounce"
 import { apiService } from "@/lib/api"
 import { Plus, Trash2, Power, PowerOff, CheckCircle, XCircle, Loader2, Rss, Youtube } from "lucide-react"
-import type { Feed } from "@/types/api"
+import type { UserFeedSubscription } from "@/types/api"
 
 export default function FeedsPage() {
   const { feeds, loading, error, refetch, subscribeFeed, updateFeedStatus, deleteFeed } = useFeeds()
@@ -69,27 +69,27 @@ export default function FeedsPage() {
     }
   }
 
-  const handleToggleStatus = async (feed: Feed) => {
-    const newStatus = feed.status === "active" ? "inactive" : "active"
-    const result = await updateFeedStatus(feed.id, newStatus)
+  const handleToggleStatus = async (subscription: UserFeedSubscription) => {
+    const newStatus = subscription.is_active ? false : true
+    const result = await updateFeedStatus(subscription.feed.id, newStatus ? "active" : "inactive")
     if (result.success) {
       setMessage({
         type: "success",
-        text: `Feed ${newStatus === "active" ? "activated" : "deactivated"} successfully!`,
+        text: `Subscription ${newStatus ? "activated" : "deactivated"} successfully!`,
       })
     } else {
-      setMessage({ type: "error", text: result.error || "Failed to update feed status" })
+      setMessage({ type: "error", text: result.error || "Failed to update subscription status" })
     }
   }
 
-  const handleDelete = async (feed: Feed) => {
-    if (!confirm(`Are you sure you want to delete "${feed.name}"?`)) return
+  const handleDelete = async (subscription: UserFeedSubscription) => {
+    if (!confirm(`Are you sure you want to unsubscribe from "${subscription.feed.name}"?`)) return
 
-    const result = await deleteFeed(feed.id)
+    const result = await deleteFeed(subscription.feed.id)
     if (result.success) {
-      setMessage({ type: "success", text: "Feed deleted successfully!" })
+      setMessage({ type: "success", text: "Unsubscribed successfully!" })
     } else {
-      setMessage({ type: "error", text: result.error || "Failed to delete feed" })
+      setMessage({ type: "error", text: result.error || "Failed to unsubscribe" })
     }
   }
 
@@ -245,50 +245,57 @@ export default function FeedsPage() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {feeds.map((feed) => (
-                <Card key={feed.id} className="bg-slate-800/50 border-slate-700/50">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-white">{feed.name}</h3>
-                          <Badge variant="secondary" className={getStatusColor(feed.status)}>
-                            {getStatusIcon(feed.status)}
-                            <span className="ml-1 capitalize">{feed.status}</span>
-                          </Badge>
-                          {feed.feed_type === "youtube" && (
-                            <Badge variant="outline" className="border-red-700/50 text-red-400">
-                              <Youtube className="w-3 h-3 mr-1" />
-                              YouTube
+              {feeds.map((subscription: UserFeedSubscription) => {
+                const feed = subscription.feed
+                return (
+                  <Card key={feed.id} className="bg-slate-800/50 border-slate-700/50">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-white">{feed.name}</h3>
+                            <Badge variant="secondary" className={getStatusColor(feed.status)}>
+                              {getStatusIcon(feed.status)}
+                              <span className="ml-1 capitalize">{feed.status}</span>
                             </Badge>
-                          )}
+                            {!subscription.is_active && (
+                              <Badge variant="outline" className="border-orange-700/50 text-orange-400">
+                                Inactive Subscription
+                              </Badge>
+                            )}
+                            {feed.url.includes("youtube") && (
+                              <Badge variant="outline" className="border-red-700/50 text-red-400">
+                                <Youtube className="w-3 h-3 mr-1" />
+                                YouTube
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-gray-400 text-sm mb-2 break-all">{feed.url}</p>
+                          <p className="text-gray-500 text-xs">Last fetched: {formatDate(feed.last_fetched_at)}</p>
                         </div>
-                        <p className="text-gray-400 text-sm mb-2 break-all">{feed.url}</p>
-                        <p className="text-gray-500 text-xs">Last updated: {formatDate(feed.last_updated_at)}</p>
-                        {feed.error_message && <p className="text-red-400 text-xs mt-1">Error: {feed.error_message}</p>}
+                        <div className="flex items-center gap-2 ml-4">
+                          <Button
+                            onClick={() => handleToggleStatus(subscription)}
+                            variant="outline"
+                            size="sm"
+                            className="border-slate-600"
+                          >
+                            {subscription.is_active ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+                          </Button>
+                          <Button
+                            onClick={() => handleDelete(subscription)}
+                            variant="outline"
+                            size="sm"
+                            className="border-red-700/50 text-red-400 hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <Button
-                          onClick={() => handleToggleStatus(feed)}
-                          variant="outline"
-                          size="sm"
-                          className="border-slate-600"
-                        >
-                          {feed.status === "active" ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(feed)}
-                          variant="outline"
-                          size="sm"
-                          className="border-red-700/50 text-red-400 hover:bg-red-900/20"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           )}
         </div>
