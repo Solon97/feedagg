@@ -36,6 +36,13 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
     return tmp.textContent || tmp.innerText || ""
   }
 
+  const getFeedType = (url: string) => {
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      return "YouTube"
+    }
+    return "RSS"
+  }
+
   // Detectar se é YouTube pela URL
   const isYouTube = item.url.includes("youtube.com") || item.url.includes("youtu.be")
 
@@ -95,6 +102,16 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
                     {item.feed.name}
+                  </Badge>
+                  <Badge
+                    variant="secondary"
+                    className={`text-xs ${
+                      getFeedType(item.url) === "YouTube"
+                        ? "bg-red-900/30 text-red-400 border-red-700/50"
+                        : "bg-orange-900/30 text-orange-400 border-orange-700/50"
+                    }`}
+                  >
+                    {getFeedType(item.url)}
                   </Badge>
                 </div>
                 <div className="flex items-center text-gray-400 text-xs sm:text-sm">
