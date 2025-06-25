@@ -41,7 +41,7 @@ class ApiService {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
     }
-    
+
     return response.json()
   }
 
@@ -64,6 +64,7 @@ class ApiService {
   }
 
   async getFeedItem(feedItemId: string) {
+    // Direct response without wrapper - matches the new API structure
     return this.makeRequest<any>(`/feeds/feed-item/${feedItemId}`)
   }
 

@@ -22,33 +22,41 @@ interface ItemPageProps {
 export default function ItemPage({ params }: ItemPageProps) {
   const router = useRouter()
   const { selectedItem, setSelectedItem } = useSelectedItem()
-  const [item, setItem] = useState<FeedItem | null>(selectedItem)
-  const [loading, setLoading] = useState(!selectedItem)
+  const [item, setItem] = useState<FeedItem | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showFullDescription, setShowFullDescription] = useState(false)
 
   useEffect(() => {
-    const fetchItem = async () => {
-      if (selectedItem && selectedItem.id === params.id) {
-        setItem(selectedItem)
-        setLoading(false)
-        return
-      }
-
+    const fetchItemData = async () => {
       try {
         setLoading(true)
         setError(null)
+
+        // Strategy 1: Check if we have the item in local context and it matches the requested ID
+        if (selectedItem && selectedItem.id === params.id) {
+          console.log("Using local data from context")
+          setItem(selectedItem)
+          setLoading(false)
+          return
+        }
+
+        // Strategy 2: Fetch from API if not available locally
+        console.log("Fetching from API - local data not available or doesn't match")
         const response = await apiService.getFeedItem(params.id)
-        setItem(response.data)
-        setSelectedItem(response.data)
+
+        // The API now returns the item directly (not wrapped in data)
+        setItem(response)
+        setSelectedItem(response)
       } catch (err) {
+        console.error("Error fetching item:", err)
         setError(err instanceof Error ? err.message : "Failed to fetch item")
       } finally {
         setLoading(false)
       }
     }
 
-    fetchItem()
+    fetchItemData()
   }, [params.id, selectedItem, setSelectedItem])
 
   const formatDate = (dateString: string) => {
@@ -225,10 +233,18 @@ export default function ItemPage({ params }: ItemPageProps) {
                     <h3 className="text-lg font-semibold text-white mb-4">Description</h3>
                     <div className="prose prose-invert prose-lg max-w-none">
                       <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                        {showFullDescription ? item.content : truncateDescription(item.content)}
+                        {item.content && item.content.trim() ? (
+                          showFullDescription ? (
+                            item.content
+                          ) : (
+                            truncateDescription(item.content)
+                          )
+                        ) : (
+                          <span className="text-gray-500 italic">No description available</span>
+                        )}
                       </div>
                     </div>
-                    {item.content.length > 300 && (
+                    {item.content && item.content.length > 300 && (
                       <Button
                         variant="ghost"
                         onClick={() => setShowFullDescription(!showFullDescription)}
@@ -251,7 +267,14 @@ export default function ItemPage({ params }: ItemPageProps) {
                 ) : (
                   /* Article Content with Full HTML */
                   <div className="prose prose-invert prose-lg max-w-none">
-                    <div className="text-gray-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.content }} />
+                    {item.content && item.content.trim() ? (
+                      <div
+                        className="text-gray-300 leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: item.content }}
+                      />
+                    ) : (
+                      <div className="text-gray-500 italic">No content available</div>
+                    )}
                   </div>
                 )}
               </CardContent>
