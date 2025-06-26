@@ -1,26 +1,27 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { apiService } from "@/lib/api"
 import type { FeedItem, UserFeedSubscription } from "@/types/api"
 
 /* -------------------------------------------------------------------------- */
-/*  USER FEEDS – list of subscriptions                                       */
+/*  USER-FEED SUBSCRIPTIONS                                                   */
 /* -------------------------------------------------------------------------- */
 
 export function useFeeds() {
+  /* state ------------------------------------------------------------------ */
   const [feeds, setFeeds] = useState<UserFeedSubscription[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  /** Stable fetch that never changes after mount */
+  /* stable helpers --------------------------------------------------------- */
   const fetchFeeds = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const response = await apiService.getUserFeeds()
-      setFeeds(response ?? [])
+      const data = await apiService.getUserFeeds()
+      setFeeds(data ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch feeds")
     } finally {
@@ -32,8 +33,7 @@ export function useFeeds() {
     async (url: string) => {
       try {
         await apiService.subscribeFeed(url)
-        /* only refetch when a new subscription is added */
-        await fetchFeeds()
+        await fetchFeeds() // refresh once
         return { success: true }
       } catch (err) {
         return {
@@ -49,7 +49,7 @@ export function useFeeds() {
     try {
       await apiService.updateFeedStatus(feedId, isActive)
 
-      /* optimistic local update – no refetch, so no extra renders */
+      /* optimistic update – no refetch */
       setFeeds((prev) => prev.map((sub) => (sub.feed.id === feedId ? { ...sub, is_active: isActive } : sub)))
 
       return { success: true }
@@ -64,10 +64,7 @@ export function useFeeds() {
   const deleteFeed = useCallback(async (feedId: string) => {
     try {
       await apiService.deleteFeed(feedId)
-
-      /* optimistic removal */
       setFeeds((prev) => prev.filter((sub) => sub.feed.id !== feedId))
-
       return { success: true }
     } catch (err) {
       return {
@@ -77,7 +74,7 @@ export function useFeeds() {
     }
   }, [])
 
-  /* Initial load — runs exactly once because fetchFeeds is stable */
+  /* first load ------------------------------------------------------------- */
   useEffect(() => {
     fetchFeeds()
   }, [fetchFeeds])
@@ -94,16 +91,15 @@ export function useFeeds() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  FEED ITEMS – supports title/feed_id/feed_type filters                     */
+/*  FEED ITEMS (WITH FILTER SUPPORT)                                          */
 /* -------------------------------------------------------------------------- */
-
 export interface FeedFilters {
   title?: string
   feed_id?: string
   feed_type?: "rss" | "youtube"
 }
 
-type Cache = {
+interface Cache {
   items: FeedItem[]
   total: number
   hasMore: boolean
@@ -111,61 +107,64 @@ type Cache = {
   filters: FeedFilters
 }
 
-/* module-level cache (five-minute TTL) */
-let feedItemsCache: Cache | null = null
+/* module-level, five-minute TTL cache -------------------------------------- */
+let cache: Cache | null = null
+const TTL = 5 * 60 * 1000 // 5 min
 
 export function useFeedItems() {
+  /* state ------------------------------------------------------------------ */
   const [items, setItems] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
   const [total, setTotal] = useState(0)
   const [filters, setFilters] = useState<FeedFilters>({})
-  const initialized = useRef(false)
 
-  /* ---- STABLE fetchItems -------------------------------------------------- */
+  const didInit = useRef(false)
+
+  /* stable fetchItems ------------------------------------------------------ */
   const fetchItems = useCallback(
     async ({
       limit = 20,
       offset = 0,
       reset = false,
-      currentFilters = filters,
+      curFilters = filters,
     }: {
       limit?: number
       offset?: number
       reset?: boolean
-      currentFilters?: FeedFilters
+      curFilters?: FeedFilters
     } = {}) => {
       try {
         setLoading(true)
         setError(null)
 
-        const response = await apiService.getUserFeedItems({
+        const data = await apiService.getUserFeedItems({
           limit,
           offset,
           sort: "published_at",
           order: "desc",
-          ...currentFilters,
+          ...curFilters,
         })
 
         setItems((prev) => {
-          const incoming = response ?? []
+          const incoming = data ?? []
           const merged = reset || offset === 0 ? incoming : [...prev, ...incoming]
 
-          /* write cache */
-          feedItemsCache = {
+          /* update cache */
+          cache = {
             items: merged,
-            total: response.total ?? merged.length,
+            total: data.total ?? merged.length,
             hasMore: incoming.length === limit,
             lastFetch: Date.now(),
-            filters: currentFilters,
+            filters: curFilters,
           }
 
           return merged
         })
 
-        setTotal(response.total ?? 0)
-        setHasMore((response ?? []).length === limit)
+        setTotal(data.total ?? 0)
+        setHasMore((data ?? []).length === limit)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch items")
       } finally {
@@ -175,48 +174,49 @@ export function useFeedItems() {
     [filters],
   )
 
-  /* ---- helpers ----------------------------------------------------------- */
+  /* helpers ---------------------------------------------------------------- */
   const refresh = useCallback(() => {
-    feedItemsCache = null
+    cache = null
     fetchItems({ reset: true })
   }, [fetchItems])
 
   const loadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchItems({ offset: items.length })
-    }
+    if (!loading && hasMore) fetchItems({ offset: items.length })
   }, [loading, hasMore, items.length, fetchItems])
 
   const applyFilters = useCallback(
-    (newFilters: FeedFilters) => {
-      setFilters(newFilters)
-      feedItemsCache = null
-      fetchItems({ reset: true, currentFilters: newFilters })
+    (f: FeedFilters) => {
+      setFilters(f)
+      cache = null
+      fetchItems({ reset: true, curFilters: f })
     },
     [fetchItems],
   )
 
   const clearFilters = useCallback(() => {
     setFilters({})
-    feedItemsCache = null
-    fetchItems({ reset: true, currentFilters: {} })
+    cache = null
+    fetchItems({ reset: true, curFilters: {} })
   }, [fetchItems])
 
-  /* ---- initial load with cache ------------------------------------------- */
+  /* initial load ----------------------------------------------------------- */
   useEffect(() => {
-    if (initialized.current) return
-    initialized.current = true
+    if (didInit.current) return
+    didInit.current = true
 
-    if (feedItemsCache && Date.now() - feedItemsCache.lastFetch < 5 * 60 * 1000 /* 5 min */) {
-      setItems(feedItemsCache.items)
-      setTotal(feedItemsCache.total)
-      setHasMore(feedItemsCache.hasMore)
-      setFilters(feedItemsCache.filters)
+    const isValidCache =
+      cache && Date.now() - cache.lastFetch < TTL && JSON.stringify(cache.filters) === JSON.stringify(filters)
+
+    if (isValidCache) {
+      setItems(cache.items)
+      setTotal(cache.total)
+      setHasMore(cache.hasMore)
       setLoading(false)
     } else {
       fetchItems({ reset: true })
     }
-  }, [fetchItems])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // run once
 
   return {
     items,
