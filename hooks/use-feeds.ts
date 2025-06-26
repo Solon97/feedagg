@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { apiService } from "@/lib/api"
-import type { Feed, FeedItem } from "@/types/api"
+import type { FeedItem, UserFeedSubscription } from "@/types/api"
 
 // Cache global para os feed items
 let feedItemsCache: {
@@ -10,10 +10,11 @@ let feedItemsCache: {
   total: number
   hasMore: boolean
   lastFetch: number
+  filters?: any
 } | null = null
 
 export function useFeeds() {
-  const [feeds, setFeeds] = useState<Feed[]>([])
+  const [feeds, setFeeds] = useState<UserFeedSubscription[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -97,12 +98,19 @@ export function useFeeds() {
   }
 }
 
+export interface FeedFilters {
+  title?: string
+  feed_id?: string
+  feed_type?: "rss" | "youtube"
+}
+
 export function useFeedItems() {
   const [items, setItems] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
   const [total, setTotal] = useState(0)
+  const [filters, setFilters] = useState<FeedFilters>({})
   const hasInitialized = useRef(false)
 
   const fetchItems = useCallback(
@@ -114,17 +122,20 @@ export function useFeedItems() {
         order?: "asc" | "desc"
         reset?: boolean
         forceRefresh?: boolean
+        filters?: FeedFilters
       } = {},
     ) => {
       try {
         setLoading(true)
         setError(null)
 
+        const currentFilters = params.filters || filters
         const response = await apiService.getUserFeedItems({
           limit: params.limit || 20,
           offset: params.offset || 0,
           sort: params.sort || "published_at",
           order: params.order || "desc",
+          ...currentFilters,
         })
 
         if (params.reset || params.offset === 0) {
@@ -135,6 +146,7 @@ export function useFeedItems() {
             total: response.total || 0,
             hasMore: (response || []).length === (params.limit || 20),
             lastFetch: Date.now(),
+            filters: currentFilters,
           }
         } else {
           const newItems = [...items, ...(response || [])]
@@ -145,6 +157,7 @@ export function useFeedItems() {
             total: response.total || 0,
             hasMore: (response || []).length === (params.limit || 20),
             lastFetch: Date.now(),
+            filters: currentFilters,
           }
         }
 
@@ -156,7 +169,7 @@ export function useFeedItems() {
         setLoading(false)
       }
     },
-    [items],
+    [items, filters],
   )
 
   const refresh = useCallback(() => {
@@ -170,6 +183,21 @@ export function useFeedItems() {
     }
   }, [fetchItems, loading, hasMore, items.length])
 
+  const applyFilters = useCallback(
+    (newFilters: FeedFilters) => {
+      setFilters(newFilters)
+      feedItemsCache = null // Clear cache when filters change
+      fetchItems({ reset: true, filters: newFilters })
+    },
+    [fetchItems],
+  )
+
+  const clearFilters = useCallback(() => {
+    setFilters({})
+    feedItemsCache = null
+    fetchItems({ reset: true, filters: {} })
+  }, [fetchItems])
+
   // Inicialização com cache
   useEffect(() => {
     if (!hasInitialized.current) {
@@ -180,6 +208,7 @@ export function useFeedItems() {
         setItems(feedItemsCache.items)
         setTotal(feedItemsCache.total)
         setHasMore(feedItemsCache.hasMore)
+        setFilters(feedItemsCache.filters || {})
         setLoading(false)
       } else {
         fetchItems({ reset: true })
@@ -193,7 +222,10 @@ export function useFeedItems() {
     error,
     hasMore,
     total,
+    filters,
     refresh,
     loadMore,
+    applyFilters,
+    clearFilters,
   }
 }

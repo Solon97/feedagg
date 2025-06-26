@@ -4,6 +4,7 @@ import { useState } from "react"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
 import { FeedItemCard } from "@/components/feed-item-card"
+import { FeedFiltersComponent } from "@/components/feed-filters"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useFeedItems } from "@/hooks/use-feeds"
@@ -11,7 +12,8 @@ import { RefreshCw, Plus, Rss } from "lucide-react"
 import Link from "next/link"
 
 export default function DashboardPage() {
-  const { items, loading, error, hasMore, total, refresh, loadMore } = useFeedItems()
+  const { items, loading, error, hasMore, total, filters, refresh, loadMore, applyFilters, clearFilters } =
+    useFeedItems()
   const [refreshing, setRefreshing] = useState(false)
 
   const handleRefresh = async () => {
@@ -19,6 +21,11 @@ export default function DashboardPage() {
     await refresh()
     setRefreshing(false)
   }
+
+  const hasActiveFilters = Object.values(filters).some(Boolean)
+  const filteredItemsText = hasActiveFilters
+    ? `${items.length} filtered items`
+    : `${items.length} items from your subscribed feeds`
 
   return (
     <ProtectedRoute>
@@ -31,7 +38,7 @@ export default function DashboardPage() {
             <div className="text-center sm:text-left">
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Your Feed</h1>
               <p className="text-gray-400 text-sm sm:text-base">
-                {items.length > 0 ? `${items.length} items from your subscribed feeds` : "No items yet"}
+                {items.length > 0 ? filteredItemsText : "No items yet"}
               </p>
             </div>
             <Button
@@ -47,6 +54,9 @@ export default function DashboardPage() {
             </Button>
           </div>
 
+          {/* Filters */}
+          <FeedFiltersComponent filters={filters} onFiltersChange={applyFilters} onClearFilters={clearFilters} />
+
           {/* Error State */}
           {error && (
             <Card className="mb-4 sm:mb-6 bg-red-900/20 border-red-700/50">
@@ -61,16 +71,30 @@ export default function DashboardPage() {
             <Card className="bg-slate-800/50 border-slate-700/50">
               <CardContent className="p-8 sm:p-12 text-center">
                 <Rss className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">No feed items yet</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                  {hasActiveFilters ? "No items match your filters" : "No feed items yet"}
+                </h3>
                 <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base px-4">
-                  Start by adding some RSS feeds or YouTube channels to see content here.
+                  {hasActiveFilters
+                    ? "Try adjusting your filters or clearing them to see more content."
+                    : "Start by adding some RSS feeds or YouTube channels to see content here."}
                 </p>
-                <Link href="/feeds">
-                  <Button className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Your First Feed
+                {hasActiveFilters ? (
+                  <Button
+                    onClick={clearFilters}
+                    variant="outline"
+                    className="border-slate-600 text-gray-300 hover:bg-slate-700 w-full sm:w-auto"
+                  >
+                    Clear Filters
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/feeds">
+                    <Button className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Your First Feed
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           )}
@@ -117,7 +141,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </div>
               ))}
             </div>
           )}
