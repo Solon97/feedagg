@@ -1,20 +1,25 @@
 "use client"
 
 import { useState } from "react"
-import { ProtectedRoute } from "@/components/protected-route"
-import { Navbar } from "@/components/navbar"
+import { RefreshCw, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { FeedItemCard } from "@/components/feed-item-card"
 import { FeedFiltersComponent } from "@/components/feed-filters"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { useFeedItems } from "@/hooks/use-feeds"
-import { RefreshCw, Plus, Rss } from "lucide-react"
-import Link from "next/link"
+import { Navbar } from "@/components/navbar"
+import { ProtectedRoute } from "@/components/protected-route"
+import { useFeedItems, useFeeds } from "@/hooks/use-feeds"
 
-export default function DashboardPage() {
-  const { items, loading, error, hasMore, total, filters, refresh, loadMore, applyFilters, clearFilters } =
-    useFeedItems()
+export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false)
+
+  // Use the hooks with stable references
+  const feedItemsHook = useFeedItems()
+  const feedsHook = useFeeds()
+
+  const { items, loading, error, hasMore, total, filters, refresh, loadMore, applyFilters, clearFilters } =
+    feedItemsHook
+
+  const { feeds, loading: feedsLoading } = feedsHook
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -31,129 +36,140 @@ export default function DashboardPage() {
     }
   }
 
-  const hasActiveFilters = Object.values(filters).some(Boolean)
-  const filteredItemsText = hasActiveFilters
-    ? `${items.length} filtered items`
-    : `${items.length} items from your subscribed feeds`
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+          <Navbar />
+          <div className="max-w-4xl mx-auto p-4">
+            <div className="text-center py-12">
+              <h1 className="text-2xl font-bold text-red-400 mb-4">Error Loading Feed</h1>
+              <p className="text-gray-400 mb-6">{error}</p>
+              <Button onClick={handleRefresh} className="bg-teal-600 hover:bg-teal-700">
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-20 md:pb-0">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <Navbar />
 
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-          {/* Header - otimizado para mobile */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Your Feed</h1>
-              <p className="text-gray-400 text-sm sm:text-base">
-                {items.length > 0 ? filteredItemsText : "No items yet"}
+        <div className="max-w-7xl mx-auto p-4 sm:p-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Your Feed</h1>
+              <p className="text-gray-400">
+                {items.length > 0 ? `${items.length} items from your subscribed feeds` : "No items yet"}
               </p>
             </div>
             <Button
               onClick={handleRefresh}
-              disabled={refreshing || loading}
-              className="bg-teal-600 hover:bg-teal-700 disabled:bg-teal-800 disabled:opacity-50 w-full sm:w-auto transition-all duration-200"
-              size="sm"
+              disabled={refreshing}
+              className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto"
             >
-              <RefreshCw
-                className={`w-4 h-4 mr-2 transition-transform duration-500 ${refreshing ? "animate-spin" : ""}`}
-              />
-              {refreshing ? "Refreshing..." : "Refresh"}
+              {refreshing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </>
+              )}
             </Button>
           </div>
 
-          {/* Filters */}
-          <FeedFiltersComponent filters={filters} onFiltersChange={applyFilters} onClearFilters={clearFilters} />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Filters Sidebar */}
+            <div className="lg:col-span-1">
+              <FeedFiltersComponent
+                filters={filters}
+                onFiltersChange={applyFilters}
+                onClearFilters={clearFilters}
+                feeds={feeds}
+                feedsLoading={feedsLoading}
+              />
+            </div>
 
-          {/* Error State */}
-          {error && (
-            <Card className="mb-4 sm:mb-6 bg-red-900/20 border-red-700/50">
-              <CardContent className="p-3 sm:p-4">
-                <p className="text-red-300 text-sm sm:text-base">{error}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Empty State - otimizado para mobile */}
-          {!loading && items.length === 0 && !error && (
-            <Card className="bg-slate-800/50 border-slate-700/50">
-              <CardContent className="p-8 sm:p-12 text-center">
-                <Rss className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
-                  {hasActiveFilters ? "No items match your filters" : "No feed items yet"}
-                </h3>
-                <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base px-4">
-                  {hasActiveFilters
-                    ? "Try adjusting your filters or clearing them to see more content."
-                    : "Start by adding some RSS feeds or YouTube channels to see content here."}
-                </p>
-                {hasActiveFilters ? (
-                  <Button
-                    onClick={clearFilters}
-                    variant="outline"
-                    className="border-slate-600 text-gray-300 hover:bg-slate-700 w-full sm:w-auto bg-transparent"
-                  >
-                    Clear Filters
-                  </Button>
-                ) : (
-                  <Link href="/feeds">
-                    <Button className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Your First Feed
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              {loading && items.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+                  <span className="ml-2 text-gray-400">Loading your feed...</span>
+                </div>
+              ) : items.length === 0 ? (
+                <div className="text-center py-12">
+                  <h2 className="text-xl font-semibold text-gray-300 mb-2">
+                    {Object.values(filters).some(Boolean) ? "No items match your filters" : "No feed items yet"}
+                  </h2>
+                  <p className="text-gray-500 mb-6">
+                    {Object.values(filters).some(Boolean)
+                      ? "Try adjusting your filters or check back later."
+                      : "Subscribe to some feeds to see content here."}
+                  </p>
+                  {Object.values(filters).some(Boolean) && (
+                    <Button
+                      onClick={clearFilters}
+                      variant="outline"
+                      className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
+                    >
+                      Clear Filters
                     </Button>
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Feed Items - espaçamento otimizado para mobile */}
-          {items.length > 0 && (
-            <div className="space-y-3 sm:space-y-6">
-              {items.map((item) => (
-                <div key={item.id}>
-                  <FeedItemCard item={item} />
+                  )}
                 </div>
-              ))}
+              ) : (
+                <>
+                  {/* Results Summary */}
+                  {Object.values(filters).some(Boolean) && (
+                    <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                      <p className="text-sm text-gray-400">
+                        Showing {items.length} of {total} items
+                        {filters.title && ` matching "${filters.title}"`}
+                      </p>
+                    </div>
+                  )}
 
-              {/* Load More Button */}
-              {hasMore && (
-                <div className="text-center pt-6 sm:pt-8">
-                  <Button
-                    onClick={handleLoadMore}
-                    disabled={loading}
-                    variant="outline"
-                    className="border-slate-600 text-gray-300 hover:bg-slate-700 w-full sm:w-auto bg-transparent"
-                  >
-                    {loading ? "Loading..." : "Load More"}
-                  </Button>
-                </div>
+                  {/* Feed Items Grid */}
+                  <div className="grid gap-4 sm:gap-6">
+                    {items.map((item) => (
+                      <FeedItemCard key={item.id} item={item} />
+                    ))}
+                  </div>
+
+                  {/* Load More Button */}
+                  {hasMore && (
+                    <div className="flex justify-center mt-8">
+                      <Button
+                        onClick={handleLoadMore}
+                        disabled={loading}
+                        variant="outline"
+                        className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Loading...
+                          </>
+                        ) : (
+                          "Load More"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-          )}
-
-          {/* Loading State - otimizado para mobile */}
-          {loading && items.length === 0 && (
-            <div className="space-y-3 sm:space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <Card key={i} className="bg-slate-800/50 border-slate-700/50">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="animate-pulse">
-                      <div className="flex gap-3 sm:gap-4">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-700 rounded-lg flex-shrink-0"></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="h-5 sm:h-6 bg-slate-700 rounded mb-2"></div>
-                          <div className="h-3 sm:h-4 bg-slate-700 rounded mb-2 w-3/4"></div>
-                          <div className="h-3 sm:h-4 bg-slate-700 rounded w-1/2"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </ProtectedRoute>

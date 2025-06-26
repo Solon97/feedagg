@@ -4,15 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { apiService } from "@/lib/api"
 import type { FeedItem, UserFeedSubscription } from "@/types/api"
 
-// Cache global para os feed items
-let feedItemsCache: {
-  items: FeedItem[]
-  total: number
-  hasMore: boolean
-  lastFetch: number
-  filters?: any
-} | null = null
-
 export function useFeeds() {
   const [feeds, setFeeds] = useState<UserFeedSubscription[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,7 +26,7 @@ export function useFeeds() {
     async (url: string) => {
       try {
         await apiService.subscribeFeed(url)
-        await fetchFeeds() // Refresh the list only for new subscriptions
+        await fetchFeeds()
         return { success: true }
       } catch (err) {
         return {
@@ -50,14 +41,11 @@ export function useFeeds() {
   const updateFeedStatus = useCallback(async (feedId: string, isActive: boolean) => {
     try {
       await apiService.updateFeedStatus(feedId, isActive)
-
-      // Update local state instead of refetching
       setFeeds((prevFeeds) =>
         prevFeeds.map((subscription) =>
           subscription.feed.id === feedId ? { ...subscription, is_active: isActive } : subscription,
         ),
       )
-
       return { success: true }
     } catch (err) {
       return {
@@ -70,10 +58,7 @@ export function useFeeds() {
   const deleteFeed = useCallback(async (feedId: string) => {
     try {
       await apiService.deleteFeed(feedId)
-
-      // Remove from local state instead of refetching
       setFeeds((prevFeeds) => prevFeeds.filter((subscription) => subscription.feed.id !== feedId))
-
       return { success: true }
     } catch (err) {
       return {
@@ -85,7 +70,7 @@ export function useFeeds() {
 
   useEffect(() => {
     fetchFeeds()
-  }, []) // Remove fetchFeeds dependency to prevent infinite loop
+  }, [fetchFeeds])
 
   return {
     feeds,
@@ -111,115 +96,95 @@ export function useFeedItems() {
   const [hasMore, setHasMore] = useState(true)
   const [total, setTotal] = useState(0)
   const [filters, setFilters] = useState<FeedFilters>({})
-  const hasInitialized = useRef(false)
 
-  // Função estável que não depende de items
+  // Use refs to track current values without causing re-renders
+  const currentFiltersRef = useRef<FeedFilters>({})
+  const isInitializedRef = useRef(false)
+  const isFetchingRef = useRef(false)
+
+  // Stable fetch function that doesn't change on every render
   const fetchItems = useCallback(
     async (
-      params: {
+      targetFilters: FeedFilters,
+      options: {
         limit?: number
         offset?: number
         sort?: string
         order?: "asc" | "desc"
         reset?: boolean
-        forceRefresh?: boolean
-        filters?: FeedFilters
       } = {},
     ) => {
+      // Prevent concurrent fetches
+      if (isFetchingRef.current) return
+
       try {
+        isFetchingRef.current = true
         setLoading(true)
         setError(null)
 
-        const currentFilters = params.filters || filters
         const response = await apiService.getUserFeedItems({
-          limit: params.limit || 20,
-          offset: params.offset || 0,
-          sort: params.sort || "published_at",
-          order: params.order || "desc",
-          ...currentFilters,
+          limit: options.limit || 20,
+          offset: options.offset || 0,
+          sort: options.sort || "published_at",
+          order: options.order || "desc",
+          ...targetFilters,
         })
 
         const responseItems = response || []
 
-        if (params.reset || params.offset === 0) {
+        if (options.reset || options.offset === 0) {
           setItems(responseItems)
-          // Atualizar cache
-          feedItemsCache = {
-            items: responseItems,
-            total: response?.total || 0,
-            hasMore: responseItems.length === (params.limit || 20),
-            lastFetch: Date.now(),
-            filters: currentFilters,
-          }
         } else {
-          setItems((prevItems) => {
-            const newItems = [...prevItems, ...responseItems]
-            // Atualizar cache
-            feedItemsCache = {
-              items: newItems,
-              total: response?.total || 0,
-              hasMore: responseItems.length === (params.limit || 20),
-              lastFetch: Date.now(),
-              filters: currentFilters,
-            }
-            return newItems
-          })
+          setItems((prevItems) => [...prevItems, ...responseItems])
         }
 
         setTotal(response?.total || 0)
-        setHasMore(responseItems.length === (params.limit || 20))
+        setHasMore(responseItems.length === (options.limit || 20))
+
+        // Update current filters ref
+        currentFiltersRef.current = targetFilters
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch feed items")
       } finally {
         setLoading(false)
+        isFetchingRef.current = false
       }
     },
-    [filters],
+    [],
   )
 
+  // Stable functions that don't change on every render
   const refresh = useCallback(() => {
-    feedItemsCache = null // Limpar cache
-    fetchItems({ reset: true, forceRefresh: true })
-  }, []) // Remove fetchItems dependency to prevent loops
+    fetchItems(currentFiltersRef.current, { reset: true })
+  }, [fetchItems])
 
   const loadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchItems({ offset: items.length })
+    if (!loading && hasMore && !isFetchingRef.current) {
+      fetchItems(currentFiltersRef.current, { offset: items.length })
     }
-  }, [loading, hasMore, items.length]) // Remove fetchItems dependency, use items.length directly
+  }, [fetchItems, loading, hasMore, items.length])
 
   const applyFilters = useCallback(
     (newFilters: FeedFilters) => {
       setFilters(newFilters)
-      feedItemsCache = null // Clear cache when filters change
-      fetchItems({ reset: true, filters: newFilters })
+      fetchItems(newFilters, { reset: true })
     },
-    [], // Remove fetchItems dependency to prevent loops
+    [fetchItems],
   )
 
   const clearFilters = useCallback(() => {
-    setFilters({})
-    feedItemsCache = null
-    fetchItems({ reset: true, filters: {} })
-  }, []) // Remove fetchItems dependency to prevent loops
+    const emptyFilters = {}
+    setFilters(emptyFilters)
+    fetchItems(emptyFilters, { reset: true })
+  }, [fetchItems])
 
-  // Inicialização com cache - executa apenas uma vez
+  // Initialize only once
   useEffect(() => {
-    if (!hasInitialized.current) {
-      hasInitialized.current = true
-
-      // Verificar se existe cache válido (menos de 5 minutos)
-      if (feedItemsCache && Date.now() - feedItemsCache.lastFetch < 5 * 60 * 1000) {
-        setItems(feedItemsCache.items)
-        setTotal(feedItemsCache.total)
-        setHasMore(feedItemsCache.hasMore)
-        setFilters(feedItemsCache.filters || {})
-        setLoading(false)
-      } else {
-        fetchItems({ reset: true })
-      }
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true
+      fetchItems({}, { reset: true })
     }
-  }, []) // Remove fetchItems dependency to prevent infinite loop
+  }, [fetchItems])
 
   return {
     items,
