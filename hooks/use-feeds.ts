@@ -10,7 +10,7 @@ let feedItemsCache: {
   total: number
   hasMore: boolean
   lastFetch: number
-  filters?: any
+  filters?: FeedFilters
 } | null = null
 
 export function useFeeds() {
@@ -112,6 +112,12 @@ export function useFeedItems() {
   const [total, setTotal] = useState(0)
   const [filters, setFilters] = useState<FeedFilters>({})
   const hasInitialized = useRef(false)
+  const filtersRef = useRef(filters)
+
+  // Keep filters ref updated
+  useEffect(() => {
+    filtersRef.current = filters
+  }, [filters])
 
   // Função estável que não depende de items
   const fetchItems = useCallback(
@@ -130,7 +136,7 @@ export function useFeedItems() {
         setLoading(true)
         setError(null)
 
-        const currentFilters = params.filters || filters
+        const currentFilters = params.filters ?? filtersRef.current
         const response = await apiService.getUserFeedItems({
           limit: params.limit || 20,
           offset: params.offset || 0,
@@ -174,7 +180,7 @@ export function useFeedItems() {
         setLoading(false)
       }
     },
-    [filters],
+    [],
   )
 
   const refresh = useCallback(() => {
