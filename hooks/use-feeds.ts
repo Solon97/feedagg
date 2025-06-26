@@ -4,15 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { apiService } from "@/lib/api"
 import type { FeedItem, UserFeedSubscription } from "@/types/api"
 
-// Cache global para os feed items
-let feedItemsCache: {
-  items: FeedItem[]
-  total: number
-  hasMore: boolean
-  lastFetch: number
-  filters?: any
-} | null = null
-
+// -----------------------------------------------------------------------------
+// SHARED – USER FEEDS (UNCHANGED)
+// -----------------------------------------------------------------------------
 export function useFeeds() {
   const [feeds, setFeeds] = useState<UserFeedSubscription[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,13 +29,10 @@ export function useFeeds() {
     async (url: string) => {
       try {
         await apiService.subscribeFeed(url)
-        await fetchFeeds() // Refresh the list only for new subscriptions
+        await fetchFeeds() // refresh list
         return { success: true }
       } catch (err) {
-        return {
-          success: false,
-          error: err instanceof Error ? err.message : "Failed to subscribe to feed",
-        }
+        return { success: false, error: err instanceof Error ? err.message : "Failed to subscribe" }
       }
     },
     [fetchFeeds],
@@ -51,35 +42,21 @@ export function useFeeds() {
     try {
       await apiService.updateFeedStatus(feedId, isActive)
 
-      // Update local state instead of refetching
-      setFeeds((prevFeeds) =>
-        prevFeeds.map((subscription) =>
-          subscription.feed.id === feedId ? { ...subscription, is_active: isActive } : subscription,
-        ),
-      )
-
+      // optimistic update
+      setFeeds((prev) => prev.map((sub) => (sub.feed.id === feedId ? { ...sub, is_active: isActive } : sub)))
       return { success: true }
     } catch (err) {
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Failed to update feed status",
-      }
+      return { success: false, error: err instanceof Error ? err.message : "Failed to update" }
     }
   }, [])
 
   const deleteFeed = useCallback(async (feedId: string) => {
     try {
       await apiService.deleteFeed(feedId)
-
-      // Remove from local state instead of refetching
-      setFeeds((prevFeeds) => prevFeeds.filter((subscription) => subscription.feed.id !== feedId))
-
+      setFeeds((prev) => prev.filter((sub) => sub.feed.id !== feedId))
       return { success: true }
     } catch (err) {
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Failed to delete feed",
-      }
+      return { success: false, error: err instanceof Error ? err.message : "Failed to delete" }
     }
   }, [])
 
@@ -98,11 +75,24 @@ export function useFeeds() {
   }
 }
 
+// -----------------------------------------------------------------------------
+// FEED ITEMS WITH FILTERS
+// -----------------------------------------------------------------------------
 export interface FeedFilters {
   title?: string
   feed_id?: string
   feed_type?: "rss" | "youtube"
 }
+
+type FeedItemsCache = {
+  items: FeedItem[]
+  total: number
+  hasMore: boolean
+  lastFetch: number
+  filters?: FeedFilters
+}
+
+let feedItemsCache: FeedItemsCache | null = null
 
 export function useFeedItems() {
   const [items, setItems] = useState<FeedItem[]>([])
@@ -113,67 +103,71 @@ export function useFeedItems() {
   const [filters, setFilters] = useState<FeedFilters>({})
   const hasInitialized = useRef(false)
 
+  // ---------------------------------------------------------------------------
+  // Stable fetchItems (does NOT depend on `items`)
+  // ---------------------------------------------------------------------------
   const fetchItems = useCallback(
-    async (
-      params: {
-        limit?: number
-        offset?: number
-        sort?: string
-        order?: "asc" | "desc"
-        reset?: boolean
-        forceRefresh?: boolean
-        filters?: FeedFilters
-      } = {},
-    ) => {
+    async ({
+      limit = 20,
+      offset = 0,
+      sort = "published_at",
+      order = "desc",
+      reset = false,
+      forceRefresh = false,
+      currentFilters = filters,
+    }: {
+      limit?: number
+      offset?: number
+      sort?: string
+      order?: "asc" | "desc"
+      reset?: boolean
+      forceRefresh?: boolean
+      currentFilters?: FeedFilters
+    } = {}) => {
       try {
         setLoading(true)
         setError(null)
 
-        const currentFilters = params.filters || filters
         const response = await apiService.getUserFeedItems({
-          limit: params.limit || 20,
-          offset: params.offset || 0,
-          sort: params.sort || "published_at",
-          order: params.order || "desc",
+          limit,
+          offset,
+          sort,
+          order,
           ...currentFilters,
         })
 
-        if (params.reset || params.offset === 0) {
-          setItems(response || [])
-          // Atualizar cache
-          feedItemsCache = {
-            items: response || [],
-            total: response.total || 0,
-            hasMore: (response || []).length === (params.limit || 20),
-            lastFetch: Date.now(),
-            filters: currentFilters,
-          }
-        } else {
-          const newItems = [...items, ...(response || [])]
-          setItems(newItems)
-          // Atualizar cache
+        setItems((prev) => {
+          const incoming = response || []
+          const newItems = reset || offset === 0 ? incoming : [...prev, ...incoming]
+
+          // update cache
           feedItemsCache = {
             items: newItems,
             total: response.total || 0,
-            hasMore: (response || []).length === (params.limit || 20),
+            hasMore: incoming.length === limit,
             lastFetch: Date.now(),
             filters: currentFilters,
           }
-        }
+
+          return newItems
+        })
 
         setTotal(response.total || 0)
-        setHasMore((response || []).length === (params.limit || 20))
+        setHasMore((response || []).length === limit)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch feed items")
       } finally {
         setLoading(false)
       }
     },
-    [items, filters],
+    [filters],
   )
 
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
   const refresh = useCallback(() => {
-    feedItemsCache = null // Limpar cache
+    feedItemsCache = null
     fetchItems({ reset: true, forceRefresh: true })
   }, [fetchItems])
 
@@ -181,13 +175,13 @@ export function useFeedItems() {
     if (!loading && hasMore) {
       fetchItems({ offset: items.length })
     }
-  }, [fetchItems, loading, hasMore, items.length])
+  }, [loading, hasMore, items.length, fetchItems])
 
   const applyFilters = useCallback(
     (newFilters: FeedFilters) => {
       setFilters(newFilters)
-      feedItemsCache = null // Clear cache when filters change
-      fetchItems({ reset: true, filters: newFilters })
+      feedItemsCache = null
+      fetchItems({ reset: true, currentFilters: newFilters })
     },
     [fetchItems],
   )
@@ -195,26 +189,27 @@ export function useFeedItems() {
   const clearFilters = useCallback(() => {
     setFilters({})
     feedItemsCache = null
-    fetchItems({ reset: true, filters: {} })
+    fetchItems({ reset: true, currentFilters: {} })
   }, [fetchItems])
 
-  // Inicialização com cache
+  // ---------------------------------------------------------------------------
+  // Initial load (with cache)
+  // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (!hasInitialized.current) {
-      hasInitialized.current = true
+    if (hasInitialized.current) return
+    hasInitialized.current = true
 
-      // Verificar se existe cache válido (menos de 5 minutos)
-      if (feedItemsCache && Date.now() - feedItemsCache.lastFetch < 5 * 60 * 1000) {
-        setItems(feedItemsCache.items)
-        setTotal(feedItemsCache.total)
-        setHasMore(feedItemsCache.hasMore)
-        setFilters(feedItemsCache.filters || {})
-        setLoading(false)
-      } else {
-        fetchItems({ reset: true })
-      }
+    if (feedItemsCache && Date.now() - feedItemsCache.lastFetch < 5 * 60 * 1000) {
+      setItems(feedItemsCache.items)
+      setTotal(feedItemsCache.total)
+      setHasMore(feedItemsCache.hasMore)
+      setFilters(feedItemsCache.filters || {})
+      setLoading(false)
+    } else {
+      fetchItems({ reset: true })
     }
-  }, [fetchItems])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // run once
 
   return {
     items,
