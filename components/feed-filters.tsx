@@ -27,8 +27,8 @@ export function FeedFiltersComponent({
   feedsLoading,
 }: FeedFiltersProps) {
   const [localTitle, setLocalTitle] = useState(filters.title || "")
-  const [localFeedId, setLocalFeedId] = useState(filters.feed_id || "")
-  const [localFeedType, setLocalFeedType] = useState(filters.feed_type || "")
+  const [localFeedId, setLocalFeedId] = useState(filters.feed_id ?? "all")
+  const [localFeedType, setLocalFeedType] = useState(filters.feed_type ?? "all")
   const [isOpen, setIsOpen] = useState(false)
 
   // Use ref to track if we're updating from external filters
@@ -41,8 +41,8 @@ export function FeedFiltersComponent({
   useEffect(() => {
     isUpdatingFromPropsRef.current = true
     setLocalTitle(filters.title || "")
-    setLocalFeedId(filters.feed_id || "")
-    setLocalFeedType(filters.feed_type || "")
+    setLocalFeedId(filters.feed_id ?? "all")
+    setLocalFeedType(filters.feed_type ?? "all")
     isUpdatingFromPropsRef.current = false
   }, [filters.title, filters.feed_id, filters.feed_type])
 
@@ -60,7 +60,7 @@ export function FeedFiltersComponent({
     setLocalFeedId(feedId)
     onFiltersChange({
       ...filters,
-      feed_id: feedId || undefined,
+      feed_id: feedId === "all" ? undefined : feedId,
     })
   }
 
@@ -68,7 +68,7 @@ export function FeedFiltersComponent({
     setLocalFeedType(feedType)
     onFiltersChange({
       ...filters,
-      feed_type: (feedType as "rss" | "youtube") || undefined,
+      feed_type: feedType === "all" ? undefined : (feedType as "rss" | "youtube"),
     })
   }
 
@@ -106,7 +106,7 @@ export function FeedFiltersComponent({
             <SelectValue placeholder={feedsLoading ? "Loading feeds..." : "All feeds"} />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
-            <SelectItem value="" className="text-white hover:bg-slate-700">
+            <SelectItem value="all" className="text-white hover:bg-slate-700">
               All feeds
             </SelectItem>
             {activeFeeds.map((subscription) => (
@@ -130,7 +130,7 @@ export function FeedFiltersComponent({
             <SelectValue placeholder="All types" />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
-            <SelectItem value="" className="text-white hover:bg-slate-700">
+            <SelectItem value="all" className="text-white hover:bg-slate-700">
               All types
             </SelectItem>
             <SelectItem value="rss" className="text-white hover:bg-slate-700">
