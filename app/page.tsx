@@ -18,8 +18,17 @@ export default function DashboardPage() {
 
   const handleRefresh = async () => {
     setRefreshing(true)
-    await refresh()
-    setRefreshing(false)
+    try {
+      await refresh()
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+  const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      loadMore()
+    }
   }
 
   const hasActiveFilters = Object.values(filters).some(Boolean)
@@ -102,7 +111,7 @@ export default function DashboardPage() {
           {/* Feed Items - espaçamento otimizado para mobile */}
           {items.length > 0 && (
             <div className="space-y-3 sm:space-y-6">
-              {items.map((item, index) => (
+              {items.map((item) => (
                 <div key={item.id}>
                   <FeedItemCard item={item} />
                 </div>
@@ -112,7 +121,7 @@ export default function DashboardPage() {
               {hasMore && (
                 <div className="text-center pt-6 sm:pt-8">
                   <Button
-                    onClick={loadMore}
+                    onClick={handleLoadMore}
                     disabled={loading}
                     variant="outline"
                     className="border-slate-600 text-gray-300 hover:bg-slate-700 w-full sm:w-auto"
@@ -141,7 +150,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </CardContent>
-                </div>
+                </Card>
               ))}
             </div>
           )}
