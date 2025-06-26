@@ -84,6 +84,10 @@ export default function ItemPage({ params }: ItemPageProps) {
     return content.slice(0, maxLength) + "..."
   }
 
+  const isMedium = (url: string) => {
+    return url.includes("medium.com") || url.includes("/@")
+  }
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -275,6 +279,29 @@ export default function ItemPage({ params }: ItemPageProps) {
                     ) : (
                       <div className="text-gray-500 italic">No content available</div>
                     )}
+                  </div>
+                )}
+                {/* Medium Membership Notice */}
+                {isMedium(item.url) && (
+                  <div className="mt-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-amber-600 rounded-full flex items-center justify-center mt-0.5">
+                        <span className="text-white text-sm font-bold">M</span>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-amber-300 font-semibold mb-2">Medium Membership Required</h4>
+                        <p className="text-amber-200/80 text-sm mb-3">
+                          This article is from Medium and may require a Medium membership to read the full content. If
+                          you have a membership, click the button below to access the complete article.
+                        </p>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Read Full Article on Medium
+                          </Button>
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardContent>
