@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,144 +28,107 @@ export function FeedFiltersComponent({
   feeds,
   feedsLoading,
 }: FeedFiltersProps) {
-  // Local state for form inputs
-  const [localTitle, setLocalTitle] = useState(filters.title || "")
-  const [localFeedId, setLocalFeedId] = useState(filters.feed_id ?? "all")
-  const [localFeedType, setLocalFeedType] = useState(filters.feed_type ?? "all")
+  // Estados locais simples
+  const [titleInput, setTitleInput] = useState(filters.title || "")
+  const [feedSelect, setFeedSelect] = useState(filters.feed_id || "all")
+  const [typeSelect, setTypeSelect] = useState(filters.feed_type || "all")
   const [isOpen, setIsOpen] = useState(false)
 
-  // Refs to track state and prevent race conditions
-  const isUpdatingFromPropsRef = useRef(false)
-  const lastAppliedTitleRef = useRef(filters.title || "")
-  const userIsTypingRef = useRef(false)
+  // Ref para evitar loops
+  const isExternalUpdate = useRef(false)
 
-  // Debounce title search with a reasonable delay
-  const debouncedTitle = useDebounce(localTitle, 300)
+  // Debounce apenas do título
+  const debouncedTitle = useDebounce(titleInput, 400)
 
-  // Stable callback for updating filters
-  const updateFilters = useCallback(
-    (newFilters: Partial<FeedFilters>) => {
+  // Atualizar filtros quando o título debounced mudar
+  useEffect(() => {
+    if (!isExternalUpdate.current) {
       onFiltersChange({
         ...filters,
-        ...newFilters,
+        title: debouncedTitle || undefined,
       })
-    },
-    [filters, onFiltersChange],
-  )
+    }
+  }, [debouncedTitle])
 
-  // Handle title input changes
-  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    userIsTypingRef.current = true
-    setLocalTitle(value)
+  // Sincronizar estado local com filtros externos (apenas quando necessário)
+  useEffect(() => {
+    isExternalUpdate.current = true
 
-    // Clear the typing flag after a short delay
+    if (filters.title !== titleInput && filters.title !== debouncedTitle) {
+      setTitleInput(filters.title || "")
+    }
+
+    if (filters.feed_id !== feedSelect) {
+      setFeedSelect(filters.feed_id || "all")
+    }
+
+    if (filters.feed_type !== typeSelect) {
+      setTypeSelect(filters.feed_type || "all")
+    }
+
     setTimeout(() => {
-      userIsTypingRef.current = false
+      isExternalUpdate.current = false
     }, 100)
-  }, [])
+  }, [filters.title, filters.feed_id, filters.feed_type])
 
-  // Update filters when debounced title changes (only if user initiated)
-  useEffect(() => {
-    // Only update if:
-    // 1. Not currently updating from props
-    // 2. The debounced title is different from what we last applied
-    // 3. This change wasn't triggered by an external filter update
-    if (!isUpdatingFromPropsRef.current && debouncedTitle !== lastAppliedTitleRef.current) {
-      lastAppliedTitleRef.current = debouncedTitle
-      updateFilters({ title: debouncedTitle || undefined })
-    }
-  }, [debouncedTitle, updateFilters])
+  // Handlers simples
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitleInput(e.target.value)
+  }
 
-  // Update local state when external filters change
-  useEffect(() => {
-    // Only update local state if user is not currently typing
-    if (!userIsTypingRef.current) {
-      isUpdatingFromPropsRef.current = true
+  const handleFeedChange = (value: string) => {
+    setFeedSelect(value)
+    onFiltersChange({
+      ...filters,
+      feed_id: value === "all" ? undefined : value,
+    })
+  }
 
-      // Update title only if it's different and user isn't typing
-      if (filters.title !== localTitle) {
-        setLocalTitle(filters.title || "")
-        lastAppliedTitleRef.current = filters.title || ""
-      }
+  const handleTypeChange = (value: string) => {
+    setTypeSelect(value)
+    onFiltersChange({
+      ...filters,
+      feed_type: value === "all" ? undefined : (value as "rss" | "youtube"),
+    })
+  }
 
-      setLocalFeedId(filters.feed_id ?? "all")
-      setLocalFeedType(filters.feed_type ?? "all")
-
-      // Reset the flag after a short delay
-      setTimeout(() => {
-        isUpdatingFromPropsRef.current = false
-      }, 50)
-    }
-  }, [filters.title, filters.feed_id, filters.feed_type, localTitle])
-
-  const handleFeedChange = useCallback(
-    (feedId: string) => {
-      setLocalFeedId(feedId)
-      updateFilters({ feed_id: feedId === "all" ? undefined : feedId })
-    },
-    [updateFilters],
-  )
-
-  const handleFeedTypeChange = useCallback(
-    (feedType: string) => {
-      setLocalFeedType(feedType)
-      updateFilters({ feed_type: feedType === "all" ? undefined : (feedType as "rss" | "youtube") })
-    },
-    [updateFilters],
-  )
-
-  const handleClearFilters = useCallback(() => {
-    // Reset all local state first
-    setLocalTitle("")
-    setLocalFeedId("all")
-    setLocalFeedType("all")
-    lastAppliedTitleRef.current = ""
-    userIsTypingRef.current = false
-
-    // Then clear the filters
+  const handleClear = () => {
+    setTitleInput("")
+    setFeedSelect("all")
+    setTypeSelect("all")
     onClearFilters()
-  }, [onClearFilters])
+  }
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length
   const activeFeeds = Array.isArray(feeds) ? feeds.filter((sub) => sub.is_active) : []
 
   const FilterContent = () => (
     <div className="space-y-4">
-      {/* Title Search */}
+      {/* Busca por título */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Search by title</label>
+        <label className="text-sm font-medium text-gray-300">Buscar por título</label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search articles..."
-            value={localTitle}
+            placeholder="Buscar artigos..."
+            value={titleInput}
             onChange={handleTitleChange}
             className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-gray-400"
             autoComplete="off"
           />
         </div>
-        {/* Debug info in development */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="text-xs text-gray-500 space-y-1">
-            <div>Local: "{localTitle}"</div>
-            <div>Debounced: "{debouncedTitle}"</div>
-            <div>Filter: "{filters.title || ""}"</div>
-            <div>Typing: {userIsTypingRef.current ? "Yes" : "No"}</div>
-          </div>
-        )}
       </div>
 
-      {/* Feed Selection */}
+      {/* Seleção de feed */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Filter by feed</label>
-        <Select value={localFeedId} onValueChange={handleFeedChange} disabled={feedsLoading}>
+        <label className="text-sm font-medium text-gray-300">Filtrar por feed</label>
+        <Select value={feedSelect} onValueChange={handleFeedChange} disabled={feedsLoading}>
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-            <SelectValue placeholder={feedsLoading ? "Loading feeds..." : "All feeds"} />
+            <SelectValue placeholder={feedsLoading ? "Carregando feeds..." : "Todos os feeds"} />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             <SelectItem value="all" className="text-white hover:bg-slate-700">
-              All feeds
+              Todos os feeds
             </SelectItem>
             {activeFeeds.map((subscription) => (
               <SelectItem
@@ -180,16 +143,16 @@ export function FeedFiltersComponent({
         </Select>
       </div>
 
-      {/* Feed Type */}
+      {/* Tipo de feed */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Filter by type</label>
-        <Select value={localFeedType} onValueChange={handleFeedTypeChange}>
+        <label className="text-sm font-medium text-gray-300">Filtrar por tipo</label>
+        <Select value={typeSelect} onValueChange={handleTypeChange}>
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-            <SelectValue placeholder="All types" />
+            <SelectValue placeholder="Todos os tipos" />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             <SelectItem value="all" className="text-white hover:bg-slate-700">
-              All types
+              Todos os tipos
             </SelectItem>
             <SelectItem value="rss" className="text-white hover:bg-slate-700">
               RSS
@@ -201,34 +164,34 @@ export function FeedFiltersComponent({
         </Select>
       </div>
 
-      {/* Active Filters */}
+      {/* Filtros ativos */}
       {activeFiltersCount > 0 && (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-300">Active filters</label>
+          <label className="text-sm font-medium text-gray-300">Filtros ativos</label>
           <div className="flex flex-wrap gap-2">
             {filters.title && (
               <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50">
-                Title: {filters.title}
+                Título: {filters.title}
               </Badge>
             )}
             {filters.feed_id && (
               <Badge variant="secondary" className="bg-blue-900/30 text-blue-400 border-blue-700/50">
-                Feed: {activeFeeds.find((f) => f.feed.id === filters.feed_id)?.feed.name || "Unknown"}
+                Feed: {activeFeeds.find((f) => f.feed.id === filters.feed_id)?.feed.name || "Desconhecido"}
               </Badge>
             )}
             {filters.feed_type && (
               <Badge variant="secondary" className="bg-purple-900/30 text-purple-400 border-purple-700/50">
-                Type: {filters.feed_type.toUpperCase()}
+                Tipo: {filters.feed_type.toUpperCase()}
               </Badge>
             )}
           </div>
           <Button
-            onClick={handleClearFilters}
+            onClick={handleClear}
             variant="outline"
             size="sm"
             className="w-full border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
           >
-            Clear all filters
+            Limpar todos os filtros
           </Button>
         </div>
       )}
@@ -237,11 +200,11 @@ export function FeedFiltersComponent({
 
   return (
     <>
-      {/* Desktop Filters */}
+      {/* Filtros Desktop */}
       <div className="hidden lg:block bg-slate-800/50 rounded-lg p-4 border border-slate-700">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-gray-400" />
-          <h3 className="font-medium text-white">Filters</h3>
+          <h3 className="font-medium text-white">Filtros</h3>
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
               {activeFiltersCount}
@@ -251,7 +214,7 @@ export function FeedFiltersComponent({
         <FilterContent />
       </div>
 
-      {/* Mobile Filters */}
+      {/* Filtros Mobile */}
       <div className="lg:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
@@ -260,7 +223,7 @@ export function FeedFiltersComponent({
               className="w-full border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
             >
               <Filter className="h-4 w-4 mr-2" />
-              Filters
+              Filtros
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary" className="ml-2 bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
                   {activeFiltersCount}
@@ -272,7 +235,7 @@ export function FeedFiltersComponent({
             <SheetHeader>
               <SheetTitle className="text-white flex items-center gap-2">
                 <Filter className="h-4 w-4" />
-                Filters
+                Filtros
               </SheetTitle>
             </SheetHeader>
             <div className="mt-6">
