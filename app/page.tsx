@@ -1,40 +1,50 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ProtectedRoute } from "@/components/protected-route"
-import { Navbar } from "@/components/navbar"
-import { FeedItemCard } from "@/components/feed-item-card"
-import { FeedFiltersComponent } from "@/components/feed-filters"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { useFeedItems } from "@/hooks/use-feeds"
-import { RefreshCw, Plus, Rss } from "lucide-react"
-import Link from "next/link"
+import { useState, useCallback } from "react";
+import { ProtectedRoute } from "@/components/protected-route";
+import { Navbar } from "@/components/navbar";
+import { FeedItemCard } from "@/components/feed-item-card";
+import { FeedFiltersComponent } from "@/components/feed-filters";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useFeedItems } from "@/hooks/use-feeds";
+import { RefreshCw, Plus, Rss } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
-  const { items, loading, error, hasMore, total, filters, refresh, loadMore, applyFilters, clearFilters } =
-    useFeedItems()
-  const [refreshing, setRefreshing] = useState(false)
+  const {
+    items,
+    loading,
+    error,
+    hasMore,
+    total,
+    filters,
+    refresh,
+    loadMore,
+    applyFilters,
+    clearFilters,
+  } = useFeedItems();
+  const [refreshing, setRefreshing] = useState(false);
 
-  const handleRefresh = async () => {
-    setRefreshing(true)
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
     try {
-      await refresh()
+      await refresh();
     } finally {
-      setRefreshing(false)
+      setRefreshing(false);
     }
-  }
+  }, [refresh]);
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
-      loadMore()
+      loadMore();
     }
-  }
+  }, [loading, hasMore, loadMore]);
 
-  const hasActiveFilters = Object.values(filters).some(Boolean)
+  const hasActiveFilters = Object.values(filters).some(Boolean);
   const filteredItemsText = hasActiveFilters
     ? `${items.length} filtered items`
-    : `${items.length} items from your subscribed feeds`
+    : `${items.length} items from your subscribed feeds`;
 
   return (
     <ProtectedRoute>
@@ -45,7 +55,9 @@ export default function DashboardPage() {
           {/* Header - otimizado para mobile */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
             <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Your Feed</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">
+                Your Feed
+              </h1>
               <p className="text-gray-400 text-sm sm:text-base">
                 {items.length > 0 ? filteredItemsText : "No items yet"}
               </p>
@@ -57,14 +69,20 @@ export default function DashboardPage() {
               size="sm"
             >
               <RefreshCw
-                className={`w-4 h-4 mr-2 transition-transform duration-500 ${refreshing ? "animate-spin" : ""}`}
+                className={`w-4 h-4 mr-2 transition-transform duration-500 ${
+                  refreshing ? "animate-spin" : ""
+                }`}
               />
               {refreshing ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
 
           {/* Filters */}
-          <FeedFiltersComponent filters={filters} onFiltersChange={applyFilters} onClearFilters={clearFilters} />
+          <FeedFiltersComponent
+            filters={filters}
+            onFiltersChange={applyFilters}
+            onClearFilters={clearFilters}
+          />
 
           {/* Error State */}
           {error && (
@@ -81,7 +99,9 @@ export default function DashboardPage() {
               <CardContent className="p-8 sm:p-12 text-center">
                 <Rss className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
                 <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
-                  {hasActiveFilters ? "No items match your filters" : "No feed items yet"}
+                  {hasActiveFilters
+                    ? "No items match your filters"
+                    : "No feed items yet"}
                 </h3>
                 <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base px-4">
                   {hasActiveFilters
@@ -157,5 +177,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </ProtectedRoute>
-  )
+  );
 }
