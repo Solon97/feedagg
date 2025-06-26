@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import type React from "react"
+
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,58 +28,104 @@ export function FeedFiltersComponent({
   feeds,
   feedsLoading,
 }: FeedFiltersProps) {
+  // Local state for form inputs
   const [localTitle, setLocalTitle] = useState(filters.title || "")
   const [localFeedId, setLocalFeedId] = useState(filters.feed_id ?? "all")
   const [localFeedType, setLocalFeedType] = useState(filters.feed_type ?? "all")
   const [isOpen, setIsOpen] = useState(false)
 
-  // Use ref to track if we're updating from external filters
+  // Refs to track state and prevent race conditions
   const isUpdatingFromPropsRef = useRef(false)
+  const lastAppliedTitleRef = useRef(filters.title || "")
+  const userIsTypingRef = useRef(false)
 
-  // Debounce title search
-  const debouncedTitle = useDebounce(localTitle, 500)
+  // Debounce title search with a reasonable delay
+  const debouncedTitle = useDebounce(localTitle, 300)
 
-  // Update local state when external filters change (without triggering effects)
-  useEffect(() => {
-    isUpdatingFromPropsRef.current = true
-    setLocalTitle(filters.title || "")
-    setLocalFeedId(filters.feed_id ?? "all")
-    setLocalFeedType(filters.feed_type ?? "all")
-    isUpdatingFromPropsRef.current = false
-  }, [filters.title, filters.feed_id, filters.feed_type])
-
-  // Handle debounced title changes
-  useEffect(() => {
-    if (!isUpdatingFromPropsRef.current && debouncedTitle !== filters.title) {
+  // Stable callback for updating filters
+  const updateFilters = useCallback(
+    (newFilters: Partial<FeedFilters>) => {
       onFiltersChange({
         ...filters,
-        title: debouncedTitle || undefined,
+        ...newFilters,
       })
+    },
+    [filters, onFiltersChange],
+  )
+
+  // Handle title input changes
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    userIsTypingRef.current = true
+    setLocalTitle(value)
+
+    // Clear the typing flag after a short delay
+    setTimeout(() => {
+      userIsTypingRef.current = false
+    }, 100)
+  }, [])
+
+  // Update filters when debounced title changes (only if user initiated)
+  useEffect(() => {
+    // Only update if:
+    // 1. Not currently updating from props
+    // 2. The debounced title is different from what we last applied
+    // 3. This change wasn't triggered by an external filter update
+    if (!isUpdatingFromPropsRef.current && debouncedTitle !== lastAppliedTitleRef.current) {
+      lastAppliedTitleRef.current = debouncedTitle
+      updateFilters({ title: debouncedTitle || undefined })
     }
-  }, [debouncedTitle]) // Remove filters and onFiltersChange from dependencies
+  }, [debouncedTitle, updateFilters])
 
-  const handleFeedChange = (feedId: string) => {
-    setLocalFeedId(feedId)
-    onFiltersChange({
-      ...filters,
-      feed_id: feedId === "all" ? undefined : feedId,
-    })
-  }
+  // Update local state when external filters change
+  useEffect(() => {
+    // Only update local state if user is not currently typing
+    if (!userIsTypingRef.current) {
+      isUpdatingFromPropsRef.current = true
 
-  const handleFeedTypeChange = (feedType: string) => {
-    setLocalFeedType(feedType)
-    onFiltersChange({
-      ...filters,
-      feed_type: feedType === "all" ? undefined : (feedType as "rss" | "youtube"),
-    })
-  }
+      // Update title only if it's different and user isn't typing
+      if (filters.title !== localTitle) {
+        setLocalTitle(filters.title || "")
+        lastAppliedTitleRef.current = filters.title || ""
+      }
 
-  const handleClearFilters = () => {
+      setLocalFeedId(filters.feed_id ?? "all")
+      setLocalFeedType(filters.feed_type ?? "all")
+
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        isUpdatingFromPropsRef.current = false
+      }, 50)
+    }
+  }, [filters.title, filters.feed_id, filters.feed_type, localTitle])
+
+  const handleFeedChange = useCallback(
+    (feedId: string) => {
+      setLocalFeedId(feedId)
+      updateFilters({ feed_id: feedId === "all" ? undefined : feedId })
+    },
+    [updateFilters],
+  )
+
+  const handleFeedTypeChange = useCallback(
+    (feedType: string) => {
+      setLocalFeedType(feedType)
+      updateFilters({ feed_type: feedType === "all" ? undefined : (feedType as "rss" | "youtube") })
+    },
+    [updateFilters],
+  )
+
+  const handleClearFilters = useCallback(() => {
+    // Reset all local state first
     setLocalTitle("")
-    setLocalFeedId("")
-    setLocalFeedType("")
+    setLocalFeedId("all")
+    setLocalFeedType("all")
+    lastAppliedTitleRef.current = ""
+    userIsTypingRef.current = false
+
+    // Then clear the filters
     onClearFilters()
-  }
+  }, [onClearFilters])
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length
   const activeFeeds = Array.isArray(feeds) ? feeds.filter((sub) => sub.is_active) : []
@@ -92,10 +140,20 @@ export function FeedFiltersComponent({
           <Input
             placeholder="Search articles..."
             value={localTitle}
-            onChange={(e) => setLocalTitle(e.target.value)}
+            onChange={handleTitleChange}
             className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-gray-400"
+            autoComplete="off"
           />
         </div>
+        {/* Debug info in development */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="text-xs text-gray-500 space-y-1">
+            <div>Local: "{localTitle}"</div>
+            <div>Debounced: "{debouncedTitle}"</div>
+            <div>Filter: "{filters.title || ""}"</div>
+            <div>Typing: {userIsTypingRef.current ? "Yes" : "No"}</div>
+          </div>
+        )}
       </div>
 
       {/* Feed Selection */}
