@@ -1,103 +1,91 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { apiService } from "@/lib/api";
-import type { FeedItem, UserFeedSubscription } from "@/types/api";
+import { useState, useEffect, useCallback, useRef } from "react"
+import { apiService } from "@/lib/api"
+import type { FeedItem, UserFeedSubscription } from "@/types/api"
 
-// Cache global para os feed items com controle de instância
+// Cache global para os feed items
 let feedItemsCache: {
-  items: FeedItem[];
-  total: number;
-  hasMore: boolean;
-  lastFetch: number;
-  filters?: FeedFilters;
-} | null = null;
-
-// Flag global para evitar múltiplas inicializações simultâneas
-let isInitializing = false;
+  items: FeedItem[]
+  total: number
+  hasMore: boolean
+  lastFetch: number
+  filters?: any
+} | null = null
 
 export function useFeeds() {
-  const [feeds, setFeeds] = useState<UserFeedSubscription[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [feeds, setFeeds] = useState<UserFeedSubscription[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchFeeds = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const response = await apiService.getUserFeeds();
-      setFeeds(response || []);
+      setLoading(true)
+      setError(null)
+      const response = await apiService.getUserFeeds()
+      setFeeds(response || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch feeds");
+      setError(err instanceof Error ? err.message : "Failed to fetch feeds")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   const subscribeFeed = useCallback(
     async (url: string) => {
       try {
-        await apiService.subscribeFeed(url);
-        await fetchFeeds(); // Refresh the list only for new subscriptions
-        return { success: true };
+        await apiService.subscribeFeed(url)
+        await fetchFeeds() // Refresh the list only for new subscriptions
+        return { success: true }
       } catch (err) {
         return {
           success: false,
-          error:
-            err instanceof Error ? err.message : "Failed to subscribe to feed",
-        };
+          error: err instanceof Error ? err.message : "Failed to subscribe to feed",
+        }
       }
     },
-    [fetchFeeds]
-  );
+    [fetchFeeds],
+  )
 
-  const updateFeedStatus = useCallback(
-    async (feedId: string, isActive: boolean) => {
-      try {
-        await apiService.updateFeedStatus(feedId, isActive);
+  const updateFeedStatus = useCallback(async (feedId: string, isActive: boolean) => {
+    try {
+      await apiService.updateFeedStatus(feedId, isActive)
 
-        // Update local state instead of refetching
-        setFeeds((prevFeeds) =>
-          prevFeeds.map((subscription) =>
-            subscription.feed.id === feedId
-              ? { ...subscription, is_active: isActive }
-              : subscription
-          )
-        );
+      // Update local state instead of refetching
+      setFeeds((prevFeeds) =>
+        prevFeeds.map((subscription) =>
+          subscription.feed.id === feedId ? { ...subscription, is_active: isActive } : subscription,
+        ),
+      )
 
-        return { success: true };
-      } catch (err) {
-        return {
-          success: false,
-          error:
-            err instanceof Error ? err.message : "Failed to update feed status",
-        };
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to update feed status",
       }
-    },
-    []
-  );
+    }
+  }, [])
 
   const deleteFeed = useCallback(async (feedId: string) => {
     try {
-      await apiService.deleteFeed(feedId);
+      await apiService.deleteFeed(feedId)
 
       // Remove from local state instead of refetching
-      setFeeds((prevFeeds) =>
-        prevFeeds.filter((subscription) => subscription.feed.id !== feedId)
-      );
+      setFeeds((prevFeeds) => prevFeeds.filter((subscription) => subscription.feed.id !== feedId))
 
-      return { success: true };
+      return { success: true }
     } catch (err) {
       return {
         success: false,
         error: err instanceof Error ? err.message : "Failed to delete feed",
-      };
+      }
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    fetchFeeds();
-  }, []); // Remove fetchFeeds dependency to prevent infinite loop
+    fetchFeeds()
+  }, []) // Remove fetchFeeds dependency to prevent infinite loop
 
   return {
     feeds,
@@ -107,131 +95,131 @@ export function useFeeds() {
     subscribeFeed,
     updateFeedStatus,
     deleteFeed,
-  };
+  }
 }
 
 export interface FeedFilters {
-  title?: string;
-  feed_id?: string;
-  feed_type?: "rss" | "youtube";
+  title?: string
+  feed_id?: string
+  feed_type?: "rss" | "youtube"
 }
 
 export function useFeedItems() {
-  const [items, setItems] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState<FeedFilters>({});
-  const hasInitialized = useRef(false);
+  const [items, setItems] = useState<FeedItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [total, setTotal] = useState(0)
+  const [filters, setFilters] = useState<FeedFilters>({})
+  const hasInitialized = useRef(false)
 
-  // Fetch function without dependencies to prevent loops
-  const fetchItemsInternal = async (
-    currentFilters: FeedFilters,
-    params: {
-      limit?: number;
-      offset?: number;
-      sort?: string;
-      order?: "asc" | "desc";
-      reset?: boolean;
-      forceRefresh?: boolean;
-    } = {}
-  ) => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Função estável que não depende de items
+  const fetchItems = useCallback(
+    async (
+      params: {
+        limit?: number
+        offset?: number
+        sort?: string
+        order?: "asc" | "desc"
+        reset?: boolean
+        forceRefresh?: boolean
+        filters?: FeedFilters
+      } = {},
+    ) => {
+      try {
+        setLoading(true)
+        setError(null)
 
-      const response = await apiService.getUserFeedItems({
-        limit: params.limit || 20,
-        offset: params.offset || 0,
-        sort: params.sort || "published_at",
-        order: params.order || "desc",
-        ...currentFilters,
-      });
+        const currentFilters = params.filters || filters
+        const response = await apiService.getUserFeedItems({
+          limit: params.limit || 20,
+          offset: params.offset || 0,
+          sort: params.sort || "published_at",
+          order: params.order || "desc",
+          ...currentFilters,
+        })
 
-      const responseItems = response || [];
+        const responseItems = response || []
 
-      if (params.reset || params.offset === 0) {
-        setItems(responseItems);
-        feedItemsCache = {
-          items: responseItems,
-          total: response?.total || 0,
-          hasMore: responseItems.length === (params.limit || 20),
-          lastFetch: Date.now(),
-          filters: currentFilters,
-        };
-      } else {
-        setItems((prevItems) => {
-          const newItems = [...prevItems, ...responseItems];
+        if (params.reset || params.offset === 0) {
+          setItems(responseItems)
+          // Atualizar cache
           feedItemsCache = {
-            items: newItems,
+            items: responseItems,
             total: response?.total || 0,
             hasMore: responseItems.length === (params.limit || 20),
             lastFetch: Date.now(),
             filters: currentFilters,
-          };
-          return newItems;
-        });
-      }
+          }
+        } else {
+          setItems((prevItems) => {
+            const newItems = [...prevItems, ...responseItems]
+            // Atualizar cache
+            feedItemsCache = {
+              items: newItems,
+              total: response?.total || 0,
+              hasMore: responseItems.length === (params.limit || 20),
+              lastFetch: Date.now(),
+              filters: currentFilters,
+            }
+            return newItems
+          })
+        }
 
-      setTotal(response?.total || 0);
-      setHasMore(responseItems.length === (params.limit || 20));
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch feed items"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+        setTotal(response?.total || 0)
+        setHasMore(responseItems.length === (params.limit || 20))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch feed items")
+      } finally {
+        setLoading(false)
+      }
+    },
+    [filters],
+  )
 
   const refresh = useCallback(() => {
-    feedItemsCache = null;
-    fetchItemsInternal(filters, { reset: true, forceRefresh: true });
-  }, [filters]);
+    feedItemsCache = null // Limpar cache
+    fetchItems({ reset: true, forceRefresh: true })
+  }, []) // Remove fetchItems dependency to prevent loops
 
   const loadMore = useCallback(() => {
     if (!loading && hasMore) {
-      fetchItemsInternal(filters, { offset: items.length });
+      fetchItems({ offset: items.length })
     }
-  }, [loading, hasMore, items.length, filters]);
+  }, [loading, hasMore, items.length]) // Remove fetchItems dependency, use items.length directly
 
-  const applyFilters = useCallback((newFilters: FeedFilters) => {
-    setFilters(newFilters);
-    feedItemsCache = null;
-    fetchItemsInternal(newFilters, { reset: true });
-  }, []);
+  const applyFilters = useCallback(
+    (newFilters: FeedFilters) => {
+      setFilters(newFilters)
+      feedItemsCache = null // Clear cache when filters change
+      fetchItems({ reset: true, filters: newFilters })
+    },
+    [], // Remove fetchItems dependency to prevent loops
+  )
 
   const clearFilters = useCallback(() => {
-    const emptyFilters = {};
-    setFilters(emptyFilters);
-    feedItemsCache = null;
-    fetchItemsInternal(emptyFilters, { reset: true });
-  }, []);
+    setFilters({})
+    feedItemsCache = null
+    fetchItems({ reset: true, filters: {} })
+  }, []) // Remove fetchItems dependency to prevent loops
 
-  // Initialize once
+  // Inicialização com cache - executa apenas uma vez
   useEffect(() => {
-    if (!hasInitialized.current && !isInitializing) {
-      hasInitialized.current = true;
-      isInitializing = true;
+    if (!hasInitialized.current) {
+      hasInitialized.current = true
 
-      if (
-        feedItemsCache &&
-        Date.now() - feedItemsCache.lastFetch < 5 * 60 * 1000
-      ) {
-        setItems(feedItemsCache.items);
-        setTotal(feedItemsCache.total);
-        setHasMore(feedItemsCache.hasMore);
-        setFilters(feedItemsCache.filters || {});
-        setLoading(false);
-        isInitializing = false;
+      // Verificar se existe cache válido (menos de 5 minutos)
+      if (feedItemsCache && Date.now() - feedItemsCache.lastFetch < 5 * 60 * 1000) {
+        setItems(feedItemsCache.items)
+        setTotal(feedItemsCache.total)
+        setHasMore(feedItemsCache.hasMore)
+        setFilters(feedItemsCache.filters || {})
+        setLoading(false)
       } else {
-        fetchItemsInternal({}, { reset: true }).finally(() => {
-          isInitializing = false;
-        });
+        fetchItems({ reset: true })
       }
     }
-  }, []);
+  }, []) // Remove fetchItems dependency to prevent infinite loop
 
   return {
     items,
@@ -244,5 +232,5 @@ export function useFeedItems() {
     loadMore,
     applyFilters,
     clearFilters,
-  };
+  }
 }
