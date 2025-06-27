@@ -50,14 +50,12 @@ export function FeedFiltersComponent({
     }
   }, [debouncedTitle])
 
-  // Sincronizar estado local com filtros externos (apenas quando necessário)
+  // Sincronizar estado local com filtros externos APENAS para feed e type
+  // Removemos a sincronização do title para evitar o loop
   useEffect(() => {
     isExternalUpdate.current = true
 
-    if (filters.title !== titleInput && filters.title !== debouncedTitle) {
-      setTitleInput(filters.title || "")
-    }
-
+    // Sincronizar apenas feed e type, NÃO o title
     if (filters.feed_id !== feedSelect) {
       setFeedSelect(filters.feed_id || "all")
     }
@@ -69,7 +67,15 @@ export function FeedFiltersComponent({
     setTimeout(() => {
       isExternalUpdate.current = false
     }, 100)
-  }, [filters.title, filters.feed_id, filters.feed_type])
+  }, [filters.feed_id, filters.feed_type]) // Removemos filters.title das dependências
+
+  // Sincronizar title apenas quando clearFilters é chamado
+  useEffect(() => {
+    // Se todos os filtros foram limpos (incluindo title), limpar o input
+    if (!filters.title && !filters.feed_id && !filters.feed_type && titleInput) {
+      setTitleInput("")
+    }
+  }, [filters.title, filters.feed_id, filters.feed_type, titleInput])
 
   // Handlers simples
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
