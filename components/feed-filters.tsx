@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,56 +28,24 @@ export function FeedFiltersComponent({
   feeds,
   feedsLoading,
 }: FeedFiltersProps) {
-  // Estados locais simples
+  // Estados locais - inicializados apenas uma vez
   const [titleInput, setTitleInput] = useState(filters.title || "")
   const [feedSelect, setFeedSelect] = useState(filters.feed_id || "all")
   const [typeSelect, setTypeSelect] = useState(filters.feed_type || "all")
   const [isOpen, setIsOpen] = useState(false)
 
-  // Ref para evitar loops
-  const isExternalUpdate = useRef(false)
-
-  // Debounce apenas do título
+  // Debounce do título
   const debouncedTitle = useDebounce(titleInput, 400)
 
-  // Atualizar filtros quando o título debounced mudar
+  // APENAS atualizar filtros quando o debounced title mudar
   useEffect(() => {
-    if (!isExternalUpdate.current) {
-      onFiltersChange({
-        ...filters,
-        title: debouncedTitle || undefined,
-      })
-    }
-  }, [debouncedTitle])
+    onFiltersChange({
+      ...filters,
+      title: debouncedTitle || undefined,
+    })
+  }, [debouncedTitle, onFiltersChange])
 
-  // Sincronizar estado local com filtros externos APENAS para feed e type
-  // Removemos a sincronização do title para evitar o loop
-  useEffect(() => {
-    isExternalUpdate.current = true
-
-    // Sincronizar apenas feed e type, NÃO o title
-    if (filters.feed_id !== feedSelect) {
-      setFeedSelect(filters.feed_id || "all")
-    }
-
-    if (filters.feed_type !== typeSelect) {
-      setTypeSelect(filters.feed_type || "all")
-    }
-
-    setTimeout(() => {
-      isExternalUpdate.current = false
-    }, 100)
-  }, [filters.feed_id, filters.feed_type]) // Removemos filters.title das dependências
-
-  // Sincronizar title apenas quando clearFilters é chamado
-  useEffect(() => {
-    // Se todos os filtros foram limpos (incluindo title), limpar o input
-    if (!filters.title && !filters.feed_id && !filters.feed_type && titleInput) {
-      setTitleInput("")
-    }
-  }, [filters.title, filters.feed_id, filters.feed_type, titleInput])
-
-  // Handlers simples
+  // Handlers diretos sem sincronização complexa
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitleInput(e.target.value)
   }
@@ -99,9 +67,11 @@ export function FeedFiltersComponent({
   }
 
   const handleClear = () => {
+    // Limpar estados locais
     setTitleInput("")
     setFeedSelect("all")
     setTypeSelect("all")
+    // Limpar filtros externos
     onClearFilters()
   }
 
