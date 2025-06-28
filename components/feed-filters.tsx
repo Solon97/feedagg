@@ -38,7 +38,7 @@ export function FeedFiltersComponent({
   const lastAppliedTitleRef = useRef(filters.title || "")
 
   // Debounce the title input
-  const debouncedTitle = useDebounce(titleInput, 400)
+  const debouncedTitle = useDebounce(titleInput, 4000)
 
   // Only call onFiltersChange when the debounced title genuinely changes
   useEffect(() => {
