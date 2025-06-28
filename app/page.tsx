@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { RefreshCw, Loader2, Search } from "lucide-react"
+import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FeedItemCard } from "@/components/feed-item-card"
 import { FeedFiltersComponent } from "@/components/feed-filters"
@@ -129,12 +129,6 @@ export default function Dashboard() {
                     <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
                     <span className="text-sm text-gray-300">Filtering results...</span>
                   </div>
-                  {filters.title && (
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Search className="w-3 h-3" />
-                      <span>"{filters.title}"</span>
-                    </div>
-                  )}
                 </div>
               )}
 
