@@ -82,27 +82,15 @@ export function FeedFiltersComponent({
         <label className="text-sm font-medium text-gray-300">Search by title</label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          {isFilterLoading && filters.title && (
-            <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-teal-500 h-4 w-4 animate-spin" />
-          )}
           <Input
             key={filters.title || "empty"}
             placeholder="Search articles..."
             defaultValue={filters.title || ""}
             onChange={handleTitleChange}
-            className={`pl-10 bg-slate-800 border-slate-700 text-white placeholder-gray-400 ${
-              isFilterLoading && filters.title ? "pr-10" : ""
-            }`}
+            className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-gray-400"
             autoComplete="off"
-            disabled={isFilterLoading}
           />
         </div>
-        {isFilterLoading && filters.title && (
-          <p className="text-xs text-teal-400 flex items-center gap-1">
-            <Loader2 className="w-3 h-3 animate-spin" />
-            Searching for "{filters.title}"...
-          </p>
-        )}
       </div>
 
       {/* Feed Selection */}
