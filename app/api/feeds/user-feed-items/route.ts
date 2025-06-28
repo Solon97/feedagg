@@ -14,8 +14,26 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort") || "published_at"
     const order = searchParams.get("order") || "desc"
 
-    // Make request to external API
-    const apiUrl = `${API_BASE_URL}/feed/user-feed-items?limit=${limit}&offset=${offset}&sort=${sort}&order=${order}`
+    // Get filter parameters
+    const title = searchParams.get("title")
+    const feed_id = searchParams.get("feed_id")
+    const feed_type = searchParams.get("feed_type")
+
+    // Build API URL with all parameters
+    const apiParams = new URLSearchParams({
+      limit,
+      offset,
+      sort,
+      order,
+    })
+
+    // Add filter parameters if they exist
+    if (title) apiParams.set("title", title)
+    if (feed_id) apiParams.set("feed_id", feed_id)
+    if (feed_type) apiParams.set("feed_type", feed_type)
+
+    const apiUrl = `${API_BASE_URL}/feed/user-feed-items?${apiParams.toString()}`
+
     const response = await makeExternalApiCall(
       apiUrl,
       {
@@ -26,12 +44,12 @@ export async function GET(request: NextRequest) {
       },
       requestId,
     )
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || "Failed to fetch feed items")
     }
-    
+
     return response.json()
   })
 }

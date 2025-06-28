@@ -52,6 +52,9 @@ class ApiService {
       offset?: number
       sort?: string
       order?: "asc" | "desc"
+      title?: string
+      feed_id?: string
+      feed_type?: "rss" | "youtube"
     } = {},
   ) {
     const searchParams = new URLSearchParams()
@@ -59,6 +62,9 @@ class ApiService {
     if (params.offset) searchParams.set("offset", params.offset.toString())
     if (params.sort) searchParams.set("sort", params.sort)
     if (params.order) searchParams.set("order", params.order)
+    if (params.title) searchParams.set("title", params.title)
+    if (params.feed_id) searchParams.set("feed_id", params.feed_id)
+    if (params.feed_type) searchParams.set("feed_type", params.feed_type)
 
     return this.makeRequest<any>(`/feeds/user-feed-items?${searchParams}`)
   }
