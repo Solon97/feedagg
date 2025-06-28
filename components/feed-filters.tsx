@@ -2,14 +2,13 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useDebounce } from "@/hooks/use-debounce"
 import type { FeedFilters } from "@/hooks/use-feeds"
 import type { UserFeedSubscription } from "@/types/api"
 
@@ -28,49 +27,39 @@ export function FeedFiltersComponent({
   feeds,
   feedsLoading,
 }: FeedFiltersProps) {
-  // Local states
+  // Estados locais simples
   const [titleInput, setTitleInput] = useState(filters.title || "")
   const [feedSelect, setFeedSelect] = useState(filters.feed_id || "all")
   const [typeSelect, setTypeSelect] = useState(filters.feed_type || "all")
   const [isOpen, setIsOpen] = useState(false)
 
-  // Ref to track the last applied title to prevent unnecessary updates
-  const lastAppliedTitleRef = useRef(filters.title || "")
-
-  // Debounce the title input
-  const debouncedTitle = useDebounce(titleInput, 4000)
-
-  // Only call onFiltersChange when the debounced title genuinely changes
+  // Sincronizar apenas quando os filtros externos são limpos
   useEffect(() => {
-    const normalizedDebouncedTitle = debouncedTitle || undefined
-    const normalizedCurrentTitle = filters.title || undefined
-
-    // Only update if the debounced title is different from what's currently in filters
-    if (normalizedDebouncedTitle !== normalizedCurrentTitle) {
-      lastAppliedTitleRef.current = debouncedTitle
-      onFiltersChange({
-        ...filters,
-        title: normalizedDebouncedTitle,
-      })
-    }
-  }, [debouncedTitle]) // Remove filters and onFiltersChange from dependencies to prevent loops
-
-  // Initialize local state only once when component mounts or when filters are cleared externally
-  useEffect(() => {
-    // Only update local state if filters were cleared externally (all filters are empty)
     const allFiltersEmpty = !filters.title && !filters.feed_id && !filters.feed_type
 
-    if (allFiltersEmpty && (titleInput || feedSelect !== "all" || typeSelect !== "all")) {
+    if (allFiltersEmpty) {
       setTitleInput("")
       setFeedSelect("all")
       setTypeSelect("all")
-      lastAppliedTitleRef.current = ""
     }
   }, [filters.title, filters.feed_id, filters.feed_type])
 
   // Handlers
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitleInput(e.target.value)
+  }
+
+  const handleTitleSearch = () => {
+    onFiltersChange({
+      ...filters,
+      title: titleInput.trim() || undefined,
+    })
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleTitleSearch()
+    }
   }
 
   const handleFeedChange = (value: string) => {
@@ -93,7 +82,6 @@ export function FeedFiltersComponent({
     setTitleInput("")
     setFeedSelect("all")
     setTypeSelect("all")
-    lastAppliedTitleRef.current = ""
     onClearFilters()
   }
 
@@ -102,31 +90,42 @@ export function FeedFiltersComponent({
 
   const FilterContent = () => (
     <div className="space-y-4">
-      {/* Title Search */}
+      {/* Busca por título */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Search by title</label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search articles..."
-            value={titleInput}
-            onChange={handleTitleChange}
-            className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-gray-400"
-            autoComplete="off"
-          />
+        <label className="text-sm font-medium text-gray-300">Buscar por título</label>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Digite para buscar artigos..."
+              value={titleInput}
+              onChange={handleTitleChange}
+              onKeyPress={handleKeyPress}
+              className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-gray-400"
+              autoComplete="off"
+            />
+          </div>
+          <Button
+            onClick={handleTitleSearch}
+            className="bg-teal-600 hover:bg-teal-700 px-4"
+            disabled={!titleInput.trim()}
+          >
+            Buscar
+          </Button>
         </div>
+        <p className="text-xs text-gray-500">Pressione Enter ou clique em "Buscar" para aplicar o filtro</p>
       </div>
 
-      {/* Feed Selection */}
+      {/* Seleção de feed */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Filter by feed</label>
+        <label className="text-sm font-medium text-gray-300">Filtrar por feed</label>
         <Select value={feedSelect} onValueChange={handleFeedChange} disabled={feedsLoading}>
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-            <SelectValue placeholder={feedsLoading ? "Loading feeds..." : "All feeds"} />
+            <SelectValue placeholder={feedsLoading ? "Carregando feeds..." : "Todos os feeds"} />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             <SelectItem value="all" className="text-white hover:bg-slate-700">
-              All feeds
+              Todos os feeds
             </SelectItem>
             {activeFeeds.map((subscription) => (
               <SelectItem
@@ -141,16 +140,16 @@ export function FeedFiltersComponent({
         </Select>
       </div>
 
-      {/* Feed Type */}
+      {/* Tipo de feed */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Filter by type</label>
+        <label className="text-sm font-medium text-gray-300">Filtrar por tipo</label>
         <Select value={typeSelect} onValueChange={handleTypeChange}>
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-            <SelectValue placeholder="All types" />
+            <SelectValue placeholder="Todos os tipos" />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             <SelectItem value="all" className="text-white hover:bg-slate-700">
-              All types
+              Todos os tipos
             </SelectItem>
             <SelectItem value="rss" className="text-white hover:bg-slate-700">
               RSS
@@ -162,24 +161,24 @@ export function FeedFiltersComponent({
         </Select>
       </div>
 
-      {/* Active Filters */}
+      {/* Filtros ativos */}
       {activeFiltersCount > 0 && (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-300">Active filters</label>
+          <label className="text-sm font-medium text-gray-300">Filtros ativos</label>
           <div className="flex flex-wrap gap-2">
             {filters.title && (
               <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50">
-                Title: {filters.title}
+                Título: {filters.title}
               </Badge>
             )}
             {filters.feed_id && (
               <Badge variant="secondary" className="bg-blue-900/30 text-blue-400 border-blue-700/50">
-                Feed: {activeFeeds.find((f) => f.feed.id === filters.feed_id)?.feed.name || "Unknown"}
+                Feed: {activeFeeds.find((f) => f.feed.id === filters.feed_id)?.feed.name || "Desconhecido"}
               </Badge>
             )}
             {filters.feed_type && (
               <Badge variant="secondary" className="bg-purple-900/30 text-purple-400 border-purple-700/50">
-                Type: {filters.feed_type.toUpperCase()}
+                Tipo: {filters.feed_type.toUpperCase()}
               </Badge>
             )}
           </div>
@@ -189,7 +188,7 @@ export function FeedFiltersComponent({
             size="sm"
             className="w-full border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
           >
-            Clear all filters
+            Limpar todos os filtros
           </Button>
         </div>
       )}
@@ -198,11 +197,11 @@ export function FeedFiltersComponent({
 
   return (
     <>
-      {/* Desktop Filters */}
+      {/* Filtros Desktop */}
       <div className="hidden lg:block bg-slate-800/50 rounded-lg p-4 border border-slate-700">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-gray-400" />
-          <h3 className="font-medium text-white">Filters</h3>
+          <h3 className="font-medium text-white">Filtros</h3>
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
               {activeFiltersCount}
@@ -212,7 +211,7 @@ export function FeedFiltersComponent({
         <FilterContent />
       </div>
 
-      {/* Mobile Filters */}
+      {/* Filtros Mobile */}
       <div className="lg:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
@@ -221,7 +220,7 @@ export function FeedFiltersComponent({
               className="w-full border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
             >
               <Filter className="h-4 w-4 mr-2" />
-              Filters
+              Filtros
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary" className="ml-2 bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
                   {activeFiltersCount}
@@ -233,7 +232,7 @@ export function FeedFiltersComponent({
             <SheetHeader>
               <SheetTitle className="text-white flex items-center gap-2">
                 <Filter className="h-4 w-4" />
-                Filters
+                Filtros
               </SheetTitle>
             </SheetHeader>
             <div className="mt-6">
