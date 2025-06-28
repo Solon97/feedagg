@@ -1,98 +1,139 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { logger } from "./logger"
+import { randomUUID } from "crypto"
 
-interface ApiContext {
+export interface ApiContext {
   requestId: string
-  token: string
   userId?: string
+  token: string
+  startTime: number
 }
+
+const API_BASE_URL = "https://rss-feed-processor.onrender.com"
 
 export async function withApiLogging<T>(
   request: NextRequest,
   handler: (context: ApiContext) => Promise<T>,
 ): Promise<NextResponse> {
-  const requestId = crypto.randomUUID()
+  const requestId = randomUUID()
   const startTime = Date.now()
+  const method = request.method
+  const endpoint = request.nextUrl.pathname
+  const userAgent = request.headers.get("user-agent") || "Unknown"
+  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "Unknown"
 
   try {
-    // Extract token from Authorization header
+    // Log request start
+    logger.apiRequest(method, endpoint, requestId, undefined, userAgent, ip)
+
+    // Get and validate authorization header
     const authHeader = request.headers.get("authorization")
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      logger.apiError(
-        request.method,
-        request.nextUrl.pathname,
-        new Error("Missing or invalid authorization header"),
-        requestId,
-      )
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      const duration = Date.now() - startTime
+      logger.apiResponse(method, endpoint, 401, duration, requestId)
+      logger.authEvent("Missing authorization header", undefined, requestId, false)
+
+      return NextResponse.json({ error: "Missing or invalid authorization header" }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
-    const userAgent = request.headers.get("user-agent") || ""
-    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+    const token = authHeader.split(" ")[1]
 
-    logger.apiRequest(request.method, request.nextUrl.pathname, requestId, undefined, userAgent, ip)
+    // Instead of validating with Supabase here, let's validate by making a test call to the external API
+    // This way we use the same validation logic as the external API
+    try {
+      const testResponse = await fetch(`${API_BASE_URL}/feed/user-feeds`, {
+        method: "HEAD", // Use HEAD to avoid getting data, just test auth
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      
+      if (!testResponse.ok) {
+        const duration = Date.now() - startTime
+        logger.apiResponse(method, endpoint, 401, duration, requestId)
+        logger.authEvent("Token validation failed with external API", undefined, requestId, false)
+        logger.error(
+          "Token validation failed",
+          {
+            status: testResponse.status,
+            statusText: testResponse.statusText,
+            tokenLength: token.length,
+            tokenPrefix: token.substring(0, 20) + "...",
+          },
+          { requestId },
+        )
 
+        return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
+      }
+
+      logger.authEvent("Token validated with external API", undefined, requestId, true)
+    } catch (validationError: any) {
+      const duration = Date.now() - startTime
+      logger.apiResponse(method, endpoint, 401, duration, requestId)
+      logger.error("Token validation error", { error: validationError.message }, { requestId })
+      return NextResponse.json({ error: "Token validation failed" }, { status: 401 })
+    }
+
+    // Create context
     const context: ApiContext = {
       requestId,
       token,
+      startTime,
     }
 
+    // Execute handler
     const result = await handler(context)
+
     const duration = Date.now() - startTime
-
-    logger.apiResponse(request.method, request.nextUrl.pathname, 200, duration, requestId)
-
-    // If result is already a Response, return it directly
-    if (result instanceof Response || result instanceof NextResponse) {
-      return result as NextResponse
-    }
+    logger.apiResponse(method, endpoint, 200, duration, requestId)
 
     return NextResponse.json(result)
-  } catch (error) {
+  } catch (error: any) {
     const duration = Date.now() - startTime
-    logger.apiError(request.method, request.nextUrl.pathname, error, requestId)
+    logger.apiError(method, endpoint, error, requestId)
+    logger.apiResponse(method, endpoint, 500, duration, requestId)
 
-    const statusCode = error instanceof Error && error.message.includes("Unauthorized") ? 401 : 500
-    const errorMessage = error instanceof Error ? error.message : "Internal server error"
-
-    logger.apiResponse(request.method, request.nextUrl.pathname, statusCode, duration, requestId)
-
-    return NextResponse.json(
-      {
-        error: errorMessage,
-        requestId,
-      },
-      { status: statusCode },
-    )
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 })
   }
 }
 
-export async function makeExternalApiCall(
-  url: string,
-  options: RequestInit = {},
-  requestId: string,
-): Promise<Response> {
+export async function makeExternalApiCall(url: string, options: RequestInit, requestId: string): Promise<Response> {
   const startTime = Date.now()
+  const method = options.method || "GET"
 
   try {
-    logger.info(`Making external API call to: ${url}`, undefined, { requestId })
+    logger.debug("Making external API call", { url, method }, { requestId })
 
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        "User-Agent": "FeedAgg/1.0",
-        ...options.headers,
-      },
-    })
-
+    const response = await fetch(url, options)
     const duration = Date.now() - startTime
-    logger.externalApiCall(url, options.method || "GET", response.status, duration, requestId)
+
+    logger.externalApiCall(url, method, response.status, duration, requestId)
+
+    if (!response.ok) {
+      logger.warn(
+        "External API call failed",
+        {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+        },
+        { requestId },
+      )
+    }
 
     return response
-  } catch (error) {
+  } catch (error: any) {
     const duration = Date.now() - startTime
-    logger.error(`External API call failed: ${url}`, error, { requestId, duration })
+    logger.error(
+      "External API call error",
+      {
+        url,
+        error: error.message,
+        duration,
+      },
+      { requestId },
+    )
     throw error
   }
 }

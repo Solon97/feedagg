@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Filter, X, Loader2 } from "lucide-react"
-import { useMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface FeedFiltersProps {
   feeds: Array<{
@@ -36,8 +35,8 @@ export function FeedFiltersComponent({
   onClearFilters,
   isLoading = false,
 }: FeedFiltersProps) {
-  const isMobile = useMobile()
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isMobile = useIsMobile()
+  const debounceTimeoutRef = useRef<NodeJS.Timeout>()
 
   const handleTitleChange = (value: string) => {
     // Clear any existing timeout
@@ -69,26 +68,93 @@ export function FeedFiltersComponent({
   }
 
   const handleClear = () => {
-    // Clear any pending debounced calls
+    // Clear any pending debounce
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current)
     }
     onClearFilters()
   }
 
-  const hasActiveFilters = Boolean(filters.title || filters.feed_id || filters.feed_type)
+  const hasActiveFilters = !!(filters.title || filters.feed_id || filters.feed_type)
 
   const FilterContent = () => (
     <div className="space-y-6">
-      {/* Loading indicator */}
-      {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 pb-2">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Filtering results...</span>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4" />
+          <h3 className="font-semibold">Filters</h3>
+          {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+        </div>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={handleClear} disabled={isLoading}>
+            <X className="w-3 h-3 mr-1" />
+            Clear all
+          </Button>
+        )}
+      </div>
+
+      {/* Active Filters */}
+      {hasActiveFilters && (
+        <div className="space-y-2">
+          <Label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Active Filters</Label>
+          <div className="flex flex-wrap gap-2">
+            {filters.title && (
+              <Badge variant="secondary" className="text-xs">
+                Title: {filters.title}
+                <button
+                  onClick={() =>
+                    onFiltersChange({
+                      ...filters,
+                      title: undefined,
+                    })
+                  }
+                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                  disabled={isLoading}
+                >
+                  <X className="w-2 h-2" />
+                </button>
+              </Badge>
+            )}
+            {filters.feed_id && (
+              <Badge variant="secondary" className="text-xs">
+                Feed: {feeds.find((f) => f.id === filters.feed_id)?.title || "Unknown"}
+                <button
+                  onClick={() =>
+                    onFiltersChange({
+                      ...filters,
+                      feed_id: undefined,
+                    })
+                  }
+                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                  disabled={isLoading}
+                >
+                  <X className="w-2 h-2" />
+                </button>
+              </Badge>
+            )}
+            {filters.feed_type && (
+              <Badge variant="secondary" className="text-xs">
+                Type: {filters.feed_type.toUpperCase()}
+                <button
+                  onClick={() =>
+                    onFiltersChange({
+                      ...filters,
+                      feed_type: undefined,
+                    })
+                  }
+                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                  disabled={isLoading}
+                >
+                  <X className="w-2 h-2" />
+                </button>
+              </Badge>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Search by title */}
+      {/* Search by Title */}
       <div className="space-y-2">
         <Label htmlFor="title-filter">Search by title</Label>
         <Input
@@ -101,7 +167,7 @@ export function FeedFiltersComponent({
         />
       </div>
 
-      {/* Filter by feed */}
+      {/* Filter by Feed */}
       <div className="space-y-2">
         <Label>Filter by feed</Label>
         <Select value={filters.feed_id || "all"} onValueChange={handleFeedChange} disabled={isLoading}>
@@ -119,7 +185,7 @@ export function FeedFiltersComponent({
         </Select>
       </div>
 
-      {/* Filter by type */}
+      {/* Filter by Type */}
       <div className="space-y-2">
         <Label>Filter by type</Label>
         <Select value={filters.feed_type || "all"} onValueChange={handleTypeChange} disabled={isLoading}>
@@ -133,50 +199,6 @@ export function FeedFiltersComponent({
           </SelectContent>
         </Select>
       </div>
-
-      {/* Active filters */}
-      {hasActiveFilters && (
-        <div className="space-y-2">
-          <Label>Active filters</Label>
-          <div className="flex flex-wrap gap-2">
-            {filters.title && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                Title: {filters.title}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => onFiltersChange({ ...filters, title: undefined })}
-                />
-              </Badge>
-            )}
-            {filters.feed_id && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                Feed: {feeds.find((f) => f.id === filters.feed_id)?.title || "Unknown"}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => onFiltersChange({ ...filters, feed_id: undefined })}
-                />
-              </Badge>
-            )}
-            {filters.feed_type && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                Type: {filters.feed_type.toUpperCase()}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => onFiltersChange({ ...filters, feed_type: undefined })}
-                />
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Clear all button */}
-      {hasActiveFilters && (
-        <Button onClick={handleClear} variant="outline" className="w-full bg-transparent" disabled={isLoading}>
-          {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-          Clear all filters
-        </Button>
-      )}
     </div>
   )
 
@@ -185,18 +207,15 @@ export function FeedFiltersComponent({
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" className="w-full bg-transparent" disabled={isLoading}>
-            {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Filter className="w-4 h-4 mr-2" />}
+            <Filter className="w-4 h-4 mr-2" />
             Filters
-            {hasActiveFilters && (
-              <Badge variant="secondary" className="ml-2">
-                {Object.values(filters).filter(Boolean).length}
-              </Badge>
-            )}
+            {hasActiveFilters && <Badge className="ml-2 px-1 py-0 text-xs">{Object.keys(filters).length}</Badge>}
+            {isLoading && <Loader2 className="w-3 h-3 ml-2 animate-spin" />}
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-80">
           <SheetHeader>
-            <SheetTitle>Filter Articles</SheetTitle>
+            <SheetTitle>Filter Feed Items</SheetTitle>
           </SheetHeader>
           <div className="mt-6">
             <FilterContent />
@@ -207,17 +226,8 @@ export function FeedFiltersComponent({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="w-5 h-5" />
-          Filters
-          {hasActiveFilters && <Badge variant="secondary">{Object.values(filters).filter(Boolean).length}</Badge>}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <FilterContent />
-      </CardContent>
-    </Card>
+    <div className="bg-white rounded-lg border p-6">
+      <FilterContent />
+    </div>
   )
 }
