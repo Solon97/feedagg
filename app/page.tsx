@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { RefreshCw, Loader2 } from "lucide-react"
+import { RefreshCw, Loader2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FeedItemCard } from "@/components/feed-item-card"
 import { FeedFiltersComponent } from "@/components/feed-filters"
@@ -16,8 +16,20 @@ export default function Dashboard() {
   const feedItemsHook = useFeedItems()
   const feedsHook = useFeeds()
 
-  const { items, loading, error, hasMore, total, filters, refresh, loadMore, applyFilters, clearFilters } =
-    feedItemsHook
+  const {
+    items,
+    loading,
+    filterLoading,
+    error,
+    hasMore,
+    total,
+    filteredTotal,
+    filters,
+    refresh,
+    loadMore,
+    applyFilters,
+    clearFilters,
+  } = feedItemsHook
 
   const { feeds, loading: feedsLoading } = feedsHook
 
@@ -31,10 +43,17 @@ export default function Dashboard() {
   }
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!loading && !filterLoading && hasMore) {
       loadMore()
     }
   }
+
+  // Check if any filters are active
+  const hasActiveFilters = Object.values(filters).some(Boolean)
+
+  // Calculate the correct total to display
+  const displayTotal = hasActiveFilters ? Math.max(filteredTotal, items.length) : total
+  const displayCount = items.length
 
   if (error) {
     return (
@@ -71,7 +90,7 @@ export default function Dashboard() {
             </div>
             <Button
               onClick={handleRefresh}
-              disabled={refreshing}
+              disabled={refreshing || filterLoading}
               className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto"
             >
               {refreshing ? (
@@ -97,31 +116,49 @@ export default function Dashboard() {
                 onClearFilters={clearFilters}
                 feeds={feeds}
                 feedsLoading={feedsLoading}
+                isFilterLoading={filterLoading}
               />
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-3">
+              {/* Filter Loading Indicator */}
+              {filterLoading && (
+                <div className="mb-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
+                    <span className="text-sm text-gray-300">Filtering results...</span>
+                  </div>
+                  {filters.title && (
+                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <Search className="w-3 h-3" />
+                      <span>"{filters.title}"</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {loading && items.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
                   <span className="ml-2 text-gray-400">Loading your feed...</span>
                 </div>
-              ) : items.length === 0 ? (
+              ) : items.length === 0 && !filterLoading ? (
                 <div className="text-center py-12">
                   <h2 className="text-xl font-semibold text-gray-300 mb-2">
-                    {Object.values(filters).some(Boolean) ? "No items match your filters" : "No feed items yet"}
+                    {hasActiveFilters ? "No items match your filters" : "No feed items yet"}
                   </h2>
                   <p className="text-gray-500 mb-6">
-                    {Object.values(filters).some(Boolean)
+                    {hasActiveFilters
                       ? "Try adjusting your filters or check back later."
                       : "Subscribe to some feeds to see content here."}
                   </p>
-                  {Object.values(filters).some(Boolean) && (
+                  {hasActiveFilters && (
                     <Button
                       onClick={clearFilters}
                       variant="outline"
                       className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
+                      disabled={filterLoading}
                     >
                       Clear Filters
                     </Button>
@@ -130,12 +167,39 @@ export default function Dashboard() {
               ) : (
                 <>
                   {/* Results Summary */}
-                  {Object.values(filters).some(Boolean) && (
+                  {(hasActiveFilters || displayCount > 0) && !filterLoading && (
                     <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <p className="text-sm text-gray-400">
-                        Showing {items.length} of {total} items
-                        {filters.title && ` matching "${filters.title}"`}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-400">
+                          {hasActiveFilters ? (
+                            <>
+                              Showing <span className="text-white font-medium">{displayCount}</span> of{" "}
+                              <span className="text-white font-medium">{displayTotal}</span> items
+                              {filters.title && (
+                                <>
+                                  {" "}
+                                  matching <span className="text-teal-400 font-medium">"{filters.title}"</span>
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              Showing <span className="text-white font-medium">{displayCount}</span> items
+                            </>
+                          )}
+                        </p>
+                        {hasActiveFilters && (
+                          <Button
+                            onClick={clearFilters}
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-gray-400 hover:text-white h-auto p-1"
+                            disabled={filterLoading}
+                          >
+                            Clear filters
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -147,7 +211,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Load More Button */}
-                  {hasMore && (
+                  {hasMore && !filterLoading && (
                     <div className="flex justify-center mt-8">
                       <Button
                         onClick={handleLoadMore}

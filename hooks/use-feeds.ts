@@ -92,9 +92,11 @@ export interface FeedFilters {
 export function useFeedItems() {
   const [items, setItems] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [filterLoading, setFilterLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
   const [total, setTotal] = useState(0)
+  const [filteredTotal, setFilteredTotal] = useState(0)
   const [filters, setFilters] = useState<FeedFilters>({})
 
   // Use refs to track current values without causing re-renders
@@ -112,6 +114,7 @@ export function useFeedItems() {
         sort?: string
         order?: "asc" | "desc"
         reset?: boolean
+        isFilterChange?: boolean
       } = {},
     ) => {
       // Prevent concurrent fetches
@@ -119,7 +122,14 @@ export function useFeedItems() {
 
       try {
         isFetchingRef.current = true
-        setLoading(true)
+
+        // Set appropriate loading state
+        if (options.isFilterChange) {
+          setFilterLoading(true)
+        } else {
+          setLoading(true)
+        }
+
         setError(null)
 
         const response = await apiService.getUserFeedItems({
@@ -130,15 +140,27 @@ export function useFeedItems() {
           ...targetFilters,
         })
 
-        const responseItems = response || []
+        const responseItems = response?.data || response || []
+
+        // Handle response structure - some APIs return { data: [], total: X }, others return just []
+        let responseTotal = 0
+        if (response && typeof response === "object" && "total" in response) {
+          responseTotal = response.total
+        } else if (Array.isArray(responseItems)) {
+          // If no total provided, use items length as total for current page
+          responseTotal = responseItems.length
+        }
 
         if (options.reset || options.offset === 0) {
           setItems(responseItems)
+          // For filtered results, the total should reflect the filtered count
+          setFilteredTotal(responseTotal)
         } else {
           setItems((prevItems) => [...prevItems, ...responseItems])
+          // For pagination, keep the existing filtered total
         }
 
-        setTotal(response?.total || 0)
+        // Set hasMore based on whether we got a full page
         setHasMore(responseItems.length === (options.limit || 20))
 
         // Update current filters ref
@@ -147,6 +169,7 @@ export function useFeedItems() {
         setError(err instanceof Error ? err.message : "Failed to fetch feed items")
       } finally {
         setLoading(false)
+        setFilterLoading(false)
         isFetchingRef.current = false
       }
     },
@@ -159,15 +182,15 @@ export function useFeedItems() {
   }, [fetchItems])
 
   const loadMore = useCallback(() => {
-    if (!loading && hasMore && !isFetchingRef.current) {
+    if (!loading && !filterLoading && hasMore && !isFetchingRef.current) {
       fetchItems(currentFiltersRef.current, { offset: items.length })
     }
-  }, [fetchItems, loading, hasMore, items.length])
+  }, [fetchItems, loading, filterLoading, hasMore, items.length])
 
   const applyFilters = useCallback(
     (newFilters: FeedFilters) => {
       setFilters(newFilters)
-      fetchItems(newFilters, { reset: true })
+      fetchItems(newFilters, { reset: true, isFilterChange: true })
     },
     [fetchItems],
   )
@@ -175,7 +198,7 @@ export function useFeedItems() {
   const clearFilters = useCallback(() => {
     const emptyFilters = {}
     setFilters(emptyFilters)
-    fetchItems(emptyFilters, { reset: true })
+    fetchItems(emptyFilters, { reset: true, isFilterChange: true })
   }, [fetchItems])
 
   // Initialize only once
@@ -189,9 +212,11 @@ export function useFeedItems() {
   return {
     items,
     loading,
+    filterLoading,
     error,
     hasMore,
     total,
+    filteredTotal,
     filters,
     refresh,
     loadMore,
