@@ -171,22 +171,8 @@ export default function Dashboard() {
                     <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-400">
-                          {hasActiveFilters ? (
-                            <>
-                              Showing <span className="text-white font-medium">{displayCount}</span> of{" "}
-                              <span className="text-white font-medium">{displayTotal}</span> items
-                              {filters.title && (
-                                <>
-                                  {" "}
-                                  matching <span className="text-teal-400 font-medium">"{filters.title}"</span>
-                                </>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              Showing <span className="text-white font-medium">{displayCount}</span> items
-                            </>
-                          )}
+                          Showing <span className="text-white font-medium">{displayCount}</span> of{" "}
+                          <span className="text-white font-medium">{displayTotal}</span> items
                         </p>
                         {hasActiveFilters && (
                           <Button
