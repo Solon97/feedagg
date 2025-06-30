@@ -17,12 +17,12 @@ const getPublicEnv = (key: string): string | undefined => {
   return undefined
 }
 
-const supabaseUrl = getPublicEnv("NEXT_PUBLIC_SUPABASE_URL")
-const supabaseAnonKey = getPublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+let supabaseUrl = getPublicEnv("NEXT_PUBLIC_SUPABASE_URL")
+let supabaseAnonKey = getPublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 }
 
 if (!supabaseUrl || !supabaseAnonKey) {
