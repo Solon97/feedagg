@@ -75,8 +75,19 @@ export default function ItemPage({ params }: ItemPageProps) {
   }
 
   const getYouTubeVideoId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
-    return match ? match[1] : null
+    // Handle regular YouTube URLs
+    let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+    if (match) return match[1]
+
+    // Handle YouTube Shorts URLs
+    match = url.match(/youtube\.com\/shorts\/([^&\n?#]+)/)
+    if (match) return match[1]
+
+    return null
+  }
+
+  const isYouTubeShort = (url: string) => {
+    return url.includes("/shorts/")
   }
 
   const truncateDescription = (content: string, maxLength = 300) => {
@@ -187,7 +198,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                 {isYouTube && (
                   <Badge variant="outline" className="border-red-700/50 text-red-400">
                     <Play className="w-3 h-3 mr-1" />
-                    YouTube Video
+                    {isYouTubeShort(item.url) ? "YouTube Short" : "YouTube Video"}
                   </Badge>
                 )}
               </div>
@@ -200,15 +211,29 @@ export default function ItemPage({ params }: ItemPageProps) {
             {/* Media Content */}
             {youtubeVideoId && (
               <div className="space-y-4">
-                <div className="aspect-video bg-slate-900 shadow-2xl overflow-hidden md:rounded-lg">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1`}
-                    title={item.title}
-                    className="w-full h-full"
-                    allowFullScreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  />
-                </div>
+                {isYouTubeShort(item.url) ? (
+                  // YouTube Shorts - Use different aspect ratio and parameters
+                  <div className="aspect-[9/16] max-w-md mx-auto bg-slate-900 shadow-2xl overflow-hidden md:rounded-lg">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1&playsinline=1`}
+                      title={item.title}
+                      className="w-full h-full"
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  </div>
+                ) : (
+                  // Regular YouTube videos
+                  <div className="aspect-video bg-slate-900 shadow-2xl overflow-hidden md:rounded-lg">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1`}
+                      title={item.title}
+                      className="w-full h-full"
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  </div>
+                )}
               </div>
             )}
 
