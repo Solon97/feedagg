@@ -13,12 +13,7 @@ class ApiService {
         return null
       }
 
-      if (!session?.access_token) {
-        console.warn("No access token in session:", session)
-        return null
-      }
-
-      return session.access_token
+      return session?.access_token || null
     } catch (error) {
       console.error("Error in getAuthToken:", error)
       return null
@@ -75,6 +70,7 @@ class ApiService {
   }
 
   async getFeedItem(feedItemId: string) {
+    // Direct response without wrapper - matches the new API structure
     return this.makeRequest<any>(`/feeds/feed-item/${feedItemId}`)
   }
 

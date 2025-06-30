@@ -23,8 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: { session },
         } = await supabase.auth.getSession()
 
-        console.log("Initial session:", session ? "Found" : "Not found")
-
         if (mounted) {
           setSession(session)
           setUser((session?.user as AuthUser) || null)
@@ -44,7 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session ? "Session exists" : "No session")
       logger.debug("Auth state changed", { event, userId: session?.user?.id })
 
       if (mounted) {
@@ -89,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       logger.info("User login attempt", { email })
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -98,7 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logger.warn("User login failed", { email, error: error.message })
       } else {
         logger.info("User login successful", { email })
-        console.log("Login successful, session:", data.session ? "Created" : "Not created")
       }
 
       return { error }
@@ -140,7 +136,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logger.warn("User logout failed", { userId: user?.id, error: error.message })
       } else {
         logger.info("User logout successful", { userId: user?.id })
-        console.log("Logout successful")
       }
 
       return { error }

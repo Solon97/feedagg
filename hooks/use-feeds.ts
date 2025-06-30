@@ -1,204 +1,237 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { apiService } from "@/lib/api"
-import { useAuth } from "@/contexts/auth-context"
+import type { FeedItem, UserFeedSubscription } from "@/types/api"
 
-interface FeedItem {
-  id: string
-  title: string
-  description: string
-  url: string
-  published_at: string
-  feed_id: string
-  feed_title: string
-  feed_type: "rss" | "youtube"
-  thumbnail_url?: string
+export function useFeeds() {
+  const [feeds, setFeeds] = useState<UserFeedSubscription[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchFeeds = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await apiService.getUserFeeds()
+      setFeeds(response || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch feeds")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const subscribeFeed = useCallback(
+    async (url: string) => {
+      try {
+        await apiService.subscribeFeed(url)
+        await fetchFeeds()
+        return { success: true }
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Failed to subscribe to feed",
+        }
+      }
+    },
+    [fetchFeeds],
+  )
+
+  const updateFeedStatus = useCallback(async (feedId: string, isActive: boolean) => {
+    try {
+      await apiService.updateFeedStatus(feedId, isActive)
+      setFeeds((prevFeeds) =>
+        prevFeeds.map((subscription) =>
+          subscription.feed.id === feedId ? { ...subscription, is_active: isActive } : subscription,
+        ),
+      )
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to update feed status",
+      }
+    }
+  }, [])
+
+  const deleteFeed = useCallback(async (feedId: string) => {
+    try {
+      await apiService.deleteFeed(feedId)
+      setFeeds((prevFeeds) => prevFeeds.filter((subscription) => subscription.feed.id !== feedId))
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to delete feed",
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchFeeds()
+  }, [fetchFeeds])
+
+  return {
+    feeds,
+    loading,
+    error,
+    refetch: fetchFeeds,
+    subscribeFeed,
+    updateFeedStatus,
+    deleteFeed,
+  }
 }
 
-interface FeedFilters {
+export interface FeedFilters {
   title?: string
   feed_id?: string
   feed_type?: "rss" | "youtube"
 }
 
-interface UseFeedsReturn {
-  items: FeedItem[]
-  feeds: any[]
-  loading: boolean
-  refreshing: boolean
-  filterLoading: boolean
-  error: string | null
-  total: number
-  filteredTotal: number
-  hasMore: boolean
-  filters: FeedFilters
-  fetchItems: () => Promise<void>
-  loadMore: () => Promise<void>
-  refresh: () => Promise<void>
-  updateFilters: (newFilters: FeedFilters) => void
-  clearFilters: () => void
-}
-
-export function useFeeds(): UseFeedsReturn {
-  const { user, session } = useAuth()
+export function useFeedItems() {
   const [items, setItems] = useState<FeedItem[]>([])
-  const [feeds, setFeeds] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [filterLoading, setFilterLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [total, setTotal] = useState(0)
-  const [filteredTotal, setFilteredTotal] = useState(0)
   const [hasMore, setHasMore] = useState(true)
+  const [total, setTotal] = useState(0)
   const [filters, setFilters] = useState<FeedFilters>({})
-  const [offset, setOffset] = useState(0)
 
-  const limit = 20
+  // Use refs to track current values without causing re-renders
+  const currentFiltersRef = useRef<FeedFilters>({})
+  const isInitializedRef = useRef(false)
+  const isFetchingRef = useRef(false)
 
+  // Stable fetch function that doesn't change on every render
   const fetchItems = useCallback(
-    async (isRefresh = false, isLoadMore = false, currentFilters = filters) => {
-      // Don't fetch if user is not authenticated
-      if (!user || !session) {
-        console.log("User not authenticated, skipping fetch")
-        setLoading(false)
-        return
-      }
+    async (
+      targetFilters: FeedFilters,
+      options: {
+        limit?: number
+        offset?: number
+        sort?: string
+        order?: "asc" | "desc"
+        reset?: boolean
+        isFilterChange?: boolean
+        isRefresh?: boolean
+      } = {},
+    ) => {
+      // Prevent concurrent fetches
+      if (isFetchingRef.current) return
 
       try {
-        const currentOffset = isRefresh || !isLoadMore ? 0 : offset
+        isFetchingRef.current = true
 
-        if (isRefresh) {
+        // Set appropriate loading state
+        if (options.isRefresh) {
           setRefreshing(true)
-          setError(null)
-        } else if (!isLoadMore) {
+        } else if (options.isFilterChange) {
           setFilterLoading(true)
-          setError(null)
+        } else {
+          setLoading(true)
         }
 
-        console.log("Fetching items with params:", {
-          limit,
-          offset: currentOffset,
-          ...currentFilters,
-        })
+        setError(null)
 
         const response = await apiService.getUserFeedItems({
-          limit,
-          offset: currentOffset,
-          sort: "published_at",
-          order: "desc",
-          ...currentFilters,
+          limit: options.limit || 20,
+          offset: options.offset || 0,
+          sort: options.sort || "published_at",
+          order: options.order || "desc",
+          ...targetFilters,
         })
 
-        console.log("API Response:", response)
+        const responseItems = response?.data || response || []
 
-        const responseItems = response?.items || []
-        const responseTotal = response?.total || 0
-        const responseFilteredTotal = response?.filtered_total || responseItems.length
+        // Handle response structure and calculate total
+        let responseTotal = 0
+        if (response && typeof response === "object" && "total" in response && typeof response.total === "number") {
+          responseTotal = response.total
+        } else if (Array.isArray(responseItems)) {
+          // If no total provided, we need to estimate
+          // For first page, if we got less than limit, that's the total
+          // For subsequent pages, we can't know the exact total
+          if (options.offset === 0 || options.reset) {
+            responseTotal = responseItems.length < (options.limit || 20) ? responseItems.length : responseItems.length
+          } else {
+            // For pagination, keep existing total and add new items
+            responseTotal = total + responseItems.length
+          }
+        }
 
-        if (isRefresh || !isLoadMore) {
+        if (options.reset || options.offset === 0) {
           setItems(responseItems)
-          setOffset(responseItems.length)
+          setTotal(responseTotal)
         } else {
-          setItems((prev) => [...prev, ...responseItems])
-          setOffset((prev) => prev + responseItems.length)
+          setItems((prevItems) => [...prevItems, ...responseItems])
+          // For pagination, update total to reflect all loaded items
+          setTotal((prevTotal) => Math.max(prevTotal, (options.offset || 0) + responseItems.length))
         }
 
-        setTotal(Math.max(responseTotal, responseItems.length))
-        setFilteredTotal(Math.max(responseFilteredTotal, responseItems.length))
-        setHasMore(responseItems.length === limit)
-        setError(null)
+        // Set hasMore based on whether we got a full page
+        setHasMore(responseItems.length === (options.limit || 20))
+
+        // Update current filters ref
+        currentFiltersRef.current = targetFilters
       } catch (err) {
-        console.error("Error fetching items:", err)
-        const errorMessage = err instanceof Error ? err.message : "Failed to load feed items"
-        setError(errorMessage)
-
-        // Reset items only on first fetch error
-        if (!isLoadMore && !isRefresh) {
-          setItems([])
-          setTotal(0)
-          setFilteredTotal(0)
-        }
+        setError(err instanceof Error ? err.message : "Failed to fetch feed items")
       } finally {
         setLoading(false)
-        setRefreshing(false)
         setFilterLoading(false)
+        setRefreshing(false)
+        isFetchingRef.current = false
       }
     },
-    [user, session, offset, filters, limit],
+    [total],
   )
 
-  const fetchFeeds = useCallback(async () => {
-    if (!user || !session) {
-      return
-    }
-
-    try {
-      const response = await apiService.getUserFeeds()
-      setFeeds(response?.feeds || [])
-    } catch (err) {
-      console.error("Error fetching feeds:", err)
-    }
-  }, [user, session])
-
-  const loadMore = useCallback(async () => {
-    if (!hasMore || loading || filterLoading || refreshing) return
-    await fetchItems(false, true)
-  }, [hasMore, loading, filterLoading, refreshing, fetchItems])
-
-  const refresh = useCallback(async () => {
-    await fetchItems(true, false)
+  // Stable functions that don't change on every render
+  const refresh = useCallback(() => {
+    fetchItems(currentFiltersRef.current, { reset: true, isRefresh: true })
   }, [fetchItems])
 
-  const updateFilters = useCallback(
+  const loadMore = useCallback(() => {
+    if (!loading && !filterLoading && !refreshing && hasMore && !isFetchingRef.current) {
+      fetchItems(currentFiltersRef.current, { offset: items.length })
+    }
+  }, [fetchItems, loading, filterLoading, refreshing, hasMore, items.length])
+
+  const applyFilters = useCallback(
     (newFilters: FeedFilters) => {
-      console.log("Updating filters:", newFilters)
       setFilters(newFilters)
-      setOffset(0)
-      fetchItems(false, false, newFilters)
+      fetchItems(newFilters, { reset: true, isFilterChange: true })
     },
     [fetchItems],
   )
 
   const clearFilters = useCallback(() => {
-    console.log("Clearing filters")
-    setFilters({})
-    setOffset(0)
-    fetchItems(false, false, {})
+    const emptyFilters = {}
+    setFilters(emptyFilters)
+    fetchItems(emptyFilters, { reset: true, isFilterChange: true })
   }, [fetchItems])
 
-  // Initial fetch when user changes
+  // Initialize only once
   useEffect(() => {
-    if (user && session) {
-      console.log("User authenticated, fetching initial data")
-      fetchItems()
-      fetchFeeds()
-    } else {
-      console.log("User not authenticated, clearing data")
-      setItems([])
-      setFeeds([])
-      setTotal(0)
-      setFilteredTotal(0)
-      setError(null)
-      setLoading(false)
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true
+      fetchItems({}, { reset: true })
     }
-  }, [user, session])
+  }, [fetchItems])
 
   return {
     items,
-    feeds,
     loading,
-    refreshing,
     filterLoading,
+    refreshing,
     error,
-    total,
-    filteredTotal,
     hasMore,
+    total,
     filters,
-    fetchItems: () => fetchItems(),
-    loadMore,
     refresh,
-    updateFilters,
+    loadMore,
+    applyFilters,
     clearFilters,
   }
 }

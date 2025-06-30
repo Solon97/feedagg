@@ -1,181 +1,250 @@
 "use client"
 
-import { useFeeds } from "@/hooks/use-feeds"
-import { FeedFiltersComponent } from "@/components/feed-filters"
-import { FeedItemCard } from "@/components/feed-item-card"
-import { Button } from "@/components/ui/button"
 import { RefreshCw, Loader2 } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { Button } from "@/components/ui/button"
+import { FeedItemCard } from "@/components/feed-item-card"
+import { FeedFiltersComponent } from "@/components/feed-filters"
+import { Navbar } from "@/components/navbar"
+import { ProtectedRoute } from "@/components/protected-route"
+import { useFeedItems, useFeeds } from "@/hooks/use-feeds"
 
 export default function Dashboard() {
-  const { user, loading: authLoading } = useAuth()
+  // Use the hooks with stable references
+  const feedItemsHook = useFeedItems()
+  const feedsHook = useFeeds()
+
   const {
     items,
-    feeds,
     loading,
-    refreshing,
     filterLoading,
+    refreshing,
     error,
-    total,
-    filteredTotal,
     hasMore,
+    total,
     filters,
-    loadMore,
     refresh,
-    updateFilters,
+    loadMore,
+    applyFilters,
     clearFilters,
-  } = useFeeds()
+  } = feedItemsHook
 
-  // Show loading while auth is being determined
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Loading...</span>
-        </div>
-      </div>
-    )
+  const { feeds, loading: feedsLoading } = feedsHook
+
+  const handleLoadMore = () => {
+    if (!loading && !filterLoading && !refreshing && hasMore) {
+      loadMore()
+    }
   }
 
-  // Show login prompt if not authenticated
-  if (!user) {
+  // Check if any filters are active
+  const hasActiveFilters = Object.values(filters).some(Boolean)
+
+  // Calculate the correct total to display
+  const displayTotal = Math.max(total, items.length)
+  const displayCount = items.length
+
+  // Check if any loading state is active
+  const isAnyLoading = loading || filterLoading || refreshing
+
+  if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Welcome to FeedAgg</h1>
-          <p className="text-gray-600 mb-4">Please log in to view your feeds</p>
-          <Button onClick={() => (window.location.href = "/auth/login")}>Go to Login</Button>
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+          <Navbar />
+          <div className="max-w-4xl mx-auto p-4">
+            <div className="text-center py-12">
+              <h1 className="text-2xl font-bold text-red-400 mb-4">Error Loading Feed</h1>
+              <p className="text-gray-400 mb-6">{error}</p>
+              <Button onClick={refresh} className="bg-teal-600 hover:bg-teal-700" disabled={refreshing}>
+                {refreshing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Refreshing...
+                  </>
+                ) : (
+                  "Try Again"
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      </ProtectedRoute>
     )
   }
-
-  const hasActiveFilters = !!(filters.title || filters.feed_id || filters.feed_type)
-  const displayTotal = hasActiveFilters ? Math.max(filteredTotal, items.length) : Math.max(total, items.length)
-  const isAnyLoading = loading || refreshing || filterLoading
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Filters Sidebar */}
-          <div className="lg:w-80 flex-shrink-0">
-            <FeedFiltersComponent
-              feeds={feeds}
-              filters={filters}
-              onFiltersChange={updateFilters}
-              onClearFilters={clearFilters}
-              isLoading={isAnyLoading}
-            />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Navbar />
+
+        <div className="max-w-7xl mx-auto p-4 sm:p-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Your Feed</h1>
+              <p className="text-gray-400">
+                {items.length > 0 ? `${items.length} items from your subscribed feeds` : "No items yet"}
+              </p>
+            </div>
+            <Button
+              onClick={refresh}
+              disabled={isAnyLoading}
+              className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto disabled:opacity-50"
+            >
+              {refreshing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </>
+              )}
+            </Button>
           </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Feed Items</h1>
-                <div className="flex items-center gap-4 mt-2">
-                  <p className="text-sm text-gray-600">
-                    Showing {items.length} of {displayTotal} items
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Filters Sidebar */}
+            <div className="lg:col-span-1">
+              <FeedFiltersComponent
+                filters={filters}
+                onFiltersChange={applyFilters}
+                onClearFilters={clearFilters}
+                feeds={feeds}
+                feedsLoading={feedsLoading}
+                isFilterLoading={filterLoading}
+              />
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              {/* Filter Loading Indicator */}
+              {filterLoading && (
+                <div className="mb-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
+                    <span className="text-sm text-gray-300">Filtering results...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Refresh Loading Indicator */}
+              {refreshing && (
+                <div className="mb-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
+                    <span className="text-sm text-gray-300">Refreshing feed...</span>
+                  </div>
+                </div>
+              )}
+
+              {loading && items.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+                  <span className="ml-2 text-gray-400">Loading your feed...</span>
+                </div>
+              ) : items.length === 0 && !isAnyLoading ? (
+                <div className="text-center py-12">
+                  <h2 className="text-xl font-semibold text-gray-300 mb-2">
+                    {hasActiveFilters ? "No items match your filters" : "No feed items yet"}
+                  </h2>
+                  <p className="text-gray-500 mb-6">
+                    {hasActiveFilters
+                      ? "Try adjusting your filters or check back later."
+                      : "Subscribe to some feeds to see content here."}
                   </p>
                   {hasActiveFilters && (
-                    <Button variant="outline" size="sm" onClick={clearFilters} disabled={isAnyLoading}>
-                      Clear filters
+                    <Button
+                      onClick={clearFilters}
+                      variant="outline"
+                      className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
+                      disabled={isAnyLoading}
+                    >
+                      Clear Filters
                     </Button>
                   )}
                 </div>
-              </div>
-              <Button
-                onClick={refresh}
-                disabled={isAnyLoading}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 bg-transparent"
-              >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                {refreshing ? "Refreshing..." : "Refresh"}
-              </Button>
-            </div>
+              ) : (
+                <>
+                  {/* Results Summary */}
+                  {displayCount > 0 && !isAnyLoading && (
+                    <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-400">
+                          Showing <span className="text-white font-medium">{displayCount}</span>
+                          {hasMore && displayTotal > displayCount && (
+                            <>
+                              {" "}
+                              of <span className="text-white font-medium">{displayTotal}+</span>
+                            </>
+                          )}
+                          {!hasMore && displayTotal > displayCount && (
+                            <>
+                              {" "}
+                              of <span className="text-white font-medium">{displayTotal}</span>
+                            </>
+                          )}
+                          {displayTotal === displayCount && (
+                            <>
+                              {" "}
+                              of <span className="text-white font-medium">{displayTotal}</span>
+                            </>
+                          )}{" "}
+                          items
+                        </p>
+                        {hasActiveFilters && (
+                          <Button
+                            onClick={clearFilters}
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-gray-400 hover:text-white h-auto p-1"
+                            disabled={isAnyLoading}
+                          >
+                            Clear filters
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
-            {/* Loading Indicator */}
-            {filterLoading && (
-              <div className="flex items-center justify-center py-8">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Filtering results...</span>
-                </div>
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && !filterLoading && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-red-800">Error Loading Feed</h3>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </div>
-                  <Button onClick={refresh} variant="outline" size="sm" disabled={refreshing}>
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Feed Items */}
-            {!loading && !filterLoading && (
-              <>
-                {items.length === 0 ? (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">
-                      {hasActiveFilters ? "No items match your current filters" : "No feed items found"}
-                    </p>
-                    {hasActiveFilters && (
-                      <Button onClick={clearFilters} variant="outline">
-                        Clear filters
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
+                  {/* Feed Items Grid */}
+                  <div className="grid gap-4 sm:gap-6">
                     {items.map((item) => (
                       <FeedItemCard key={item.id} item={item} />
                     ))}
-
-                    {/* Load More Button */}
-                    {hasMore && (
-                      <div className="flex justify-center pt-6">
-                        <Button onClick={loadMore} disabled={isAnyLoading} variant="outline">
-                          {loading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                              Loading more items...
-                            </>
-                          ) : (
-                            "Load More"
-                          )}
-                        </Button>
-                      </div>
-                    )}
                   </div>
-                )}
-              </>
-            )}
 
-            {/* Initial Loading */}
-            {loading && !refreshing && !filterLoading && (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Loading feed items...</span>
-                </div>
-              </div>
-            )}
+                  {/* Load More Button */}
+                  {hasMore && !isAnyLoading && (
+                    <div className="flex justify-center mt-8">
+                      <Button
+                        onClick={handleLoadMore}
+                        disabled={isAnyLoading}
+                        variant="outline"
+                        className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
+                      >
+                        Load More
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Loading More Indicator */}
+                  {loading && items.length > 0 && (
+                    <div className="flex justify-center mt-8">
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Loading more items...</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }
