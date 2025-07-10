@@ -1,13 +1,16 @@
-import type { NextRequest } from "next/server"
-import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware"
+import type { NextRequest } from "next/server";
+import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware";
 
-const API_BASE_URL = "https://rss-feed-processor.onrender.com"
+const API_BASE_URL = process.env.EXTERNAL_API_URL;
 
-export async function GET(request: NextRequest, { params }: { params: { feedItemId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { feedItemId: string } }
+) {
   return withApiLogging(request, async (context) => {
-    const { requestId, token } = context
+    const { requestId, token } = context;
 
-    const { feedItemId } = params
+    const { feedItemId } = params;
 
     // Make request to external API
     const response = await makeExternalApiCall(
@@ -18,14 +21,14 @@ export async function GET(request: NextRequest, { params }: { params: { feedItem
           "Content-Type": "application/json",
         },
       },
-      requestId,
-    )
+      requestId
+    );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || "Failed to fetch feed item")
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch feed item");
     }
 
-    return response.json()
-  })
+    return response.json();
+  });
 }

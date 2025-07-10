@@ -1,14 +1,14 @@
-import type { NextRequest } from "next/server"
-import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware"
+import type { NextRequest } from "next/server";
+import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware";
 
-const API_BASE_URL = "https://rss-feed-processor.onrender.com"
+const API_BASE_URL = process.env.EXTERNAL_API_URL;
 
 export async function POST(request: NextRequest) {
   return withApiLogging(request, async (context) => {
-    const { requestId, token } = context
+    const { requestId, token } = context;
 
     // Get request body
-    const body = await request.json()
+    const body = await request.json();
 
     // Make request to external API
     const response = await makeExternalApiCall(
@@ -21,14 +21,14 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify(body),
       },
-      requestId,
-    )
+      requestId
+    );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || "Failed to subscribe to feed")
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to subscribe to feed");
     }
 
-    return response.json()
-  })
+    return response.json();
+  });
 }

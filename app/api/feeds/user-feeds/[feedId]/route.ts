@@ -1,13 +1,16 @@
-import type { NextRequest } from "next/server"
-import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware"
+import type { NextRequest } from "next/server";
+import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware";
 
-const API_BASE_URL = "https://rss-feed-processor.onrender.com"
+const API_BASE_URL = process.env.EXTERNAL_API_URL;
 
-export async function DELETE(request: NextRequest, { params }: { params: { feedId: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { feedId: string } }
+) {
   return withApiLogging(request, async (context) => {
-    const { requestId, token } = context
+    const { requestId, token } = context;
 
-    const { feedId } = params
+    const { feedId } = params;
 
     // Make request to external API
     const response = await makeExternalApiCall(
@@ -19,14 +22,14 @@ export async function DELETE(request: NextRequest, { params }: { params: { feedI
           "Content-Type": "application/json",
         },
       },
-      requestId,
-    )
+      requestId
+    );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || "Failed to delete feed")
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to delete feed");
     }
 
-    return response.json()
-  })
+    return response.json();
+  });
 }
