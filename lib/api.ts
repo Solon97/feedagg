@@ -1,4 +1,4 @@
-import { supabase } from "./supabase"
+import { supabase } from "./supabase";
 
 class ApiService {
   private async getAuthToken(): Promise<string | null> {
@@ -6,28 +6,31 @@ class ApiService {
       const {
         data: { session },
         error,
-      } = await supabase.auth.getSession()
+      } = await supabase.auth.getSession();
 
       if (error) {
-        console.error("Error getting session:", error)
-        return null
+        console.error("Error getting session:", error);
+        return null;
       }
 
-      return session?.access_token || null
+      return session?.access_token || null;
     } catch (error) {
-      console.error("Error in getAuthToken:", error)
-      return null
+      console.error("Error in getAuthToken:", error);
+      return null;
     }
   }
 
-  private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = await this.getAuthToken()
+  private async makeRequest<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const token = await this.getAuthToken();
 
     if (!token) {
-      throw new Error("No authentication token available")
+      throw new Error("No authentication token available");
     }
 
-    const url = `/api${endpoint}`
+    const url = `/api${endpoint}`;
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -35,69 +38,76 @@ class ApiService {
         Authorization: `Bearer ${token}`,
         ...options.headers,
       },
-    })
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error || `HTTP ${response.status}: ${response.statusText}`
+      );
     }
 
-    return response.json()
+    return response.json();
   }
 
   // Feed Items
   async getUserFeedItems(
     params: {
-      limit?: number
-      offset?: number
-      sort?: string
-      order?: "asc" | "desc"
-      title?: string
-      feed_id?: string
-      feed_type?: "rss" | "youtube"
-    } = {},
+      limit?: number;
+      offset?: number;
+      sort?: string;
+      order?: "asc" | "desc";
+      title?: string;
+      feed_id?: string;
+      feed_type?: "rss" | "youtube";
+    } = {}
   ) {
-    const searchParams = new URLSearchParams()
-    if (params.limit) searchParams.set("limit", params.limit.toString())
-    if (params.offset) searchParams.set("offset", params.offset.toString())
-    if (params.sort) searchParams.set("sort", params.sort)
-    if (params.order) searchParams.set("order", params.order)
-    if (params.title) searchParams.set("title", params.title)
-    if (params.feed_id) searchParams.set("feed_id", params.feed_id)
-    if (params.feed_type) searchParams.set("feed_type", params.feed_type)
+    const searchParams = new URLSearchParams();
+    if (params.limit) searchParams.set("limit", params.limit.toString());
+    if (params.offset) searchParams.set("offset", params.offset.toString());
+    if (params.sort) searchParams.set("sort", params.sort);
+    if (params.order) searchParams.set("order", params.order);
+    if (params.title) searchParams.set("title", params.title);
+    if (params.feed_id) searchParams.set("feed_id", params.feed_id);
+    if (params.feed_type) searchParams.set("feed_type", params.feed_type);
 
-    return this.makeRequest<any>(`/feeds/user-feed-items?${searchParams}`)
+    return this.makeRequest<any>(`/feeds/user-feed-items?${searchParams}`);
   }
 
   async getFeedItem(feedItemId: string) {
     // Direct response without wrapper - matches the new API structure
-    return this.makeRequest<any>(`/feeds/feed-item/${feedItemId}`)
+    return this.makeRequest<any>(`/feeds/feed-item/${feedItemId}`);
   }
 
   // Feeds Management
   async getUserFeeds() {
-    return this.makeRequest<any>("/feeds/user-feeds")
+    return this.makeRequest<any>("/feeds/user-feeds");
   }
 
   async subscribeFeed(url: string) {
     return this.makeRequest<any>("/feeds/subscribe", {
       method: "POST",
       body: JSON.stringify({ url }),
-    })
+    });
   }
 
   async updateFeedStatus(feedId: string, isActive: boolean) {
     return this.makeRequest<any>(`/feeds/user-feeds/${feedId}/status`, {
       method: "PUT",
       body: JSON.stringify({ is_active: isActive }),
-    })
+    });
   }
 
   async deleteFeed(feedId: string) {
     return this.makeRequest<any>(`/feeds/user-feeds/${feedId}`, {
       method: "DELETE",
-    })
+    });
+  }
+
+  // Subscriptions
+  async getUserSubscriptionStatus(userId: string) {
+    return this.makeRequest<any>(`/subscriptions/user/${userId}/active`);
   }
 }
 
-export const apiService = new ApiService()
+export const apiService = new ApiService();

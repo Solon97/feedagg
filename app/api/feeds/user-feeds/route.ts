@@ -1,5 +1,9 @@
 import type { NextRequest } from "next/server";
-import { withApiLogging, makeExternalApiCall } from "@/lib/api-middleware";
+import {
+  withApiLogging,
+  makeExternalApiCall,
+  handleExternalApiResponse,
+} from "@/lib/api-middleware";
 
 const API_BASE_URL = process.env.EXTERNAL_API_URL;
 
@@ -19,11 +23,11 @@ export async function GET(request: NextRequest) {
       requestId
     );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Failed to fetch feeds");
-    }
-
-    return response.json();
+    // Handle response and automatically throw ExternalApiError if needed
+    return await handleExternalApiResponse(
+      response,
+      "Failed to fetch feeds",
+      `${API_BASE_URL}/feed/user-feeds`
+    );
   });
 }

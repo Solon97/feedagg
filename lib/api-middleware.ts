@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { logger } from "./logger";
 import { randomUUID } from "crypto";
+import { ExternalApiError } from "./api-errors";
 
 export interface ApiContext {
   requestId: string;
@@ -123,6 +124,24 @@ export async function withApiLogging<T>(
   } catch (error: any) {
     const duration = Date.now() - startTime;
     logger.apiError(method, endpoint, error, requestId);
+
+    // Handle ExternalApiError differently to preserve status codes and details
+    if (error instanceof ExternalApiError) {
+      const clientStatusCode = error.getClientStatusCode();
+      const clientResponse = error.getClientErrorResponse();
+
+      logger.apiResponse(
+        method,
+        endpoint,
+        clientStatusCode,
+        duration,
+        requestId
+      );
+
+      return NextResponse.json(clientResponse, { status: clientStatusCode });
+    }
+
+    // Handle all other errors as internal server errors
     logger.apiResponse(method, endpoint, 500, duration, requestId);
 
     return NextResponse.json(
@@ -174,4 +193,24 @@ export async function makeExternalApiCall(
     );
     throw error;
   }
+}
+
+/**
+ * Helper function to handle external API responses and throw appropriate errors
+ * Use this instead of manually checking response.ok and throwing generic errors
+ */
+export async function handleExternalApiResponse(
+  response: Response,
+  fallbackErrorMessage: string,
+  originalUrl?: string
+): Promise<any> {
+  if (!response.ok) {
+    throw await ExternalApiError.fromResponse(
+      response,
+      fallbackErrorMessage,
+      originalUrl
+    );
+  }
+
+  return response.json();
 }
