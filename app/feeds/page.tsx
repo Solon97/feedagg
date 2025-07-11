@@ -192,30 +192,6 @@ export default function FeedsPage() {
             </Alert>
           )}
 
-          {/* Premium User Limit Warning */}
-          {!subscriptionLoading && hasReachedFreeLimit && (
-            <Alert className="mb-6 bg-yellow-900/20 border-yellow-700/50">
-              <AlertTriangle className="h-4 w-4 text-yellow-400" />
-              <AlertDescription className="text-yellow-300">
-                <div className="flex items-center justify-between">
-                  <span>
-                    Free users can only subscribe to one feed. You've reached
-                    your limit.
-                  </span>
-                  <Link href="/subscribe">
-                    <Button
-                      size="sm"
-                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                    >
-                      <Crown className="w-4 h-4 mr-2" />
-                      Upgrade to Premium
-                    </Button>
-                  </Link>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-
           {/* Add New Feed */}
           <Card className="mb-8 bg-slate-800/50 border-slate-700/50">
             <CardHeader>
