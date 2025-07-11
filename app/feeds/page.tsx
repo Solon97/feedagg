@@ -1,106 +1,168 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ProtectedRoute } from "@/components/protected-route"
-import { Navbar } from "@/components/navbar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useFeeds } from "@/hooks/use-feeds"
-import { Plus, Trash2, Power, PowerOff, CheckCircle, Loader2, Rss, Youtube } from "lucide-react"
-import type { UserFeedSubscription } from "@/types/api"
+import { useState, useEffect } from "react";
+import { ProtectedRoute } from "@/components/protected-route";
+import { Navbar } from "@/components/navbar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useFeeds } from "@/hooks/use-feeds";
+import { useSubscription } from "@/hooks/use-subscription";
+import { useAuth } from "@/contexts/auth-context";
+import {
+  Plus,
+  Trash2,
+  Power,
+  PowerOff,
+  CheckCircle,
+  Loader2,
+  Rss,
+  Youtube,
+  Crown,
+  AlertTriangle,
+} from "lucide-react";
+import Link from "next/link";
+import type { UserFeedSubscription } from "@/types/api";
 
 export default function FeedsPage() {
-  const { feeds, loading, error, refetch, subscribeFeed, updateFeedStatus, deleteFeed } = useFeeds()
-  const [newFeedUrl, setNewFeedUrl] = useState("")
-  const [subscribing, setSubscribing] = useState(false)
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const { user } = useAuth();
+  const {
+    feeds,
+    loading,
+    error,
+    refetch,
+    subscribeFeed,
+    updateFeedStatus,
+    deleteFeed,
+  } = useFeeds();
+  const { isActive: isPremium, loading: subscriptionLoading } = useSubscription(
+    user?.id
+  );
+  const [newFeedUrl, setNewFeedUrl] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  // Check if user can add more feeds
+  const canAddMoreFeeds = isPremium || feeds.length < 1;
+  const hasReachedFreeLimit = !isPremium && feeds.length >= 1;
 
   // Auto-hide messages after 5 seconds
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
-        setMessage(null)
-      }, 5000)
-      return () => clearTimeout(timer)
+        setMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  }, [message])
+  }, [message]);
 
   const handleSubscribe = async () => {
-    if (!newFeedUrl.trim()) return
+    if (!newFeedUrl.trim()) return;
+
+    // Check if user can add more feeds
+    if (!canAddMoreFeeds) {
+      setMessage({
+        type: "error",
+        text: "Free users can only subscribe to one feed. Upgrade to Premium to add more feeds.",
+      });
+      return;
+    }
 
     try {
-      setSubscribing(true)
-      const result = await subscribeFeed(newFeedUrl)
+      setSubscribing(true);
+      const result = await subscribeFeed(newFeedUrl);
       if (result.success) {
-        setMessage({ type: "success", text: "Feed subscribed successfully!" })
-        setNewFeedUrl("")
+        setMessage({ type: "success", text: "Feed subscribed successfully!" });
+        setNewFeedUrl("");
       } else {
-        setMessage({ type: "error", text: result.error || "Failed to subscribe to feed" })
+        setMessage({
+          type: "error",
+          text: result.error || "Failed to subscribe to feed",
+        });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to subscribe to feed"
-      setMessage({ type: "error", text: errorMessage })
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to subscribe to feed";
+      setMessage({ type: "error", text: errorMessage });
     } finally {
-      setSubscribing(false)
+      setSubscribing(false);
     }
-  }
+  };
 
   const handleToggleStatus = async (subscription: UserFeedSubscription) => {
-    const feedId = subscription.feed.id
-    const newStatus = !subscription.is_active
+    const feedId = subscription.feed.id;
+    const newStatus = !subscription.is_active;
 
     try {
-      setUpdatingStatus(feedId)
-      const result = await updateFeedStatus(feedId, newStatus)
+      setUpdatingStatus(feedId);
+      const result = await updateFeedStatus(feedId, newStatus);
       if (result.success) {
         setMessage({
           type: "success",
-          text: `Subscription ${newStatus ? "activated" : "deactivated"} successfully!`,
-        })
+          text: `Subscription ${
+            newStatus ? "activated" : "deactivated"
+          } successfully!`,
+        });
       } else {
-        setMessage({ type: "error", text: result.error || "Failed to update subscription status" })
+        setMessage({
+          type: "error",
+          text: result.error || "Failed to update subscription status",
+        });
       }
     } catch (err) {
-      setMessage({ type: "error", text: "Failed to update subscription status" })
+      setMessage({
+        type: "error",
+        text: "Failed to update subscription status",
+      });
     } finally {
-      setUpdatingStatus(null)
+      setUpdatingStatus(null);
     }
-  }
+  };
 
   const handleDelete = async (subscription: UserFeedSubscription) => {
-    if (!confirm(`Are you sure you want to unsubscribe from "${subscription.feed.name}"?`)) return
+    if (
+      !confirm(
+        `Are you sure you want to unsubscribe from "${subscription.feed.name}"?`
+      )
+    )
+      return;
 
-    const result = await deleteFeed(subscription.feed.id)
+    const result = await deleteFeed(subscription.feed.id);
     if (result.success) {
-      setMessage({ type: "success", text: "Unsubscribed successfully!" })
+      setMessage({ type: "success", text: "Unsubscribed successfully!" });
     } else {
-      setMessage({ type: "error", text: result.error || "Failed to unsubscribe" })
+      setMessage({
+        type: "error",
+        text: result.error || "Failed to unsubscribe",
+      });
     }
-  }
+  };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return "Never"
+    if (!dateString) return "Never";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   const isValidUrl = (url: string) => {
     try {
-      new URL(url)
-      return true
+      new URL(url);
+      return true;
     } catch {
-      return false
+      return false;
     }
-  }
+  };
 
   return (
     <ProtectedRoute>
@@ -111,7 +173,9 @@ export default function FeedsPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Manage Feeds</h1>
-            <p className="text-gray-400">Add and manage your RSS feeds and YouTube channels</p>
+            <p className="text-gray-400">
+              Add and manage your RSS feeds and YouTube channels
+            </p>
           </div>
 
           {/* Message */}
@@ -125,6 +189,30 @@ export default function FeedsPage() {
               }`}
             >
               <AlertDescription>{message.text}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Premium User Limit Warning */}
+          {!subscriptionLoading && hasReachedFreeLimit && (
+            <Alert className="mb-6 bg-yellow-900/20 border-yellow-700/50">
+              <AlertTriangle className="h-4 w-4 text-yellow-400" />
+              <AlertDescription className="text-yellow-300">
+                <div className="flex items-center justify-between">
+                  <span>
+                    Free users can only subscribe to one feed. You've reached
+                    your limit.
+                  </span>
+                  <Link href="/subscribe">
+                    <Button
+                      size="sm"
+                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Upgrade to Premium
+                    </Button>
+                  </Link>
+                </div>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -146,23 +234,55 @@ export default function FeedsPage() {
                     onChange={(e) => setNewFeedUrl(e.target.value)}
                     className="bg-slate-700/50 border-slate-600 text-white placeholder:text-gray-400"
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && newFeedUrl.trim() && isValidUrl(newFeedUrl.trim()) && !subscribing) {
-                        handleSubscribe()
+                      if (
+                        e.key === "Enter" &&
+                        newFeedUrl.trim() &&
+                        isValidUrl(newFeedUrl.trim()) &&
+                        !subscribing
+                      ) {
+                        handleSubscribe();
                       }
                     }}
                   />
                 </div>
                 <Button
                   onClick={handleSubscribe}
-                  disabled={!newFeedUrl.trim() || !isValidUrl(newFeedUrl.trim()) || subscribing}
+                  disabled={
+                    !newFeedUrl.trim() ||
+                    !isValidUrl(newFeedUrl.trim()) ||
+                    subscribing ||
+                    !canAddMoreFeeds
+                  }
                   className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50"
+                  title={
+                    !canAddMoreFeeds
+                      ? "Upgrade to Premium to add more feeds"
+                      : undefined
+                  }
                 >
-                  {subscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {subscribing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
                   {subscribing ? "Adding..." : "Add Feed"}
                 </Button>
               </div>
               <p className="text-sm text-gray-400">
-                Enter a valid RSS feed URL or YouTube channel URL. The feed will be validated when you add it.
+                Enter a valid RSS feed URL or YouTube channel URL. The feed will
+                be validated when you add it.
+                {!subscriptionLoading && !isPremium && (
+                  <span className="block mt-1 text-yellow-400">
+                    Free users can only subscribe to one feed.
+                    <Link
+                      href="/subscribe"
+                      className="underline hover:text-yellow-300 ml-1"
+                    >
+                      Upgrade to Premium
+                    </Link>{" "}
+                    for unlimited feeds.
+                  </span>
+                )}
               </p>
             </CardContent>
           </Card>
@@ -195,23 +315,32 @@ export default function FeedsPage() {
             <Card className="bg-slate-800/50 border-slate-700/50">
               <CardContent className="p-12 text-center">
                 <Rss className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">No feeds yet</h3>
-                <p className="text-gray-400">Add your first RSS feed or YouTube channel to get started.</p>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  No feeds yet
+                </h3>
+                <p className="text-gray-400">
+                  Add your first RSS feed or YouTube channel to get started.
+                </p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-4">
               {feeds.map((subscription: UserFeedSubscription) => {
-                const feed = subscription.feed
-                const isUpdating = updatingStatus === feed.id
+                const feed = subscription.feed;
+                const isUpdating = updatingStatus === feed.id;
 
                 return (
-                  <Card key={feed.id} className="bg-slate-800/50 border-slate-700/50">
+                  <Card
+                    key={feed.id}
+                    className="bg-slate-800/50 border-slate-700/50"
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-white">{feed.name}</h3>
+                            <h3 className="text-lg font-semibold text-white">
+                              {feed.name}
+                            </h3>
                             <Badge
                               variant="secondary"
                               className={
@@ -225,17 +354,26 @@ export default function FeedsPage() {
                               ) : (
                                 <PowerOff className="w-4 h-4" />
                               )}
-                              <span className="ml-1">{subscription.is_active ? "Active" : "Inactive"}</span>
+                              <span className="ml-1">
+                                {subscription.is_active ? "Active" : "Inactive"}
+                              </span>
                             </Badge>
                             {feed.url.includes("youtube") && (
-                              <Badge variant="outline" className="border-red-700/50 text-red-400">
+                              <Badge
+                                variant="outline"
+                                className="border-red-700/50 text-red-400"
+                              >
                                 <Youtube className="w-3 h-3 mr-1" />
                                 YouTube
                               </Badge>
                             )}
                           </div>
-                          <p className="text-gray-400 text-sm mb-2 break-all">{feed.url}</p>
-                          <p className="text-gray-500 text-xs">Last fetched: {formatDate(feed.last_fetched_at)}</p>
+                          <p className="text-gray-400 text-sm mb-2 break-all">
+                            {feed.url}
+                          </p>
+                          <p className="text-gray-500 text-xs">
+                            Last fetched: {formatDate(feed.last_fetched_at)}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
                           <Button
@@ -267,12 +405,12 @@ export default function FeedsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                )
+                );
               })}
             </div>
           )}
         </div>
       </div>
     </ProtectedRoute>
-  )
+  );
 }
