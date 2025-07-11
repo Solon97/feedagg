@@ -1,65 +1,71 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { supabase } from "@/lib/supabase"
-import type { AuthContextType, AuthUser } from "@/types/auth"
-import type { Session } from "@supabase/supabase-js"
-import { logger } from "@/lib/logger"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { supabase } from "@/lib/supabase";
+import type { AuthContextType, AuthUser } from "@/types/auth";
+import type { Session } from "@supabase/supabase-js";
+import { logger } from "@/lib/logger";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     // Get initial session
     const getInitialSession = async () => {
       try {
         const {
           data: { session },
-        } = await supabase.auth.getSession()
+        } = await supabase.auth.getSession();
 
         if (mounted) {
-          setSession(session)
-          setUser((session?.user as AuthUser) || null)
-          setLoading(false)
+          setSession(session);
+          setUser((session?.user as AuthUser) || null);
+          setLoading(false);
         }
       } catch (error) {
-        logger.error("Failed to get initial session", { error })
+        logger.error("Failed to get initial session", { error });
         if (mounted) {
-          setLoading(false)
+          setLoading(false);
         }
       }
-    }
+    };
 
-    getInitialSession()
+    getInitialSession();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      logger.debug("Auth state changed", { event, userId: session?.user?.id })
+      logger.debug("Auth state changed", { event, userId: session?.user?.id });
 
       if (mounted) {
-        setSession(session)
-        setUser((session?.user as AuthUser) || null)
-        setLoading(false)
+        setSession(session);
+        setUser((session?.user as AuthUser) || null);
+        setLoading(false);
       }
-    })
+    });
 
     return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [])
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      logger.info("User registration attempt", { email })
+      logger.info("User registration attempt", { email });
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -68,82 +74,114 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             full_name: fullName,
           },
         },
-      })
+      });
 
       if (error) {
-        logger.warn("User registration failed", { email, error: error.message })
+        logger.warn("User registration failed", {
+          email,
+          error: error.message,
+        });
       } else {
-        logger.info("User registration successful", { email })
+        logger.info("User registration successful", { email });
       }
 
-      return { error }
+      return { error };
     } catch (error: any) {
-      logger.error("User registration error", { email, error: error.message })
-      return { error }
+      logger.error("User registration error", { email, error: error.message });
+      return { error };
     }
-  }
+  };
 
   const signIn = async (email: string, password: string) => {
     try {
-      logger.info("User login attempt", { email })
+      logger.info("User login attempt", { email });
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
-      })
+      });
 
       if (error) {
-        logger.warn("User login failed", { email, error: error.message })
+        logger.warn("User login failed", { email, error: error.message });
       } else {
-        logger.info("User login successful", { email })
+        logger.info("User login successful", { email });
       }
 
-      return { error }
+      return { error };
     } catch (error: any) {
-      logger.error("User login error", { email, error: error.message })
-      return { error }
+      logger.error("User login error", { email, error: error.message });
+      return { error };
     }
-  }
+  };
+
+  const getRedirectUrl = () => {
+    // Check for production URL from environment variables
+    const productionUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_VERCEL_URL ||
+      process.env.VERCEL_URL;
+
+    // If we have a production URL and we're not in development, use it
+    if (productionUrl && process.env.NODE_ENV === "production") {
+      // Ensure the URL has the correct protocol
+      const url = productionUrl.startsWith("http")
+        ? productionUrl
+        : `https://${productionUrl}`;
+      return `${url}/`;
+    }
+
+    // For development or when no production URL is set, use current origin
+    return `${window.location.origin}/`;
+  };
 
   const signInWithGoogle = async () => {
     try {
-      logger.info("Google OAuth attempt")
+      logger.info("Google OAuth attempt");
+      const redirectUrl = getRedirectUrl();
+      logger.debug("OAuth redirect URL", { redirectUrl });
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: redirectUrl,
         },
-      })
+      });
 
       if (error) {
-        logger.warn("Google OAuth failed", { error: error.message })
+        logger.warn("Google OAuth failed", { error: error.message });
       } else {
-        logger.info("Google OAuth initiated")
+        logger.info("Google OAuth initiated");
       }
 
-      return { error }
+      return { error };
     } catch (error: any) {
-      logger.error("Google OAuth error", { error: error.message })
-      return { error }
+      logger.error("Google OAuth error", { error: error.message });
+      return { error };
     }
-  }
+  };
 
   const signOut = async () => {
     try {
-      logger.info("User logout attempt", { userId: user?.id })
-      const { error } = await supabase.auth.signOut()
+      logger.info("User logout attempt", { userId: user?.id });
+      const { error } = await supabase.auth.signOut();
 
       if (error) {
-        logger.warn("User logout failed", { userId: user?.id, error: error.message })
+        logger.warn("User logout failed", {
+          userId: user?.id,
+          error: error.message,
+        });
       } else {
-        logger.info("User logout successful", { userId: user?.id })
+        logger.info("User logout successful", { userId: user?.id });
       }
 
-      return { error }
+      return { error };
     } catch (error: any) {
-      logger.error("User logout error", { userId: user?.id, error: error.message })
-      return { error }
+      logger.error("User logout error", {
+        userId: user?.id,
+        error: error.message,
+      });
+      return { error };
     }
-  }
+  };
 
   const value: AuthContextType = {
     user,
@@ -153,15 +191,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn,
     signInWithGoogle,
     signOut,
-  }
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }
