@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, ExternalLink } from "lucide-react"
-import { useSelectedItem } from "@/contexts/selected-item-context"
-import type { FeedItem } from "@/types/api"
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, ExternalLink } from "lucide-react";
+import { useSelectedItem } from "@/contexts/selected-item-context";
+import type { FeedItem } from "@/types/api";
 
 interface FeedItemCardProps {
-  item: FeedItem
+  item: FeedItem;
 }
 
 export function FeedItemCard({ item }: FeedItemCardProps) {
-  const { setSelectedItem } = useSelectedItem()
+  const { setSelectedItem } = useSelectedItem();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -21,34 +21,49 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   const truncateContent = (content: string, maxLength = 120) => {
-    if (content.length <= maxLength) return content
-    return content.slice(0, maxLength) + "..."
-  }
+    if (content.length <= maxLength) return content;
+    return content.slice(0, maxLength) + "...";
+  };
 
   const stripHtml = (html: string) => {
     // Remove HTML tags and decode HTML entities
-    const tmp = document.createElement("div")
-    tmp.innerHTML = html
-    return tmp.textContent || tmp.innerText || ""
-  }
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
 
   const getFeedType = (url: string) => {
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
-      return "YouTube"
+      return "YouTube";
     }
-    return "RSS"
-  }
+    return "RSS";
+  };
 
-  // Detectar se é YouTube pela URL
-  const isYouTube = item.url.includes("youtube.com") || item.url.includes("youtu.be")
+  // Detectar se é Shorts pela URL
+  const isYoutubeShorts =
+    item.url.includes("youtube") && item.url.includes("shorts");
 
   const handleClick = () => {
-    setSelectedItem(item)
-  }
+    setSelectedItem(item);
+  };
+
+  const formatDuration = (duration: string) => {
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return "";
+
+    const [, hours, minutes, seconds] = match;
+    return [
+      hours ? `${hours.padStart(2, "0")}:` : "",
+      minutes ? `${minutes.padStart(2, "0")}:` : "",
+      seconds ? `${seconds.padStart(2, "0")}` : "",
+    ]
+      .filter(Boolean)
+      .join("");
+  };
 
   return (
     <Link href={`/item/${item.id}`} onClick={handleClick}>
@@ -64,7 +79,7 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                     alt={item.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.style.display = "none"
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                 </div>
@@ -79,9 +94,9 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                 </h3>
                 <button
                   onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    window.open(item.url, "_blank", "noopener,noreferrer")
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(item.url, "_blank", "noopener,noreferrer");
                   }}
                   className="flex-shrink-0 p-1 rounded hover:bg-slate-700/50 transition-colors"
                   title="Open original content"
@@ -93,14 +108,20 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
               {/* Content Preview - ajustado para mobile */}
               {item.content && (
                 <p className="text-gray-300 text-xs sm:text-sm mb-3 line-clamp-2 sm:line-clamp-3">
-                  {truncateContent(stripHtml(item.content), window.innerWidth < 640 ? 100 : 150)}
+                  {truncateContent(
+                    stripHtml(item.content),
+                    window.innerWidth < 640 ? 100 : 150
+                  )}
                 </p>
               )}
 
               {/* Metadata - layout responsivo */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs"
+                  >
                     {item.feed.name}
                   </Badge>
                   <Badge
@@ -113,10 +134,20 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                   >
                     {getFeedType(item.url)}
                   </Badge>
+                  {(item.duration || isYoutubeShorts) && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-purple-900/30 text-purple-400 border-purple-700/50 text-xs"
+                    >
+                      {item.duration ? formatDuration(item.duration) : "Shorts"}
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center text-gray-400 text-xs sm:text-sm">
                   <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  <span className="truncate">{formatDate(item.published_at)}</span>
+                  <span className="truncate">
+                    {formatDate(item.published_at)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -124,5 +155,5 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
         </CardContent>
       </Card>
     </Link>
-  )
+  );
 }

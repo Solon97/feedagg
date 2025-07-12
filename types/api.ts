@@ -6,6 +6,7 @@ export interface FeedItem {
   url: string;
   thumbnail?: string;
   created_at: string;
+  duration?: string; // Representa a duração no formato ISO 8601, ex: 'PT10M47S'
   feed: {
     id: string;
     name: string;
