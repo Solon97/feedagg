@@ -11,13 +11,29 @@ export interface FeedItem {
     id: string;
     name: string;
     url: string;
+    topic?: Topic;
   };
+}
+
+export interface Topic {
+  id: string;
+  name: string;
+  color?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTopicRequest {
+  name: string;
+  color?: string;
 }
 
 export interface UserFeedSubscription {
   feed_id: string;
   is_active: boolean;
   created_at: string;
+  topic_id?: string;
+  topic?: Topic;
   feed: {
     id: string;
     name: string;

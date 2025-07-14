@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const title = searchParams.get("title");
     const feed_id = searchParams.get("feed_id");
     const feed_type = searchParams.get("feed_type");
+    const topic_id = searchParams.get("topic_id");
 
     // Build API URL with all parameters
     const apiParams = new URLSearchParams({
@@ -31,8 +32,11 @@ export async function GET(request: NextRequest) {
     if (title) apiParams.set("title", title);
     if (feed_id) apiParams.set("feed_id", feed_id);
     if (feed_type) apiParams.set("feed_type", feed_type);
+    if (topic_id) apiParams.set("topic_id", topic_id);
 
     const apiUrl = `${API_BASE_URL}/feed/user-feed-items?${apiParams.toString()}`;
+
+    console.log(`[${requestId}] Fetching feed items from: ${apiUrl}`);
 
     const response = await makeExternalApiCall(
       apiUrl,

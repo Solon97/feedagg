@@ -47,6 +47,26 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
   const isYoutubeShorts =
     item.url.includes("youtube") && item.url.includes("shorts");
 
+  // Get dynamic colors for feed badge based on topic
+  const getFeedBadgeStyle = () => {
+    const topicColor = item.feed.topic?.color;
+    if (topicColor) {
+      // Convert hex to rgb for transparency
+      const hex = topicColor.replace("#", "");
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+
+      return {
+        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.2)`,
+        color: topicColor,
+        borderColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
+      };
+    }
+    // Fallback to default teal
+    return {};
+  };
+
   const handleClick = () => {
     setSelectedItem(item);
   };
@@ -120,7 +140,12 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="secondary"
-                    className="bg-teal-900/30 text-teal-400 border-teal-700/50 text-xs"
+                    className={`text-xs ${
+                      item.feed.topic?.color
+                        ? ""
+                        : "bg-teal-900/30 text-teal-400 border-teal-700/50"
+                    }`}
+                    style={item.feed.topic?.color ? getFeedBadgeStyle() : {}}
                   >
                     {item.feed.name}
                   </Badge>
@@ -137,7 +162,7 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                   {(item.duration || isYoutubeShorts) && (
                     <Badge
                       variant="secondary"
-                      className="bg-purple-900/30 text-purple-400 border-purple-700/50 text-xs"
+                      className="bg-red-900/30 text-red-400 border-red-700/50"
                     >
                       {item.duration ? formatDuration(item.duration) : "Shorts"}
                     </Badge>

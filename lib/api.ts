@@ -60,6 +60,7 @@ class ApiService {
       title?: string;
       feed_id?: string;
       feed_type?: "rss" | "youtube";
+      topic_id?: string;
     } = {}
   ) {
     const searchParams = new URLSearchParams();
@@ -70,6 +71,7 @@ class ApiService {
     if (params.title) searchParams.set("title", params.title);
     if (params.feed_id) searchParams.set("feed_id", params.feed_id);
     if (params.feed_type) searchParams.set("feed_type", params.feed_type);
+    if (params.topic_id) searchParams.set("topic_id", params.topic_id);
 
     return this.makeRequest<any>(`/feeds/user-feed-items?${searchParams}`);
   }
@@ -84,10 +86,10 @@ class ApiService {
     return this.makeRequest<any>("/feeds/user-feeds");
   }
 
-  async subscribeFeed(url: string) {
+  async subscribeFeed(url: string, topicId: string) {
     return this.makeRequest<any>("/feeds/subscribe", {
       method: "POST",
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, topic_id: topicId }),
     });
   }
 
@@ -101,6 +103,18 @@ class ApiService {
   async deleteFeed(feedId: string) {
     return this.makeRequest<any>(`/feeds/user-feeds/${feedId}`, {
       method: "DELETE",
+    });
+  }
+
+  // Topics
+  async getTopics() {
+    return this.makeRequest<any>("/topics");
+  }
+
+  async createTopic(data: { name: string; color?: string }) {
+    return this.makeRequest<any>("/topics", {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   }
 

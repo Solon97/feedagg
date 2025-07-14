@@ -13,7 +13,6 @@ Este documento contém instruções de design para o app **FeedAgg**, com base n
 | Texto primário       | `#F8FAFC` (Slate 50)   | Títulos, descrições principais     |
 | Texto secundário     | `#94A3B8` (Slate 400)  | Metadados, datas                   |
 | Botões primários     | `#14B8A6` (Teal 500)   | Botões como “Add Feed”, “Refresh”  |
-| Destaques especiais  | `#FACC15` (Yellow 400) | Indicadores, labels de YouTube     |
 | Fundo do ícone ativo | `#0EA5E9` (Sky 500)    | Feed ativo, status, etc            |
 
 ---
