@@ -122,6 +122,18 @@ class ApiService {
   async getUserSubscriptionStatus(userId: string) {
     return this.makeRequest<any>(`/subscriptions/user/${userId}/active`);
   }
+
+  // Stripe Integration
+  async getStripePrices() {
+    return this.makeRequest<any>("/stripe/prices");
+  }
+
+  async createStripeCheckoutSession(priceId: string) {
+    return this.makeRequest<any>("/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ priceId }),
+    });
+  }
 }
 
 export const apiService = new ApiService();
