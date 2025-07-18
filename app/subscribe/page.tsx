@@ -6,6 +6,7 @@ import { useStripePrices } from "@/hooks/use-stripe-prices";
 import { apiService } from "@/lib/api";
 import { StripePrice } from "@/types/stripe";
 import { PricingCard } from "@/components/pricing-card";
+import { Navbar } from "@/components/navbar";
 
 /**
  * Subscribe Page Component
@@ -24,9 +25,7 @@ export default function SubscribePage() {
     setCheckoutLoading(priceId);
     try {
       const response = await apiService.createStripeCheckoutSession(priceId);
-
       if (response.success && response.data?.checkoutUrl) {
-        // Redirect to Stripe checkout
         window.location.href = response.data.checkoutUrl;
       } else {
         throw new Error(response.error || "Failed to create checkout session");
@@ -40,7 +39,6 @@ export default function SubscribePage() {
   };
 
   const getPopularBadge = (price: StripePrice) => {
-    // Mark yearly as most popular
     return price.recurring?.interval === "year";
   };
 
@@ -53,7 +51,8 @@ export default function SubscribePage() {
 
   if (pricesLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 p-4">
+      <div className="min-h-screen bg-slate-900">
+        <Navbar />
         <div className="max-w-4xl mx-auto pt-8">
           <div className="text-center">
             <Zap className="w-8 h-8 text-yellow-400 animate-spin mx-auto mb-4" />
@@ -66,7 +65,8 @@ export default function SubscribePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 p-4">
+      <div className="min-h-screen bg-slate-900">
+        <Navbar />
         <div className="max-w-4xl mx-auto pt-8">
           <div className="text-center">
             <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-4" />
@@ -79,40 +79,43 @@ export default function SubscribePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4">
-      <div className="max-w-4xl mx-auto pt-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            Simple, Transparent Pricing
-          </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Pay monthly or save with annual billing
-          </p>
-        </div>
+    <div className="min-h-screen bg-slate-900">
+      <Navbar />
+      {/* Pricing */}
+      <section id="pricing" className="py-20 bg-slate-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-slate-50 mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Pay monthly or save with annual billing
+            </p>
+          </div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {prices.map((price) => (
-            <PricingCard
-              key={price.id}
-              price={price}
-              isPopular={getPopularBadge(price)}
-              isLoading={checkoutLoading === price.id}
-              features={premiumFeatures}
-              onSubscribe={handleSubscribe}
-            />
-          ))}
-        </div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {prices.map((price) => (
+              <PricingCard
+                key={price.id}
+                price={price}
+                isPopular={getPopularBadge(price)}
+                isLoading={checkoutLoading === price.id}
+                features={premiumFeatures}
+                onSubscribe={handleSubscribe}
+                variant="example"
+              />
+            ))}
+          </div>
 
-        {/* Security Information */}
-        <div className="mt-16 text-center">
-          <p className="text-xs text-gray-500 max-w-md mx-auto">
-            Your payment information is encrypted and processed securely. We
-            never store your card details.
-          </p>
+          <div className="mt-16 text-center">
+            {/* You can add a Stripe logo here if desired */}
+            <p className="text-xs text-slate-400 mt-3 max-w-md mx-auto">
+              Your payment information is encrypted and processed securely. We
+              never store your card details.
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
