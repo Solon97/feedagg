@@ -240,13 +240,24 @@ export function useFeedItems() {
     fetchItems(emptyFilters, { reset: true, isFilterChange: true });
   }, [fetchItems]);
 
-  // Initialize only once
+  const fetchAllItems = useCallback(() => {
+    const emptyFilters = {};
+    setFilters(emptyFilters);
+    fetchItems(emptyFilters, { reset: true });
+  }, [fetchItems]);
+
+  const hasActiveFilters = useCallback(() => {
+    return Object.values(filters).some(Boolean);
+  }, [filters]);
+
+  // Initialize only once - but don't fetch without filters
   useEffect(() => {
     if (!isInitializedRef.current) {
       isInitializedRef.current = true;
-      fetchItems({}, { reset: true });
+      // Don't fetch items initially - wait for user to select a topic or apply filters
+      setLoading(false);
     }
-  }, [fetchItems]);
+  }, []);
 
   return {
     items,
@@ -261,5 +272,7 @@ export function useFeedItems() {
     loadMore,
     applyFilters,
     clearFilters,
+    fetchAllItems,
+    hasActiveFilters,
   };
 }

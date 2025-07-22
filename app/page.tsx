@@ -1,17 +1,18 @@
-"use client"
+"use client";
 
-import { RefreshCw, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { FeedItemCard } from "@/components/feed-item-card"
-import { FeedFiltersComponent } from "@/components/feed-filters"
-import { Navbar } from "@/components/navbar"
-import { ProtectedRoute } from "@/components/protected-route"
-import { useFeedItems, useFeeds } from "@/hooks/use-feeds"
+import { RefreshCw, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FeedItemCard } from "@/components/feed-item-card";
+import { FeedFiltersComponent } from "@/components/feed-filters";
+import { TopicSelection } from "@/components/topic-selection";
+import { Navbar } from "@/components/navbar";
+import { ProtectedRoute } from "@/components/protected-route";
+import { useFeedItems, useFeeds } from "@/hooks/use-feeds";
 
 export default function Dashboard() {
   // Use the hooks with stable references
-  const feedItemsHook = useFeedItems()
-  const feedsHook = useFeeds()
+  const feedItemsHook = useFeedItems();
+  const feedsHook = useFeeds();
 
   const {
     items,
@@ -26,25 +27,24 @@ export default function Dashboard() {
     loadMore,
     applyFilters,
     clearFilters,
-  } = feedItemsHook
+    fetchAllItems,
+    hasActiveFilters,
+  } = feedItemsHook;
 
-  const { feeds, loading: feedsLoading } = feedsHook
+  const { feeds, loading: feedsLoading } = feedsHook;
 
   const handleLoadMore = () => {
     if (!loading && !filterLoading && !refreshing && hasMore) {
-      loadMore()
+      loadMore();
     }
-  }
-
-  // Check if any filters are active
-  const hasActiveFilters = Object.values(filters).some(Boolean)
+  };
 
   // Calculate the correct total to display
-  const displayTotal = Math.max(total, items.length)
-  const displayCount = items.length
+  const displayTotal = Math.max(total, items.length);
+  const displayCount = items.length;
 
   // Check if any loading state is active
-  const isAnyLoading = loading || filterLoading || refreshing
+  const isAnyLoading = loading || filterLoading || refreshing;
 
   if (error) {
     return (
@@ -53,9 +53,15 @@ export default function Dashboard() {
           <Navbar />
           <div className="max-w-4xl mx-auto p-4">
             <div className="text-center py-12">
-              <h1 className="text-2xl font-bold text-red-400 mb-4">Error Loading Feed</h1>
+              <h1 className="text-2xl font-bold text-red-400 mb-4">
+                Error Loading Feed
+              </h1>
               <p className="text-gray-400 mb-6">{error}</p>
-              <Button onClick={refresh} className="bg-teal-600 hover:bg-teal-700" disabled={refreshing}>
+              <Button
+                onClick={refresh}
+                className="bg-teal-600 hover:bg-teal-700"
+                disabled={refreshing}
+              >
                 {refreshing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -69,7 +75,7 @@ export default function Dashboard() {
           </div>
         </div>
       </ProtectedRoute>
-    )
+    );
   }
 
   return (
@@ -81,10 +87,9 @@ export default function Dashboard() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Your Feed</h1>
-              <p className="text-gray-400">
-                {items.length > 0 ? `${items.length} items from your subscribed feeds` : "No items yet"}
-              </p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                Your Feed
+              </h1>
             </div>
             <Button
               onClick={refresh}
@@ -125,7 +130,9 @@ export default function Dashboard() {
                 <div className="mb-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-3">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
-                    <span className="text-sm text-gray-300">Filtering results...</span>
+                    <span className="text-sm text-gray-300">
+                      Filtering results...
+                    </span>
                   </div>
                 </div>
               )}
@@ -135,27 +142,39 @@ export default function Dashboard() {
                 <div className="mb-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-3">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
-                    <span className="text-sm text-gray-300">Refreshing feed...</span>
+                    <span className="text-sm text-gray-300">
+                      Refreshing feed...
+                    </span>
                   </div>
                 </div>
               )}
 
-              {loading && items.length === 0 ? (
+              {/* Show topic selection when no filters are active */}
+              {!hasActiveFilters() && items.length === 0 && !isAnyLoading ? (
+                <TopicSelection
+                  onTopicSelect={applyFilters}
+                  onContinueWithoutFilter={fetchAllItems}
+                />
+              ) : loading && items.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
-                  <span className="ml-2 text-gray-400">Loading your feed...</span>
+                  <span className="ml-2 text-gray-400">
+                    Loading your feed...
+                  </span>
                 </div>
               ) : items.length === 0 && !isAnyLoading ? (
                 <div className="text-center py-12">
                   <h2 className="text-xl font-semibold text-gray-300 mb-2">
-                    {hasActiveFilters ? "No items match your filters" : "No feed items yet"}
+                    {hasActiveFilters()
+                      ? "No items match your filters"
+                      : "No feed items yet"}
                   </h2>
                   <p className="text-gray-500 mb-6">
-                    {hasActiveFilters
+                    {hasActiveFilters()
                       ? "Try adjusting your filters or check back later."
                       : "Subscribe to some feeds to see content here."}
                   </p>
-                  {hasActiveFilters && (
+                  {hasActiveFilters() && (
                     <Button
                       onClick={clearFilters}
                       variant="outline"
@@ -173,28 +192,40 @@ export default function Dashboard() {
                     <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-400">
-                          Showing <span className="text-white font-medium">{displayCount}</span>
+                          Showing{" "}
+                          <span className="text-white font-medium">
+                            {displayCount}
+                          </span>
                           {hasMore && displayTotal > displayCount && (
                             <>
                               {" "}
-                              of <span className="text-white font-medium">{displayTotal}+</span>
+                              of{" "}
+                              <span className="text-white font-medium">
+                                {displayTotal}+
+                              </span>
                             </>
                           )}
                           {!hasMore && displayTotal > displayCount && (
                             <>
                               {" "}
-                              of <span className="text-white font-medium">{displayTotal}</span>
+                              of{" "}
+                              <span className="text-white font-medium">
+                                {displayTotal}
+                              </span>
                             </>
                           )}
                           {displayTotal === displayCount && (
                             <>
                               {" "}
-                              of <span className="text-white font-medium">{displayTotal}</span>
+                              of{" "}
+                              <span className="text-white font-medium">
+                                {displayTotal}
+                              </span>
                             </>
                           )}{" "}
                           items
                         </p>
-                        {hasActiveFilters && (
+                        {hasActiveFilters() && (
                           <Button
                             onClick={clearFilters}
                             variant="ghost"
@@ -246,5 +277,5 @@ export default function Dashboard() {
         </div>
       </div>
     </ProtectedRoute>
-  )
+  );
 }

@@ -20,7 +20,7 @@ export function useSubscription(
         setLoading(true);
         setError(null);
         const response = await apiService.getUserSubscriptionStatus(userId);
-        setSubscription(response.data || null);
+        setSubscription(response || null);
       } catch (err) {
         console.error("Error fetching subscription:", err);
         setError(
@@ -35,7 +35,7 @@ export function useSubscription(
     fetchSubscription();
   }, [userId]);
 
-  const isActive = subscription?.status === "active";
+  const isActive = subscription?.status?.toLowerCase() === "active";
   const currentPeriodEnd = subscription?.current_period_end
     ? new Date(subscription.current_period_end)
     : null;
