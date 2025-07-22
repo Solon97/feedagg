@@ -29,10 +29,10 @@ export default function FeedsPage() {
   const { user } = useAuth();
   const { feeds, loading, error, refetch, updateFeedStatus, deleteFeed } =
     useFeeds();
-  const isPremium = true;
-  // const { isActive: isPremium, loading: subscriptionLoading } = useSubscription(
-  //   user?.id
-  // );
+
+  const { isActive: isPremium, loading: subscriptionLoading } = useSubscription(
+    user?.id
+  );
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -41,7 +41,6 @@ export default function FeedsPage() {
 
   // Check if user can add more feeds
   const canAddMoreFeeds = isPremium || feeds.length < 1;
-  const hasReachedFreeLimit = !isPremium && feeds.length >= 1;
 
   // Auto-hide messages after 5 seconds
   useEffect(() => {
