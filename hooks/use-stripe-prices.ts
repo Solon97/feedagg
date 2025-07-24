@@ -19,14 +19,45 @@ export function useStripePrices(): UseStripePricesReturn {
       setLoading(true);
       setError(null);
 
-      const response: StripePricesResponse = await apiService.getStripePrices();
+      const response = await apiService.getStripePrices();
 
       if (response.success) {
-        setPrices(response.data);
+        // Convert the API response format to an array
+        const pricesArray: StripePrice[] = [
+          {
+            id: response.data.monthly.id,
+            interval: response.data.monthly.interval,
+            unit_amount: response.data.monthly.unit_amount,
+            currency: response.data.monthly.currency,
+            recurring: {
+              interval: response.data.monthly.interval,
+              interval_count: 1,
+            },
+            product: {
+              name: "Monthly",
+            },
+          },
+          {
+            id: response.data.yearly.id,
+            interval: response.data.yearly.interval,
+            unit_amount: response.data.yearly.unit_amount,
+            currency: response.data.yearly.currency,
+            recurring: {
+              interval: response.data.yearly.interval,
+              interval_count: 1,
+            },
+            product: {
+              name: "Yearly",
+            },
+          },
+        ];
+
+        setPrices(pricesArray);
       } else {
         setError(response.error || "Failed to fetch prices");
       }
     } catch (err) {
+      console.error("Error fetching prices:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);

@@ -30,31 +30,41 @@ export interface StripeRecurring {
   usage_type: string;
 }
 
+// Simplified StripePrice for the API response format
 export interface StripePrice {
   id: string;
-  object: string;
-  active: boolean;
-  billing_scheme: string;
-  created: number;
-  currency: string;
-  custom_unit_amount: any;
-  livemode: boolean;
-  lookup_key: string | null;
-  metadata: Record<string, any>;
-  nickname: string | null;
-  product: StripeProduct;
-  recurring: StripeRecurring;
-  tax_behavior: string;
-  tiers_mode: string | null;
-  transform_quantity: any;
-  type: string;
+  interval: "month" | "year";
   unit_amount: number;
-  unit_amount_decimal: string;
+  currency: string;
+  // Add computed properties for compatibility
+  recurring?: {
+    interval: "month" | "year";
+    interval_count: number;
+  };
+  product?: {
+    name: string;
+  };
+}
+
+// API response format from external service
+export interface StripePricesApiResponse {
+  monthly: {
+    id: string;
+    interval: "month";
+    unit_amount: number;
+    currency: string;
+  };
+  yearly: {
+    id: string;
+    interval: "year";
+    unit_amount: number;
+    currency: string;
+  };
 }
 
 export interface StripePricesResponse {
   success: boolean;
-  data: StripePrice[];
+  data: StripePricesApiResponse;
   error?: string;
 }
 

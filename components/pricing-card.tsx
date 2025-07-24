@@ -35,6 +35,7 @@ export function PricingCard({
     ? price.unit_amount / 12 / 100
     : price.unit_amount / 100;
   const annualTotal = isAnnual ? price.unit_amount / 100 : 0;
+  const productName = price.product?.name || (isAnnual ? "Yearly" : "Monthly");
 
   if (variant === "example") {
     return (
@@ -52,7 +53,7 @@ export function PricingCard({
         )}
         <CardContent className="p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-50 mb-4">
-            {price.product.name}
+            {productName}
           </h3>
           <div className="mb-2">
             <span
@@ -104,7 +105,7 @@ export function PricingCard({
                 Processing...
               </>
             ) : (
-              `Start Free Trial (${price.product.name})`
+              `Start Free Trial (${productName})`
             )}
           </Button>
           <p className="text-sm text-slate-400">
@@ -132,9 +133,7 @@ export function PricingCard({
         </div>
       )}
       <CardContent className="p-8 text-center">
-        <h3 className="text-2xl font-bold text-white mb-4">
-          {price.product.name}
-        </h3>
+        <h3 className="text-2xl font-bold text-white mb-4">{productName}</h3>
         <div className="mb-2">
           <span
             className={`text-4xl font-bold ${
@@ -186,7 +185,7 @@ export function PricingCard({
               Processing...
             </>
           ) : (
-            `Start Free Trial (${price.product.name})`
+            `Start Free Trial (${productName})`
           )}
         </Button>
         <p className="text-sm text-gray-500">Cancel anytime. No hidden fees.</p>

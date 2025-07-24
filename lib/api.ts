@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { StripePricesResponse, StripeCheckoutResponse } from "@/types/stripe";
 
 class ApiService {
   private async getAuthToken(): Promise<string | null> {
@@ -125,11 +126,11 @@ class ApiService {
 
   // Stripe Integration
   async getStripePrices() {
-    return this.makeRequest<any>("/stripe/prices");
+    return this.makeRequest<StripePricesResponse>("/stripe/prices");
   }
 
   async createStripeCheckoutSession(priceId: string) {
-    return this.makeRequest<any>("/stripe/checkout", {
+    return this.makeRequest<StripeCheckoutResponse>("/stripe/checkout", {
       method: "POST",
       body: JSON.stringify({ priceId }),
     });
