@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { StripePricesResponse, StripeCheckoutResponse } from "@/types/stripe";
 
 class ApiService {
   private async getAuthToken(): Promise<string | null> {
@@ -121,6 +122,18 @@ class ApiService {
   // Subscriptions
   async getUserSubscriptionStatus(userId: string) {
     return this.makeRequest<any>(`/subscriptions/user/${userId}/active`);
+  }
+
+  // Stripe Integration
+  async getStripePrices() {
+    return this.makeRequest<StripePricesResponse>("/stripe/prices");
+  }
+
+  async createStripeCheckoutSession(priceId: string) {
+    return this.makeRequest<StripeCheckoutResponse>("/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ priceId }),
+    });
   }
 }
 
