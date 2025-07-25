@@ -34,26 +34,34 @@ export function SubscriptionDetails({
   if (isActive) {
     return (
       <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center gap-2">
-          <PremiumBadge />
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm">
+            <span>🌟</span>
+            <span className="text-white font-medium">Plan: Premium</span>
+          </div>
+
+          {currentPeriodEnd && (
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <span>🔄</span>
+              <span>Renews: {formatDate(currentPeriodEnd)}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <span>📩</span>
+            <span>Need help?</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <span>👉</span>
+            <a
+              href="mailto:contact@feedagg.com"
+              className="text-teal-400 hover:text-teal-300 underline"
+            >
+              contact@feedagg.com
+            </a>
+          </div>
         </div>
-
-        {currentPeriodEnd && (
-          <p className="text-xs text-gray-400">
-            Valid until {formatDate(currentPeriodEnd)}
-          </p>
-        )}
-
-        <Link href={manageUrl}>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-gray-300 hover:text-white hover:bg-slate-700 px-0"
-          >
-            <CreditCard className="mr-2 h-4 w-4" />
-            Manage Subscription
-          </Button>
-        </Link>
       </div>
     );
   }

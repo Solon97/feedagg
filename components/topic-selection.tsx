@@ -4,21 +4,28 @@ import { Button } from "@/components/ui/button";
 import { useTopics } from "@/hooks/use-topics";
 import { Loader2, TrendingUp, ArrowRight } from "lucide-react";
 import type { FeedFilters } from "@/hooks/use-feeds";
+import type { UserFeedSubscription } from "@/types/api";
+import { AddFeedSuggestion } from "@/components/add-feed-suggestion";
 
 interface TopicSelectionProps {
   onTopicSelect: (filters: FeedFilters) => void;
   onContinueWithoutFilter: () => void;
+  feeds?: UserFeedSubscription[];
 }
 
 export function TopicSelection({
   onTopicSelect,
   onContinueWithoutFilter,
+  feeds = [],
 }: TopicSelectionProps) {
   const { topics, loading } = useTopics();
 
   const handleTopicClick = (topicId: string) => {
     onTopicSelect({ topic_id: topicId });
   };
+
+  // Check if user has active feeds
+  const hasActiveFeeds = feeds.some((feed) => feed.is_active);
 
   if (loading) {
     return (
@@ -27,6 +34,11 @@ export function TopicSelection({
         <p className="text-gray-400">Loading topics...</p>
       </div>
     );
+  }
+
+  // Show "Add Feeds" suggestion when user has no active feeds
+  if (!hasActiveFeeds) {
+    return <AddFeedSuggestion feeds={feeds} />;
   }
 
   return (

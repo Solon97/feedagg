@@ -154,6 +154,7 @@ export default function Dashboard() {
                 <TopicSelection
                   onTopicSelect={applyFilters}
                   onContinueWithoutFilter={fetchAllItems}
+                  feeds={feeds}
                 />
               ) : loading && items.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
