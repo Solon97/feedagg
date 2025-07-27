@@ -288,7 +288,7 @@ export function FeedFiltersComponent({
   return (
     <>
       {/* Desktop Filters */}
-      <div className="hidden lg:block bg-slate-800/50 rounded-lg p-4 border border-slate-700 min-h-[320px]">
+      <div className="hidden lg:block bg-slate-800/50 rounded-lg p-4 border border-slate-700 min-h-[410px]">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-gray-400" />
           <h3 className="font-medium text-white">Filters</h3>

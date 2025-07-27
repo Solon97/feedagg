@@ -42,7 +42,7 @@ export function TopicSelection({
   }
 
   return (
-    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 min-h-[410px]">
       <div className="text-center mb-6">
         <div className="mx-auto mb-4 p-3 bg-teal-500/10 rounded-full w-fit">
           <TrendingUp className="w-8 h-8 text-teal-500" />
