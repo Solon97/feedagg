@@ -12,6 +12,8 @@ interface SubscriptionDetailsProps {
   className?: string;
 }
 
+const email = "contact@feedagg.com";
+
 export function SubscriptionDetails({
   isActive,
   currentPeriodEnd,
@@ -48,17 +50,17 @@ export function SubscriptionDetails({
           )}
 
           <div className="flex items-center gap-2 text-sm text-gray-400">
-            <span>📩</span>
+            <span>❓</span>
             <span>Need help?</span>
           </div>
 
           <div className="flex items-center gap-2 text-sm">
-            <span>👉</span>
+            <span>📩</span>
             <a
-              href="mailto:contact@feedagg.com"
+              href={`mailto:${email}`}
               className="text-teal-400 hover:text-teal-300 underline"
             >
-              contact@feedagg.com
+              {email}
             </a>
           </div>
         </div>
