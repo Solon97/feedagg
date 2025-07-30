@@ -63,52 +63,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signInWithMicrosoft = async () => {
     try {
-      logger.info("User registration attempt", { email });
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
+      logger.info("Microsoft OAuth attempt");
+      const redirectUrl = getRedirectUrl();
+      logger.debug("OAuth redirect URL", { redirectUrl });
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "azure",
         options: {
-          data: {
-            full_name: fullName,
-          },
+          scopes: "openid email profile User.Read",
+          redirectTo: redirectUrl,
         },
       });
 
       if (error) {
-        logger.warn("User registration failed", {
-          email,
-          error: error.message,
-        });
+        logger.warn("Microsoft OAuth failed", { error: error.message });
       } else {
-        logger.info("User registration successful", { email });
+        logger.info("Microsoft OAuth initiated");
       }
 
       return { error };
     } catch (error: any) {
-      logger.error("User registration error", { email, error: error.message });
-      return { error };
-    }
-  };
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      logger.info("User login attempt", { email });
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        logger.warn("User login failed", { email, error: error.message });
-      } else {
-        logger.info("User login successful", { email });
-      }
-
-      return { error };
-    } catch (error: any) {
-      logger.error("User login error", { email, error: error.message });
+      logger.error("Microsoft OAuth error", { error: error.message });
       return { error };
     }
   };
@@ -187,9 +164,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     session,
     loading,
-    signUp,
-    signIn,
     signInWithGoogle,
+    signInWithMicrosoft,
     signOut,
   };
 
