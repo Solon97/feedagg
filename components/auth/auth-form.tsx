@@ -89,7 +89,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             onClick={handleGoogleSignIn}
             className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 hover:text-gray-700 text-gray-700 font-semibold py-3 rounded-lg transition-colors flex items-center justify-center"
           >
-            <div className="flex items-center justify-center w-5 h-5 mr-2">
+            <div className="flex items-center justify-center w-5 h-5 sm:mr-2">
               <svg
                 className="w-5 h-5"
                 viewBox="0 0 24 24"
@@ -117,7 +117,6 @@ export function AuthForm({ mode }: AuthFormProps) {
             <span className="hidden sm:inline">
               {googleLoading ? "Connecting..." : "Google"}
             </span>
-            <span className="sm:hidden">{googleLoading ? "..." : "G"}</span>
           </Button>
 
           {/* Microsoft Button */}
@@ -128,7 +127,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             onClick={handleMicrosoftSignIn}
             className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 hover:text-gray-700 text-gray-700 font-semibold py-3 rounded-lg transition-colors flex items-center justify-center"
           >
-            <div className="flex items-center justify-center w-5 h-5 mr-2">
+            <div className="flex items-center justify-center w-5 h-5 sm:mr-2">
               <svg
                 className="w-5 h-5"
                 viewBox="0 0 23 23"
@@ -144,7 +143,6 @@ export function AuthForm({ mode }: AuthFormProps) {
             <span className="hidden sm:inline">
               {microsoftLoading ? "Connecting..." : "Microsoft"}
             </span>
-            <span className="sm:hidden">{microsoftLoading ? "..." : "M"}</span>
           </Button>
         </div>
       </div>
