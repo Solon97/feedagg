@@ -43,17 +43,15 @@ export function AuthForm({ mode }: AuthFormProps) {
         {/* Logo Section */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-teal-400 to-teal-600 rounded-2xl p-3 shadow-lg">
+            <div className="rounded-2xl shadow-lg">
               <img
-                src="/funnel-icon.webp"
+                src="/logo.png"
                 alt="FeedAgg Icon"
-                className="w-8 h-8 filter brightness-0 invert"
+                className="w-16 h-16 filter"
               />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Feed<span className="text-teal-600">Agg</span>
-          </h1>
+          <h1 className="text-2xl font-bold text-teal-600 mb-2">FeedAgg</h1>
           <p className="text-gray-500 text-sm">Pure content. Zero noise.</p>
         </div>
 

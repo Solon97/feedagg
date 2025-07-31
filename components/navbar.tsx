@@ -67,13 +67,13 @@ export function Navbar() {
           <Link href="/" className="flex items-center space-x-2 md:space-x-3">
             <div className="bg-gradient-to-br from-teal-400 to-teal-600 rounded-xl p-1.5 md:p-2">
               <img
-                src="/funnel-icon.webp"
+                src="/logo.png"
                 alt="FeedAgg"
-                className="w-5 h-5 md:w-6 md:h-6 filter brightness-0 invert"
+                className="w-5 h-5 md:w-6 md:h-6 filter"
               />
             </div>
-            <span className="text-lg md:text-xl font-bold text-white">
-              Feed<span className="text-teal-400">Agg</span>
+            <span className="text-lg md:text-xl font-bold text-teal-400">
+              FeedAgg
             </span>
           </Link>
 
