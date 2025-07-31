@@ -51,7 +51,9 @@ export function AuthForm({ mode }: AuthFormProps) {
               />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-teal-600 mb-2">FeedAgg</h1>
+          <h1 className="text-2xl font-bold text-gray-600 mb-2">
+            Feed<span className="text-teal-600">Agg</span>
+          </h1>
           <p className="text-gray-500 text-sm">Pure content. Zero noise.</p>
         </div>
 
