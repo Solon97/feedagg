@@ -80,15 +80,6 @@ export default function SubscriptionSuccessPage() {
                 <ArrowRight className="w-4 h-4 mr-2" />
                 Go to Your Feed
               </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => router.push("/account")}
-                className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Manage Account
-              </Button>
             </div>
 
             <p className="text-xs text-slate-500 mt-6">

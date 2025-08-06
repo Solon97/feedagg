@@ -45,7 +45,6 @@ export default function SubscriptionCancelPage() {
                 Still interested in Premium?
               </h3>
               <ul className="text-sm text-slate-300 space-y-1">
-                <li>• 14-day free trial</li>
                 <li>• Cancel anytime</li>
                 <li>• Unlimited content sources</li>
                 <li>• Clean, distraction-free experience</li>
