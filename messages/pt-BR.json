@@ -1,0 +1,240 @@
+{
+    "common": {
+        "loading": "Carregando...",
+        "error": "Erro",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "delete": "Excluir",
+        "edit": "Editar",
+        "close": "Fechar",
+        "search": "Pesquisar",
+        "filter": "Filtrar",
+        "clear": "Limpar",
+        "loadMore": "Carregar Mais",
+        "refresh": "Atualizar",
+        "retry": "Tentar Novamente",
+        "back": "Voltar",
+        "next": "Próximo",
+        "previous": "Anterior",
+        "submit": "Enviar",
+        "confirm": "Confirmar",
+        "user": "Usuário"
+    },
+    "navigation": {
+        "dashboard": "Painel",
+        "feeds": "Feeds",
+        "home": "Início",
+        "account": "Conta",
+        "navigation": "Navegação",
+        "menu": "Menu",
+        "openMenu": "Abrir menu"
+    },
+    "auth": {
+        "signIn": "Entrar",
+        "signOut": "Sair",
+        "signUp": "Cadastrar",
+        "login": {
+            "title": "Acesse sua seleção personalizada"
+        },
+        "description": "Entre com segurança usando uma das opções abaixo:",
+        "connecting": "Conectando...",
+        "email": "E-mail",
+        "password": "Senha",
+        "confirmPassword": "Confirmar Senha",
+        "fullName": "Nome Completo",
+        "forgotPassword": "Esqueceu a senha?",
+        "resetPassword": "Redefinir Senha",
+        "alreadyHaveAccount": "Já tem uma conta?",
+        "dontHaveAccount": "Não tem uma conta?",
+        "createAccount": "Criar Conta",
+        "loginToAccount": "Entre na sua conta",
+        "invalidCredentials": "Credenciais inválidas",
+        "accountCreated": "Conta criada com sucesso",
+        "passwordResetSent": "E-mail de redefinição de senha enviado",
+        "signInWithGoogle": "Entrar com Google",
+        "signInWithGitHub": "Entrar com GitHub"
+    },
+    "subscription": {
+        "subscribeNow": "Assinar Agora",
+        "premium": "Premium",
+        "free": "Gratuito",
+        "activeUntil": "Ativo até",
+        "expiredOn": "Expirou em",
+        "manageSubscription": "Gerenciar Assinatura",
+        "upgradeAccount": "Upgrade da Conta",
+        "cancelSubscription": "Cancelar Assinatura",
+        "subscriptionStatus": "Status da Assinatura",
+        "billingCycle": "Ciclo de Cobrança",
+        "nextBilling": "Próxima Cobrança",
+        "monthly": "Mensal",
+        "yearly": "Anual",
+        "success": {
+            "title": "Bem-vindo ao Premium!",
+            "message": "Sua assinatura foi ativada com sucesso. Agora você tem acesso a todos os recursos premium.",
+            "returnToDashboard": "Voltar ao Painel"
+        },
+        "cancel": {
+            "title": "Assinatura Cancelada",
+            "message": "Sua assinatura foi cancelada. Você pode continuar usando os recursos premium até o final do período de cobrança.",
+            "returnToDashboard": "Voltar ao Painel"
+        },
+        "checkoutError": "Falha ao criar sessão de checkout",
+        "checkoutErrorAlert": "Falha ao iniciar o processo de checkout. Tente novamente.",
+        "loadingPlans": "Carregando planos de preço...",
+        "errorLoading": "Erro ao carregar planos de preço",
+        "pricing": {
+            "title": "Preços Simples e Transparentes",
+            "subtitle": "Pague mensalmente ou economize com cobrança anual"
+        },
+        "features": {
+            "unlimited": "Fontes de conteúdo ilimitadas",
+            "clean": "Feed limpo e sem distrações",
+            "webAccess": "Acesso web de qualquer dispositivo",
+            "updates": "Acesso a atualizações futuras"
+        },
+        "security": "Suas informações de pagamento são criptografadas e processadas com segurança. Nunca armazenamos os detalhes do seu cartão."
+    },
+    "feeds": {
+        "title": "Meus Feeds",
+        "description": "Gerencie seus feeds RSS e fontes de conteúdo",
+        "manageTitle": "Gerenciar Feeds",
+        "manageDescription": "Adicione e gerencie seus feeds RSS e canais do YouTube",
+        "addFeed": "Adicionar Feed",
+        "addFeedUrl": "Adicionar URL do Feed",
+        "feedUrl": "URL do Feed",
+        "feedName": "Nome do Feed",
+        "feedDescription": "Descrição do Feed",
+        "category": "Categoria",
+        "noFeeds": "Nenhum feed encontrado",
+        "noFeedsDescription": "Comece adicionando seu primeiro feed.",
+        "loadingFeeds": "Carregando feeds...",
+        "feedAdded": "Feed adicionado com sucesso",
+        "feedDeleted": "Feed removido com sucesso",
+        "feedUpdated": "Feed atualizado com sucesso",
+        "invalidUrl": "URL inválida",
+        "feedExists": "Feed já existe",
+        "fetchError": "Erro ao buscar feed",
+        "actions": {
+            "add": "Adicionar Feed",
+            "activate": "Ativar",
+            "deactivate": "Desativar",
+            "delete": "Excluir",
+            "subscribe": "Inscrever-se"
+        },
+        "add": {
+            "title": "Adicionar Novo Feed"
+        },
+        "upgrade": {
+            "message": "Você precisa de um plano ativo para adicionar feeds.",
+            "action": "Assine agora",
+            "suffix": "para começar a usar.",
+            "freeLimit": "Usuários gratuitos podem se inscrever em apenas um feed.",
+            "premiumAction": "Faça upgrade para Premium",
+            "unlimitedFeeds": "para feeds ilimitados."
+        },
+        "status": {
+            "active": "Ativo",
+            "inactive": "Inativo"
+        },
+        "messages": {
+            "subscribed": "Feed inscrito com sucesso!",
+            "activated": "Inscrição ativada com sucesso!",
+            "deactivated": "Inscrição desativada com sucesso!",
+            "unsubscribed": "Cancelamento de inscrição realizado com sucesso!",
+            "updateError": "Falha ao atualizar status da inscrição",
+            "deleteError": "Falha ao cancelar inscrição"
+        },
+        "confirmDelete": "Tem certeza de que deseja cancelar a inscrição de",
+        "empty": {
+            "title": "Nenhum feed ainda",
+            "description": "Adicione seu primeiro feed RSS ou canal do YouTube para começar."
+        },
+        "lastFetched": "Última busca:",
+        "never": "Nunca"
+    },
+    "feedForm": {
+        "title": "Adicionar Novo Feed",
+        "description": "Inscreva-se em feeds RSS ou canais do YouTube fornecendo sua URL e selecionando um tópico",
+        "fields": {
+            "url": "URL do Feed",
+            "urlPlaceholder": "https://exemplo.com/feed.xml ou https://youtube.com/channel/..."
+        },
+        "validation": {
+            "fillRequired": "Por favor, preencha todos os campos obrigatórios"
+        },
+        "errors": {
+            "subscribeError": "Falha ao se inscrever no feed",
+            "unexpected": "Ocorreu um erro inesperado"
+        },
+        "success": {
+            "subscribed": "Feed inscrito com sucesso!"
+        },
+        "actions": {
+            "subscribing": "Inscrevendo...",
+            "subscribe": "Inscrever-se no Feed"
+        }
+    },
+    "feedItems": {
+        "title": "Itens do Feed",
+        "noItems": "Nenhum item encontrado",
+        "noItemsDescription": "Nenhum item do feed corresponde aos seus filtros atuais.",
+        "loadingItems": "Carregando itens...",
+        "refreshing": "Atualizando...",
+        "showingItems": "Mostrando {count} de {total} itens",
+        "readMore": "Ler Mais",
+        "markAsRead": "Marcar como Lido",
+        "markAsUnread": "Marcar como Não Lido",
+        "favorite": "Favoritar",
+        "unfavorite": "Desfavoritar",
+        "share": "Compartilhar",
+        "openOriginal": "Abrir Original",
+        "publishedOn": "Publicado em",
+        "author": "Autor",
+        "source": "Fonte"
+    },
+    "filters": {
+        "title": "Filtros",
+        "clearAll": "Limpar Todos os Filtros",
+        "clearFilters": "Limpar Filtros",
+        "applyFilters": "Aplicar Filtros",
+        "showRead": "Mostrar Lidos",
+        "showUnread": "Mostrar Não Lidos",
+        "showFavorites": "Mostrar Favoritos",
+        "dateRange": "Período",
+        "from": "De",
+        "to": "Até",
+        "source": "Fonte",
+        "allSources": "Todas as Fontes",
+        "searchPlaceholder": "Pesquisar nos itens...",
+        "topics": "Tópicos",
+        "allTopics": "Todos os Tópicos"
+    },
+    "topics": {
+        "title": "Tópicos",
+        "selectTopics": "Selecionar Tópicos",
+        "technology": "Tecnologia",
+        "business": "Negócios",
+        "science": "Ciência",
+        "health": "Saúde",
+        "sports": "Esportes",
+        "entertainment": "Entretenimento",
+        "politics": "Política",
+        "world": "Mundo",
+        "lifestyle": "Estilo de Vida",
+        "education": "Educação"
+    },
+    "errors": {
+        "generic": "Algo deu errado",
+        "networkError": "Erro de rede. Verifique sua conexão.",
+        "serverError": "Erro do servidor. Tente novamente mais tarde.",
+        "notFound": "Recurso não encontrado",
+        "unauthorized": "Você não tem autorização para realizar esta ação",
+        "validationError": "Verifique suas informações e tente novamente",
+        "sessionExpired": "Sua sessão expirou. Entre novamente."
+    },
+    "app": {
+        "title": "FeedAgg - O conteúdo que importa",
+        "description": "Agregue e gerencie seus feeds RSS e canais do YouTube em um só lugar",
+        "tagline": "O conteúdo que importa"
+    }
+}

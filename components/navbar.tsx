@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import { useAuth } from "@/contexts/auth-context";
 import { useSubscription } from "@/hooks/use-subscription";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import { PremiumBadge } from "@/components/premium-badge";
 import { SubscriptionDetails } from "@/components/subscription-details";
 
 export function Navbar() {
+  const { t } = useLocalizedTranslations();
   const { user, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -51,8 +53,8 @@ export function Navbar() {
   };
 
   const navItems = [
-    { href: "/", label: "Dashboard", icon: Home },
-    { href: "/feeds", label: "Feeds", icon: Rss },
+    { href: "/", label: t("navigation.dashboard"), icon: Home },
+    { href: "/feeds", label: t("navigation.feeds"), icon: Rss },
   ];
 
   const handleNavClick = () => {
@@ -111,7 +113,7 @@ export function Navbar() {
                     className="text-teal-400 border-teal-400 hover:bg-teal-400 hover:text-white"
                   >
                     <Crown className="w-4 h-4 mr-2" />
-                    Subscribe Now
+                    {t("subscription.subscribeNow")}
                   </Button>
                 </Link>
               )}
@@ -147,7 +149,7 @@ export function Navbar() {
                   </Avatar>
                   <div className="flex flex-col space-y-1 leading-none">
                     <p className="font-medium text-white text-sm">
-                      {user?.user_metadata?.full_name || "User"}
+                      {user?.user_metadata?.full_name || t("common.user")}
                     </p>
                     <p className="text-xs text-gray-400 truncate max-w-[180px]">
                       {user?.email}
@@ -172,7 +174,7 @@ export function Navbar() {
                   className="text-gray-300 hover:text-white hover:bg-slate-700 cursor-pointer m-1"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
+                  {t("auth.signOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -188,7 +190,7 @@ export function Navbar() {
                   className="text-white hover:bg-slate-700"
                 >
                   <Menu className="h-6 w-6" />
-                  <span className="sr-only">Open menu</span>
+                  <span className="sr-only">{t("navigation.openMenu")}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent
@@ -197,7 +199,7 @@ export function Navbar() {
               >
                 <SheetHeader className="border-b border-slate-700 pb-4">
                   <SheetTitle className="text-white text-lg font-semibold text-left">
-                    Menu
+                    {t("navigation.menu")}
                   </SheetTitle>
                 </SheetHeader>
 
@@ -213,7 +215,7 @@ export function Navbar() {
                     </Avatar>
                     <div className="flex flex-col space-y-1 leading-none">
                       <p className="font-medium text-white text-sm">
-                        {user?.user_metadata?.full_name || "User"}
+                        {user?.user_metadata?.full_name || t("common.user")}
                       </p>
                       <p className="text-xs text-gray-400 truncate max-w-[200px]">
                         {user?.email}
@@ -236,7 +238,7 @@ export function Navbar() {
                           className="w-full text-teal-400 border-teal-400 hover:bg-teal-400 hover:text-white"
                         >
                           <Crown className="w-4 h-4 mr-2" />
-                          Subscribe Now
+                          {t("subscription.subscribeNow")}
                         </Button>
                       </Link>
                     </div>
@@ -245,7 +247,7 @@ export function Navbar() {
                   {/* Navigation Links */}
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider px-3">
-                      Navigation
+                      {t("navigation.navigation")}
                     </h3>
                     {navItems.map(({ href, label, icon: Icon }) => (
                       <Link
@@ -267,7 +269,7 @@ export function Navbar() {
                   {/* Actions */}
                   <div className="space-y-2 pt-4 border-t border-slate-700">
                     <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider px-3">
-                      Account
+                      {t("navigation.account")}
                     </h3>
 
                     {/* Subscription Details - mobile */}
@@ -288,7 +290,7 @@ export function Navbar() {
                       className="w-full justify-start text-gray-300 hover:text-white hover:bg-slate-700 px-3 py-3 h-auto"
                     >
                       <LogOut className="mr-3 h-5 w-5" />
-                      Sign out
+                      {t("auth.signOut")}
                     </Button>
                   </div>
                 </div>

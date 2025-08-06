@@ -11,9 +11,9 @@ import { DevLogger } from "@/components/dev-logger";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FeedAgg - Pure content. Zero noise.",
+  title: "FeedAgg - O conteúdo que importa",
   description:
-    "Aggregate and manage your RSS feeds and YouTube channels in one place",
+    "Agregue e gerencie seus feeds RSS e canais do YouTube em um só lugar",
   generator: "v0.dev",
 };
 
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"

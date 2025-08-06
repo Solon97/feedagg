@@ -11,6 +11,7 @@ import { AddFeedForm } from "@/components/add-feed-form";
 import { useFeeds } from "@/hooks/use-feeds";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useAuth } from "@/contexts/auth-context";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import {
   Trash2,
   Power,
@@ -26,6 +27,7 @@ import Link from "next/link";
 import type { UserFeedSubscription } from "@/types/api";
 
 export default function FeedsPage() {
+  const { t } = useLocalizedTranslations();
   const { user } = useAuth();
   const { feeds, loading, error, refetch, updateFeedStatus, deleteFeed } =
     useFeeds();
@@ -54,7 +56,7 @@ export default function FeedsPage() {
 
   const handleFeedAdded = () => {
     refetch();
-    setMessage({ type: "success", text: "Feed subscribed successfully!" });
+    setMessage({ type: "success", text: t("feeds.messages.subscribed") });
   };
 
   const handleToggleStatus = async (subscription: UserFeedSubscription) => {
@@ -67,20 +69,20 @@ export default function FeedsPage() {
       if (result.success) {
         setMessage({
           type: "success",
-          text: `Subscription ${
-            newStatus ? "activated" : "deactivated"
-          } successfully!`,
+          text: newStatus
+            ? t("feeds.messages.activated")
+            : t("feeds.messages.deactivated"),
         });
       } else {
         setMessage({
           type: "error",
-          text: result.error || "Failed to update subscription status",
+          text: result.error || t("feeds.messages.updateError"),
         });
       }
     } catch (err) {
       setMessage({
         type: "error",
-        text: "Failed to update subscription status",
+        text: t("feeds.messages.updateError"),
       });
     } finally {
       setUpdatingStatus(null);
@@ -88,27 +90,23 @@ export default function FeedsPage() {
   };
 
   const handleDelete = async (subscription: UserFeedSubscription) => {
-    if (
-      !confirm(
-        `Are you sure you want to unsubscribe from "${subscription.feed.name}"?`
-      )
-    )
+    if (!confirm(`${t("feeds.confirmDelete")} "${subscription.feed.name}"?`))
       return;
 
     const result = await deleteFeed(subscription.feed.id);
     if (result.success) {
-      setMessage({ type: "success", text: "Unsubscribed successfully!" });
+      setMessage({ type: "success", text: t("feeds.messages.unsubscribed") });
     } else {
       setMessage({
         type: "error",
-        text: result.error || "Failed to unsubscribe",
+        text: result.error || t("feeds.messages.deleteError"),
       });
     }
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return "Never";
-    return new Date(dateString).toLocaleDateString("en-US", {
+    if (!dateString) return t("feeds.never");
+    return new Date(dateString).toLocaleDateString("pt-BR", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -125,10 +123,10 @@ export default function FeedsPage() {
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Manage Feeds</h1>
-            <p className="text-gray-400">
-              Add and manage your RSS feeds and YouTube channels
-            </p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {t("feeds.manageTitle")}
+            </h1>
+            <p className="text-gray-400">{t("feeds.manageDescription")}</p>
           </div>
 
           {/* Message */}
@@ -156,14 +154,14 @@ export default function FeedsPage() {
                 <div className="flex items-center gap-2 text-yellow-400">
                   <Crown className="w-5 h-5" />
                   <p>
-                    Free users can only subscribe to one feed.
+                    {t("feeds.upgrade.freeLimit")}{" "}
                     <Link
                       href="/subscribe"
                       className="underline hover:text-yellow-300 ml-1"
                     >
-                      Upgrade to Premium
+                      {t("feeds.upgrade.premiumAction")}
                     </Link>{" "}
-                    for unlimited feeds.
+                    {t("feeds.upgrade.unlimitedFeeds")}
                   </p>
                 </div>
               </CardContent>
@@ -199,11 +197,9 @@ export default function FeedsPage() {
               <CardContent className="p-12 text-center">
                 <Rss className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  No feeds yet
+                  {t("feeds.empty.title")}
                 </h3>
-                <p className="text-gray-400">
-                  Add your first RSS feed or YouTube channel to get started.
-                </p>
+                <p className="text-gray-400">{t("feeds.empty.description")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -238,7 +234,9 @@ export default function FeedsPage() {
                                 <PowerOff className="w-4 h-4" />
                               )}
                               <span className="ml-1">
-                                {subscription.is_active ? "Active" : "Inactive"}
+                                {subscription.is_active
+                                  ? t("feeds.status.active")
+                                  : t("feeds.status.inactive")}
                               </span>
                             </Badge>
                             {subscription.topic && (
@@ -271,7 +269,8 @@ export default function FeedsPage() {
                             {feed.url}
                           </p>
                           <p className="text-gray-500 text-xs">
-                            Last fetched: {formatDate(feed.last_fetched_at)}
+                            {t("feeds.lastFetched")}{" "}
+                            {formatDate(feed.last_fetched_at)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 ml-4">

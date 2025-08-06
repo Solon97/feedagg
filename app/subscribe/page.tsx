@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Zap, AlertCircle } from "lucide-react";
 import { useStripePrices } from "@/hooks/use-stripe-prices";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import { apiService } from "@/lib/api";
 import { StripePrice } from "@/types/stripe";
 import { PricingCard } from "@/components/pricing-card";
@@ -18,6 +19,7 @@ import { Navbar } from "@/components/navbar";
  * 4. Redirecting users to Stripe's hosted checkout
  */
 export default function SubscribePage() {
+  const { t } = useLocalizedTranslations();
   const { prices, loading: pricesLoading, error } = useStripePrices();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
@@ -28,11 +30,11 @@ export default function SubscribePage() {
       if (response.success && response.data?.checkoutUrl) {
         window.location.href = response.data.checkoutUrl;
       } else {
-        throw new Error(response.error || "Failed to create checkout session");
+        throw new Error(response.error || t("subscription.checkoutError"));
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      alert("Failed to start checkout process. Please try again.");
+      alert(t("subscription.checkoutErrorAlert"));
     } finally {
       setCheckoutLoading(null);
     }
@@ -43,10 +45,10 @@ export default function SubscribePage() {
   };
 
   const premiumFeatures = [
-    "Unlimited content sources",
-    "Clean, distraction-free feed",
-    "Web access from any device",
-    "Access to future updates",
+    t("subscription.features.unlimited"),
+    t("subscription.features.clean"),
+    t("subscription.features.webAccess"),
+    t("subscription.features.updates"),
   ];
 
   if (pricesLoading) {
@@ -56,7 +58,7 @@ export default function SubscribePage() {
         <div className="max-w-4xl mx-auto pt-8">
           <div className="text-center">
             <Zap className="w-8 h-8 text-yellow-400 animate-spin mx-auto mb-4" />
-            <p className="text-gray-400">Loading pricing plans...</p>
+            <p className="text-gray-400">{t("subscription.loadingPlans")}</p>
           </div>
         </div>
       </div>
@@ -70,7 +72,7 @@ export default function SubscribePage() {
         <div className="max-w-4xl mx-auto pt-8">
           <div className="text-center">
             <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-4" />
-            <p className="text-red-400">Error loading pricing plans</p>
+            <p className="text-red-400">{t("subscription.errorLoading")}</p>
             <p className="text-gray-400 text-sm mt-2">{error}</p>
           </div>
         </div>
@@ -86,10 +88,10 @@ export default function SubscribePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-50 mb-4">
-              Simple, Transparent Pricing
+              {t("subscription.pricing.title")}
             </h2>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Pay monthly or save with annual billing
+              {t("subscription.pricing.subtitle")}
             </p>
           </div>
 
@@ -110,8 +112,7 @@ export default function SubscribePage() {
           <div className="mt-16 text-center">
             {/* You can add a Stripe logo here if desired */}
             <p className="text-xs text-slate-400 mt-3 max-w-md mx-auto">
-              Your payment information is encrypted and processed securely. We
-              never store your card details.
+              {t("subscription.security")}
             </p>
           </div>
         </div>

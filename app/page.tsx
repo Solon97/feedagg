@@ -8,8 +8,10 @@ import { TopicSelection } from "@/components/topic-selection";
 import { Navbar } from "@/components/navbar";
 import { ProtectedRoute } from "@/components/protected-route";
 import { useFeedItems, useFeeds } from "@/hooks/use-feeds";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 
 export default function Dashboard() {
+  const { t } = useLocalizedTranslations();
   // Use the hooks with stable references
   const feedItemsHook = useFeedItems();
   const feedsHook = useFeeds();
@@ -54,7 +56,7 @@ export default function Dashboard() {
           <div className="max-w-4xl mx-auto p-4">
             <div className="text-center py-12">
               <h1 className="text-2xl font-bold text-red-400 mb-4">
-                Error Loading Feed
+                {t("errors.generic")}
               </h1>
               <p className="text-gray-400 mb-6">{error}</p>
               <Button
@@ -65,10 +67,10 @@ export default function Dashboard() {
                 {refreshing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Refreshing...
+                    {t("feedItems.refreshing")}
                   </>
                 ) : (
-                  "Try Again"
+                  t("common.retry")
                 )}
               </Button>
             </div>
@@ -88,7 +90,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                Your Feed
+                {t("navigation.dashboard")}
               </h1>
             </div>
             <Button
@@ -99,12 +101,12 @@ export default function Dashboard() {
               {refreshing ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Refreshing...
+                  {t("feedItems.refreshing")}
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
+                  {t("common.refresh")}
                 </>
               )}
             </Button>
@@ -131,7 +133,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
                     <span className="text-sm text-gray-300">
-                      Filtering results...
+                      {t("feedItems.loadingItems")}
                     </span>
                   </div>
                 </div>
@@ -143,7 +145,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
                     <span className="text-sm text-gray-300">
-                      Refreshing feed...
+                      {t("feedItems.refreshing")}
                     </span>
                   </div>
                 </div>
@@ -160,20 +162,20 @@ export default function Dashboard() {
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
                   <span className="ml-2 text-gray-400">
-                    Loading your feed...
+                    {t("feedItems.loadingItems")}
                   </span>
                 </div>
               ) : items.length === 0 && !isAnyLoading ? (
                 <div className="text-center py-12">
                   <h2 className="text-xl font-semibold text-gray-300 mb-2">
                     {hasActiveFilters()
-                      ? "No items match your filters"
-                      : "No feed items yet"}
+                      ? t("feedItems.noItems")
+                      : t("feedItems.noItems")}
                   </h2>
                   <p className="text-gray-500 mb-6">
                     {hasActiveFilters()
-                      ? "Try adjusting your filters or check back later."
-                      : "Subscribe to some feeds to see content here."}
+                      ? t("feedItems.noItemsDescription")
+                      : t("feeds.noFeedsDescription")}
                   </p>
                   {hasActiveFilters() && (
                     <Button
@@ -182,7 +184,7 @@ export default function Dashboard() {
                       className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
                       disabled={isAnyLoading}
                     >
-                      Clear Filters
+                      {t("filters.clearFilters")}
                     </Button>
                   )}
                 </div>
@@ -193,38 +195,10 @@ export default function Dashboard() {
                     <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-400">
-                          Showing{" "}
-                          <span className="text-white font-medium">
-                            {displayCount}
-                          </span>
-                          {hasMore && displayTotal > displayCount && (
-                            <>
-                              {" "}
-                              of{" "}
-                              <span className="text-white font-medium">
-                                {displayTotal}+
-                              </span>
-                            </>
-                          )}
-                          {!hasMore && displayTotal > displayCount && (
-                            <>
-                              {" "}
-                              of{" "}
-                              <span className="text-white font-medium">
-                                {displayTotal}
-                              </span>
-                            </>
-                          )}
-                          {displayTotal === displayCount && (
-                            <>
-                              {" "}
-                              of{" "}
-                              <span className="text-white font-medium">
-                                {displayTotal}
-                              </span>
-                            </>
-                          )}{" "}
-                          items
+                          {t("feedItems.showingItems", {
+                            count: displayCount,
+                            total: displayTotal,
+                          })}
                         </p>
                         {hasActiveFilters() && (
                           <Button
@@ -234,7 +208,7 @@ export default function Dashboard() {
                             className="text-xs text-gray-400 hover:text-white h-auto p-1"
                             disabled={isAnyLoading}
                           >
-                            Clear filters
+                            {t("filters.clearFilters")}
                           </Button>
                         )}
                       </div>
@@ -257,7 +231,7 @@ export default function Dashboard() {
                         variant="outline"
                         className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
                       >
-                        Load More
+                        {t("common.loadMore")}
                       </Button>
                     </div>
                   )}
@@ -267,7 +241,9 @@ export default function Dashboard() {
                     <div className="flex justify-center mt-8">
                       <div className="flex items-center gap-2 text-gray-400">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Loading more items...</span>
+                        <span className="text-sm">
+                          {t("feedItems.loadingItems")}
+                        </span>
                       </div>
                     </div>
                   )}

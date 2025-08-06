@@ -15,12 +15,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Plus, CheckCircle } from "lucide-react";
 import { TopicSelector } from "@/components/topic-selector";
 import { useFeeds } from "@/hooks/use-feeds";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 
 interface AddFeedFormProps {
   onSuccess?: () => void;
 }
 
 export function AddFeedForm({ onSuccess }: AddFeedFormProps) {
+  const { t } = useLocalizedTranslations();
   const [url, setUrl] = useState("");
   const [topicId, setTopicId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +35,7 @@ export function AddFeedForm({ onSuccess }: AddFeedFormProps) {
     e.preventDefault();
 
     if (!url.trim() || !topicId) {
-      setError("Please fill in all required fields");
+      setError(t("feedForm.validation.fillRequired"));
       return;
     }
 
@@ -53,11 +55,11 @@ export function AddFeedForm({ onSuccess }: AddFeedFormProps) {
         // Hide success message after 3 seconds
         setTimeout(() => setSuccess(false), 3000);
       } else {
-        setError(result.error || "Failed to subscribe to feed");
+        setError(result.error || t("feedForm.errors.subscribeError"));
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
+        err instanceof Error ? err.message : t("feedForm.errors.unexpected")
       );
     } finally {
       setIsSubmitting(false);
@@ -69,11 +71,10 @@ export function AddFeedForm({ onSuccess }: AddFeedFormProps) {
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <Plus className="h-5 w-5" />
-          Add New Feed
+          {t("feedForm.title")}
         </CardTitle>
         <CardDescription className="text-gray-400">
-          Subscribe to RSS feeds or YouTube channels by providing their URL and
-          selecting a topic
+          {t("feedForm.description")}
         </CardDescription>
       </CardHeader>
 
@@ -81,14 +82,14 @@ export function AddFeedForm({ onSuccess }: AddFeedFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="url" className="text-sm font-medium text-gray-200">
-              Feed URL <span className="text-red-400">*</span>
+              {t("feedForm.fields.url")} <span className="text-red-400">*</span>
             </Label>
             <Input
               id="url"
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/feed.xml or https://youtube.com/channel/..."
+              placeholder={t("feedForm.fields.urlPlaceholder")}
               className="mt-1 bg-slate-700 border-slate-600 text-white placeholder-gray-400"
               disabled={isSubmitting}
             />
@@ -108,7 +109,7 @@ export function AddFeedForm({ onSuccess }: AddFeedFormProps) {
             <Alert className="border-green-600 bg-green-900/20">
               <CheckCircle className="h-4 w-4 text-green-400" />
               <AlertDescription className="text-green-400 ml-2">
-                Feed subscribed successfully!
+                {t("feedForm.success.subscribed")}
               </AlertDescription>
             </Alert>
           )}
@@ -121,12 +122,12 @@ export function AddFeedForm({ onSuccess }: AddFeedFormProps) {
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Subscribing...
+                {t("feedForm.actions.subscribing")}
               </>
             ) : (
               <>
                 <Plus className="h-4 w-4 mr-2" />
-                Subscribe to Feed
+                {t("feedForm.actions.subscribe")}
               </>
             )}
           </Button>

@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 import { useAuth } from "@/contexts/auth-context";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -10,6 +11,7 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
+  const { t } = useLocalizedTranslations();
   const { signInWithGoogle, signInWithMicrosoft } = useAuth();
 
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -54,17 +56,17 @@ export function AuthForm({ mode }: AuthFormProps) {
           <h1 className="text-2xl font-bold text-gray-600 mb-2">
             Feed<span className="text-teal-600">Agg</span>
           </h1>
-          <p className="text-gray-500 text-sm">Pure content. Zero noise.</p>
+          <p className="text-gray-500 text-sm">{t("app.tagline")}</p>
         </div>
 
         {/* Title */}
         <div className="text-center mb-6">
           <h2 className="text-xl font-semibold text-gray-700">
-            {mode === "login" ? "Log in to see more" : "Join FeedAgg today"}
+            {mode === "login"
+              ? t("auth.login.title")
+              : t("auth.register.title")}
           </h2>
-          <p className="text-gray-500 text-sm mt-2">
-            Sign in securely with your existing account
-          </p>
+          <p className="text-gray-500 text-sm mt-2">{t("auth.description")}</p>
         </div>
 
         {/* Error Alert */}
@@ -115,7 +117,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               </svg>
             </div>
             <span className="hidden sm:inline">
-              {googleLoading ? "Connecting..." : "Google"}
+              {googleLoading ? t("auth.connecting") : "Google"}
             </span>
           </Button>
 
@@ -141,7 +143,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               </svg>
             </div>
             <span className="hidden sm:inline">
-              {microsoftLoading ? "Connecting..." : "Microsoft"}
+              {microsoftLoading ? t("auth.connecting") : "Microsoft"}
             </span>
           </Button>
         </div>
