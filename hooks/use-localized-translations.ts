@@ -88,11 +88,33 @@ export function useLocalizedTranslations() {
     return value;
   };
 
+  const localizedDate = (date?: string | Date) => {
+    if (!date) return "";
+
+    return new Date(date).toLocaleDateString(locale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    });
+  };
+
+  const localizedTime = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleTimeString(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return {
     locale,
     setLocale,
     t,
     loading,
     messages,
+    localizedDate,
+    localizedTime,
   };
 }

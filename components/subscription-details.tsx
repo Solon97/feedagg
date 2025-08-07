@@ -1,9 +1,8 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PremiumBadge } from "@/components/premium-badge";
 import { SubscriptionSkeleton } from "@/components/subscription-skeleton";
-import { CreditCard, Crown } from "lucide-react";
-
+import { Button } from "@/components/ui/button";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
+import { Crown } from "lucide-react";
+import Link from "next/link";
 interface SubscriptionDetailsProps {
   isActive: boolean;
   currentPeriodEnd: Date | null;
@@ -21,13 +20,7 @@ export function SubscriptionDetails({
   loading,
   className,
 }: SubscriptionDetailsProps) {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  const { t, localizedDate } = useLocalizedTranslations();
 
   if (loading) {
     return <SubscriptionSkeleton />;
@@ -39,19 +32,24 @@ export function SubscriptionDetails({
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
             <span>🌟</span>
-            <span className="text-white font-medium">Plan: Premium</span>
+            <span className="text-white font-medium">
+              {t("subscription.details.plan")}: {t("subscription.premium")}
+            </span>
           </div>
 
           {currentPeriodEnd && (
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <span>🔄</span>
-              <span>Renews: {formatDate(currentPeriodEnd)}</span>
+              <span>
+                {t("subscription.details.renews")}:{" "}
+                {localizedDate(currentPeriodEnd)}
+              </span>
             </div>
           )}
 
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <span>❓</span>
-            <span>Need help?</span>
+            <span>{t("subscription.details.needHelp")}</span>
           </div>
 
           <div className="flex items-center gap-2 text-sm">
@@ -77,7 +75,7 @@ export function SubscriptionDetails({
           className="w-full justify-start text-teal-400 hover:text-teal-300 hover:bg-slate-700 px-0"
         >
           <Crown className="mr-2 h-4 w-4" />
-          Subscribe Now
+          {t("subscription.subscribeNow")}
         </Button>
       </Link>
     </div>

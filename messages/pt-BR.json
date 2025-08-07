@@ -18,7 +18,8 @@
         "previous": "Anterior",
         "submit": "Enviar",
         "confirm": "Confirmar",
-        "user": "Usuário"
+        "user": "Usuário",
+        "or": "ou"
     },
     "navigation": {
         "dashboard": "Painel",
@@ -84,13 +85,38 @@
         "errorLoading": "Erro ao carregar planos de preço",
         "pricing": {
             "title": "Preços Simples e Transparentes",
-            "subtitle": "Pague mensalmente ou economize com cobrança anual"
+            "subtitle": "Pague mensalmente ou economize com cobrança anual",
+            "processing": "Processando...",
+            "startFreeTrial": "Iniciar Teste Gratuito",
+            "subscribeNow": "Assinar Agora",
+            "cancelAnytime": "Cancele a qualquer momento. Sem taxas ocultas.",
+            "monthly": "Mensal",
+            "yearly": "Anual",
+            "mostPopular": "Mais Popular",
+            "defaultFeature": "Recurso premium incluído na sua assinatura",
+            "save50": "Economize 50%",
+            "month": "/mês",
+            "year": "/ano",
+            "billedAnnually": "Cobrado anualmente por",
+            "freeTrial": "Teste gratuito de 14 dias",
+            "noCreditCard": "Não é necessário cartão de crédito",
+            "featureDescriptions": {
+                "unlimitedSources": "Adicione quantos feeds RSS e canais do YouTube quiser",
+                "cleanFeed": "Mantenha o foco com uma interface minimalista",
+                "webAccess": "Sem necessidade de aplicativos ou instalações",
+                "futureUpdates": "Aproveite todos os novos recursos e melhorias"
+            }
         },
         "features": {
             "unlimited": "Fontes de conteúdo ilimitadas",
             "clean": "Feed limpo e sem distrações",
             "webAccess": "Acesso web de qualquer dispositivo",
             "updates": "Acesso a atualizações futuras"
+        },
+        "details": {
+            "plan": "Plano",
+            "renews": "Renova em",
+            "needHelp": "Precisa de ajuda?"
         },
         "security": "Suas informações de pagamento são criptografadas e processadas com segurança. Nunca armazenamos os detalhes do seu cartão."
     },
@@ -149,6 +175,14 @@
             "title": "Nenhum feed ainda",
             "description": "Adicione seu primeiro feed RSS ou canal do YouTube para começar."
         },
+        "suggestion": {
+            "activateTitle": "Ative Seus Feeds",
+            "addFirstTitle": "Adicione Seu Primeiro Feed",
+            "activateDescription": "Você tem feeds mas eles estão inativos. Ative-os para começar a ver conteúdo.",
+            "addFirstDescription": "Para começar a ver conteúdo personalizado, você precisa se inscrever e ativar alguns feeds RSS ou canais do YouTube.",
+            "manageFeeds": "Gerenciar Feeds",
+            "addFeed": "Adicionar Feed"
+        },
         "lastFetched": "Última busca:",
         "never": "Nunca"
     },
@@ -157,7 +191,7 @@
         "description": "Inscreva-se em feeds RSS ou canais do YouTube fornecendo sua URL e selecionando um tópico",
         "fields": {
             "url": "URL do Feed",
-            "urlPlaceholder": "https://exemplo.com/feed.xml ou https://youtube.com/channel/..."
+            "urlPlaceholder": "https://exemplo.com ou https://www.youtube.com/@canal"
         },
         "validation": {
             "fillRequired": "Por favor, preencha todos os campos obrigatórios"
@@ -207,11 +241,26 @@
         "allSources": "Todas as Fontes",
         "searchPlaceholder": "Pesquisar nos itens...",
         "topics": "Tópicos",
-        "allTopics": "Todos os Tópicos"
+        "allTopics": "Todos os Tópicos",
+        "filterByType": "Filtrar por tipo",
+        "allTypes": "Todos os tipos",
+        "filterByTopic": "Filtrar por tópico",
+        "loadingTopics": "Carregando tópicos...",
+        "activeFilters": "Filtros ativos",
+        "titleLabel": "Título",
+        "feedLabel": "Feed",
+        "typeLabel": "Tipo",
+        "topicLabel": "Tópico",
+        "filtering": "Filtrando...",
+        "clearing": "Limpando..."
     },
     "topics": {
         "title": "Tópicos",
         "selectTopics": "Selecionar Tópicos",
+        "chooseInterest": "Escolha Seu Interesse",
+        "chooseInterestDescription": "Selecione um tópico para ver conteúdo personalizado de seus feeds inscritos, ou continue para ver todo o conteúdo.",
+        "continueWithout": "Continuar sem selecionar um tópico",
+        "loadingTopics": "Carregando tópicos...",
         "technology": "Tecnologia",
         "business": "Negócios",
         "science": "Ciência",

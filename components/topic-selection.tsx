@@ -6,6 +6,7 @@ import { Loader2, TrendingUp, ArrowRight } from "lucide-react";
 import type { FeedFilters } from "@/hooks/use-feeds";
 import type { UserFeedSubscription } from "@/types/api";
 import { AddFeedSuggestion } from "@/components/add-feed-suggestion";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 
 interface TopicSelectionProps {
   onTopicSelect: (filters: FeedFilters) => void;
@@ -19,6 +20,7 @@ export function TopicSelection({
   feeds = [],
 }: TopicSelectionProps) {
   const { topics, loading } = useTopics();
+  const { t } = useLocalizedTranslations();
 
   const handleTopicClick = (topicId: string) => {
     onTopicSelect({ topic_id: topicId });
@@ -31,7 +33,7 @@ export function TopicSelection({
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-8 h-8 animate-spin text-teal-500 mb-4" />
-        <p className="text-gray-400">Loading topics...</p>
+        <p className="text-gray-400">{t("topics.loadingTopics")}</p>
       </div>
     );
   }
@@ -48,11 +50,10 @@ export function TopicSelection({
           <TrendingUp className="w-8 h-8 text-teal-500" />
         </div>
         <h3 className="text-xl font-medium text-white mb-2">
-          Choose Your Interest
+          {t("topics.chooseInterest")}
         </h3>
         <p className="text-gray-400 text-sm">
-          Select a topic to see personalized content from your subscribed feeds,
-          or continue to view all content.
+          {t("topics.chooseInterestDescription")}
         </p>
       </div>
 
@@ -88,7 +89,9 @@ export function TopicSelection({
             <div className="w-full border-t border-slate-700"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-slate-800/50 px-3 text-gray-400">or</span>
+            <span className="bg-slate-800/50 px-3 text-gray-400">
+              {t("common.or")}
+            </span>
           </div>
         </div>
 
@@ -99,7 +102,7 @@ export function TopicSelection({
             variant="ghost"
             className="text-gray-400 hover:text-white hover:bg-slate-700 text-sm"
           >
-            Continue without selecting a topic
+            {t("topics.continueWithout")}
           </Button>
         </div>
       </div>

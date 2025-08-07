@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Zap } from "lucide-react";
 import { StripePrice } from "@/types/stripe";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 
 interface PricingCardProps {
   price: StripePrice;
@@ -13,8 +14,12 @@ interface PricingCardProps {
   variant?: "default" | "example";
 }
 
-const formatCurrency = (unitAmount: number, currency: string) => {
-  return new Intl.NumberFormat("en-US", {
+const formatCurrency = (
+  unitAmount: number,
+  currency: string,
+  locale: string = "en-US"
+) => {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency.toUpperCase(),
     minimumFractionDigits: 0,
@@ -30,12 +35,61 @@ export function PricingCard({
   onSubscribe,
   variant = "default",
 }: PricingCardProps) {
+  const { t, locale } = useLocalizedTranslations();
   const isAnnual = price.recurring?.interval === "year";
   const monthlyPrice = isAnnual
     ? price.unit_amount / 12 / 100
     : price.unit_amount / 100;
   const annualTotal = isAnnual ? price.unit_amount / 100 : 0;
-  const productName = price.product?.name || (isAnnual ? "Yearly" : "Monthly");
+  const productName =
+    price.product?.name ||
+    (isAnnual
+      ? t("subscription.pricing.yearly")
+      : t("subscription.pricing.monthly"));
+
+  // Get the appropriate locale for currency formatting
+  const getCurrencyLocale = () => {
+    switch (locale) {
+      case "pt-BR":
+        return "pt-BR";
+      case "en":
+      default:
+        return "en-US";
+    }
+  };
+
+  // Format monthly price with proper locale
+  const formatMonthlyPrice = (amount: number) => {
+    return new Intl.NumberFormat(getCurrencyLocale(), {
+      style: "currency",
+      currency: price.currency.toUpperCase(),
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const getFeatureDescription = (feature: string): string => {
+    const features = {
+      unlimited: t("subscription.features.unlimited"),
+      clean: t("subscription.features.clean"),
+      webAccess: t("subscription.features.webAccess"),
+      updates: t("subscription.features.updates"),
+    };
+    const descriptions: Record<string, string> = {
+      [features.unlimited]: t(
+        "subscription.pricing.featureDescriptions.unlimitedSources"
+      ),
+      [features.clean]: t("subscription.pricing.featureDescriptions.cleanFeed"),
+      [features.webAccess]: t(
+        "subscription.pricing.featureDescriptions.webAccess"
+      ),
+      [features.updates]: t(
+        "subscription.pricing.featureDescriptions.futureUpdates"
+      ),
+    };
+
+    return descriptions[feature] || t("subscription.pricing.defaultFeature");
+  };
 
   if (variant === "example") {
     return (
@@ -48,7 +102,9 @@ export function PricingCard({
       >
         {isPopular && (
           <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-            <Badge className="bg-teal-500 text-white">Save 50%</Badge>
+            <Badge className="bg-teal-500 text-white">
+              {t("subscription.pricing.save50")}
+            </Badge>
           </div>
         )}
         <CardContent className="p-8 text-center">
@@ -61,25 +117,30 @@ export function PricingCard({
                 isPopular ? "text-teal-500" : "text-slate-50"
               }`}
             >
-              ${monthlyPrice}
+              {formatMonthlyPrice(monthlyPrice)}
             </span>
-            <span className="text-slate-400">/month</span>
+            <span className="text-slate-400">
+              {t("subscription.pricing.month")}
+            </span>
           </div>
           <div className="text-sm text-slate-400 mb-6">
             {isAnnual ? (
-              `Billed annually at ${formatCurrency(
+              `${t("subscription.pricing.billedAnnually")} ${formatCurrency(
                 annualTotal * 100,
-                price.currency
-              )}/year`
+                price.currency,
+                getCurrencyLocale()
+              )}${t("subscription.pricing.year")}`
             ) : (
               <span className="opacity-0">Placeholder spacing text</span>
             )}
           </div>
           <div className="bg-slate-700 rounded-lg p-4 mb-6">
             <div className="text-lg font-semibold text-slate-50 mb-2">
-              14-day free trial
+              {t("subscription.pricing.freeTrial")}
             </div>
-            <div className="text-slate-400">No credit card required</div>
+            <div className="text-slate-400">
+              {t("subscription.pricing.noCreditCard")}
+            </div>
           </div>
           <ul className="space-y-3 mb-8 text-left">
             {features.map((feature, index) => (
@@ -102,14 +163,14 @@ export function PricingCard({
             {isLoading ? (
               <>
                 <Zap className="w-5 h-5 mr-2 animate-spin" />
-                Processing...
+                {t("subscription.pricing.processing")}
               </>
             ) : (
-              `Start Free Trial (${productName})`
+              `${t("subscription.pricing.startFreeTrial")}`
             )}
           </Button>
           <p className="text-sm text-slate-400">
-            Cancel anytime. No hidden fees.
+            {t("subscription.pricing.cancelAnytime")}
           </p>
         </CardContent>
       </Card>
@@ -128,7 +189,7 @@ export function PricingCard({
       {isPopular && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
           <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold">
-            Save 50%
+            {t("subscription.pricing.save50")}
           </Badge>
         </div>
       )}
@@ -140,21 +201,24 @@ export function PricingCard({
               isPopular ? "text-yellow-400" : "text-white"
             }`}
           >
-            ${monthlyPrice}
+            {formatMonthlyPrice(monthlyPrice)}
           </span>
-          <span className="text-gray-400">/month</span>
+          <span className="text-gray-400">
+            {t("subscription.pricing.month")}
+          </span>
         </div>
         <div className="text-sm text-gray-400 mb-6 h-5">
           {isAnnual
-            ? `Billed annually at ${formatCurrency(
+            ? `${t("subscription.pricing.billedAnnually")} ${formatCurrency(
                 annualTotal * 100,
-                price.currency
-              )}/year`
+                price.currency,
+                getCurrencyLocale()
+              )}${t("subscription.pricing.year")}`
             : ""}
         </div>
         <div className="bg-gradient-to-r from-slate-700 to-slate-600 rounded-lg p-4 mb-6 border border-slate-600">
           <div className="text-lg font-semibold text-white mb-2">
-            14-day free trial
+            {t("subscription.pricing.freeTrial")}
           </div>
         </div>
         <ul className="space-y-3 mb-8 text-left">
@@ -182,29 +246,16 @@ export function PricingCard({
           {isLoading ? (
             <>
               <Zap className="w-5 h-5 mr-2 animate-spin" />
-              Processing...
+              {t("subscription.pricing.processing")}
             </>
           ) : (
-            `Start Free Trial (${productName})`
+            `${t("subscription.pricing.startFreeTrial")} (${productName})`
           )}
         </Button>
-        <p className="text-sm text-gray-500">Cancel anytime. No hidden fees.</p>
+        <p className="text-sm text-gray-500">
+          {t("subscription.pricing.cancelAnytime")}
+        </p>
       </CardContent>
     </Card>
-  );
-}
-
-// Helper function to provide descriptions for features
-function getFeatureDescription(feature: string): string {
-  const descriptions: Record<string, string> = {
-    "Unlimited content sources":
-      "Add as many RSS feeds and YouTube channels as you like",
-    "Clean, distraction-free feed": "Stay focused with a minimal interface",
-    "Web access from any device": "No apps or installations needed",
-    "Access to future updates": "Enjoy every new feature and improvement",
-  };
-
-  return (
-    descriptions[feature] || "Premium feature included with your subscription"
   );
 }

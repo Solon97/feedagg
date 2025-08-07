@@ -1,27 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { use } from "react";
-import { useRouter } from "next/navigation";
-import { ProtectedRoute } from "@/components/protected-route";
 import { Navbar } from "@/components/navbar";
+import { ProtectedRoute } from "@/components/protected-route";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSelectedItem } from "@/contexts/selected-item-context";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import { apiService } from "@/lib/api";
+import type { FeedItem } from "@/types/api";
 import {
   ArrowLeft,
-  ExternalLink,
   Calendar,
-  Play,
-  Clock,
-  User,
   ChevronDown,
   ChevronUp,
+  Clock,
+  ExternalLink,
+  Play,
+  User,
 } from "lucide-react";
-import type { FeedItem } from "@/types/api";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 
 interface ItemPageProps {
   params: Promise<{
@@ -30,6 +30,7 @@ interface ItemPageProps {
 }
 
 export default function ItemPage({ params }: ItemPageProps) {
+  const { localizedDate, localizedTime } = useLocalizedTranslations();
   const router = useRouter();
   const { selectedItem, setSelectedItem } = useSelectedItem();
   const [item, setItem] = useState<FeedItem | null>(null);
@@ -73,21 +74,6 @@ export default function ItemPage({ params }: ItemPageProps) {
 
     fetchItemData();
   }, [resolvedParams.id, selectedItem, setSelectedItem]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const getYouTubeVideoId = (url: string) => {
     // Handle regular YouTube URLs
@@ -222,11 +208,11 @@ export default function ItemPage({ params }: ItemPageProps) {
                 </div>
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-1" />
-                  {formatDate(item.published_at)}
+                  {localizedDate(item.published_at)}
                 </div>
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  {formatTime(item.published_at)}
+                  {localizedTime(item.published_at)}
                 </div>
                 {isYouTube && (
                   <Badge

@@ -1,28 +1,20 @@
 "use client";
 
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ExternalLink } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useSelectedItem } from "@/contexts/selected-item-context";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import type { FeedItem } from "@/types/api";
+import { Calendar, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface FeedItemCardProps {
   item: FeedItem;
 }
 
 export function FeedItemCard({ item }: FeedItemCardProps) {
+  const { localizedDate } = useLocalizedTranslations();
   const { setSelectedItem } = useSelectedItem();
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const truncateContent = (content: string, maxLength = 120) => {
     if (content.length <= maxLength) return content;
@@ -171,7 +163,7 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
                 <div className="flex items-center text-gray-400 text-xs sm:text-sm">
                   <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   <span className="truncate">
-                    {formatDate(item.published_at)}
+                    {localizedDate(item.published_at)}
                   </span>
                 </div>
               </div>

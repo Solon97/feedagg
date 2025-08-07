@@ -18,7 +18,8 @@
         "previous": "Previous",
         "submit": "Submit",
         "confirm": "Confirm",
-        "user": "User"
+        "user": "User",
+        "or": "or"
     },
     "navigation": {
         "dashboard": "Dashboard",
@@ -87,13 +88,27 @@
         "errorLoading": "Error loading pricing plans",
         "pricing": {
             "title": "Simple, Transparent Pricing",
-            "subtitle": "Pay monthly or save with annual billing"
-        },
-        "features": {
-            "unlimited": "Unlimited content sources",
-            "clean": "Clean, distraction-free feed",
-            "webAccess": "Web access from any device",
-            "updates": "Access to future updates"
+            "subtitle": "Pay monthly or save with annual billing",
+            "processing": "Processing...",
+            "startFreeTrial": "Start Free Trial",
+            "subscribeNow": "Subscribe Now",
+            "cancelAnytime": "Cancel anytime. No hidden fees.",
+            "monthly": "Monthly",
+            "yearly": "Yearly",
+            "mostPopular": "Most Popular",
+            "defaultFeature": "Premium feature included with your subscription",
+            "save50": "Save 50%",
+            "month": "/month",
+            "year": "/year",
+            "billedAnnually": "Billed annually at",
+            "freeTrial": "14-day free trial",
+            "noCreditCard": "No credit card required",
+            "featureDescriptions": {
+                "unlimitedSources": "Add as many RSS feeds and YouTube channels as you like",
+                "cleanFeed": "Stay focused with a minimal interface",
+                "webAccess": "No apps or installations needed",
+                "futureUpdates": "Enjoy every new feature and improvement"
+            }
         },
         "security": "Your payment information is encrypted and processed securely. We never store your card details."
     },
@@ -152,6 +167,14 @@
             "title": "No feeds yet",
             "description": "Add your first RSS feed or YouTube channel to get started."
         },
+        "suggestion": {
+            "activateTitle": "Activate Your Feeds",
+            "addFirstTitle": "Add Your First Feed",
+            "activateDescription": "You have feeds but they are inactive. Activate them to start seeing content.",
+            "addFirstDescription": "To start seeing personalized content, you need to subscribe to and activate some RSS feeds or YouTube channels.",
+            "manageFeeds": "Manage Feeds",
+            "addFeed": "Add Feed"
+        },
         "lastFetched": "Last fetched:",
         "never": "Never"
     },
@@ -160,7 +183,7 @@
         "description": "Subscribe to RSS feeds or YouTube channels by providing their URL and selecting a topic",
         "fields": {
             "url": "Feed URL",
-            "urlPlaceholder": "https://example.com/feed.xml or https://youtube.com/channel/..."
+            "urlPlaceholder": "https://example.com or https://youtube.com/@channel"
         },
         "validation": {
             "fillRequired": "Please fill in all required fields"
@@ -210,11 +233,26 @@
         "allSources": "All Sources",
         "searchPlaceholder": "Search in items...",
         "topics": "Topics",
-        "allTopics": "All Topics"
+        "allTopics": "All Topics",
+        "filterByType": "Filter by type",
+        "allTypes": "All types",
+        "filterByTopic": "Filter by topic",
+        "loadingTopics": "Loading topics...",
+        "activeFilters": "Active filters",
+        "titleLabel": "Title",
+        "feedLabel": "Feed",
+        "typeLabel": "Type",
+        "topicLabel": "Topic",
+        "filtering": "Filtering...",
+        "clearing": "Clearing..."
     },
     "topics": {
         "title": "Topics",
         "selectTopics": "Select Topics",
+        "chooseInterest": "Choose Your Interest",
+        "chooseInterestDescription": "Select a topic to see personalized content from your subscribed feeds, or continue to view all content.",
+        "continueWithout": "Continue without selecting a topic",
+        "loadingTopics": "Loading topics...",
         "technology": "Technology",
         "business": "Business",
         "science": "Science",

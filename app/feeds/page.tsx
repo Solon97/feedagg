@@ -1,33 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ProtectedRoute } from "@/components/protected-route";
-import { Navbar } from "@/components/navbar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AddFeedForm } from "@/components/add-feed-form";
-import { useFeeds } from "@/hooks/use-feeds";
-import { useSubscription } from "@/hooks/use-subscription";
+import { Navbar } from "@/components/navbar";
+import { ProtectedRoute } from "@/components/protected-route";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
+import { useFeeds } from "@/hooks/use-feeds";
 import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
+import { useSubscription } from "@/hooks/use-subscription";
+import type { UserFeedSubscription } from "@/types/api";
 import {
-  Trash2,
+  CheckCircle,
+  Crown,
+  Loader2,
   Power,
   PowerOff,
-  CheckCircle,
-  Loader2,
   Rss,
+  Trash2,
   Youtube,
-  Crown,
-  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
-import type { UserFeedSubscription } from "@/types/api";
+import { useEffect, useState } from "react";
 
 export default function FeedsPage() {
-  const { t } = useLocalizedTranslations();
+  const { t, localizedDate } = useLocalizedTranslations();
   const { user } = useAuth();
   const { feeds, loading, error, refetch, updateFeedStatus, deleteFeed } =
     useFeeds();
@@ -102,17 +101,6 @@ export default function FeedsPage() {
         text: result.error || t("feeds.messages.deleteError"),
       });
     }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return t("feeds.never");
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   return (
@@ -270,7 +258,7 @@ export default function FeedsPage() {
                           </p>
                           <p className="text-gray-500 text-xs">
                             {t("feeds.lastFetched")}{" "}
-                            {formatDate(feed.last_fetched_at)}
+                            {localizedDate(feed.last_fetched_at)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 ml-4">

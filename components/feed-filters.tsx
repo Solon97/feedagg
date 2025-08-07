@@ -24,6 +24,7 @@ import {
 import type { FeedFilters } from "@/hooks/use-feeds";
 import type { UserFeedSubscription } from "@/types/api";
 import { useTopics } from "@/hooks/use-topics";
+import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 
 const DEBOUNCE_DELAY = 1000;
 
@@ -47,6 +48,7 @@ export function FeedFiltersComponent({
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { topics, loading: topicsLoading } = useTopics();
+  const { t } = useLocalizedTranslations();
 
   // Handler com debounce para o campo de título
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,13 +105,13 @@ export function FeedFiltersComponent({
       {/* Title Search */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-300">
-          Search by title
+          {t("common.search")}
         </label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             key={filters.title || "empty"}
-            placeholder="Search articles..."
+            placeholder={t("filters.searchPlaceholder")}
             defaultValue={filters.title || ""}
             onChange={handleTitleChange}
             className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-gray-400"
@@ -121,7 +123,7 @@ export function FeedFiltersComponent({
       {/* Feed Selection */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-300">
-          Filter by feed
+          {t("filters.source")}
         </label>
         <Select
           value={filters.feed_id || "all"}
@@ -130,12 +132,14 @@ export function FeedFiltersComponent({
         >
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
             <SelectValue
-              placeholder={feedsLoading ? "Loading feeds..." : "All feeds"}
+              placeholder={
+                feedsLoading ? t("feeds.loadingFeeds") : t("filters.allSources")
+              }
             />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             <SelectItem value="all" className="text-white hover:bg-slate-700">
-              All feeds
+              {t("filters.allSources")}
             </SelectItem>
             {activeFeeds.map((subscription) => (
               <SelectItem
@@ -153,7 +157,7 @@ export function FeedFiltersComponent({
       {/* Feed Type */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-300">
-          Filter by type
+          {t("filters.filterByType")}
         </label>
         <Select
           value={filters.feed_type || "all"}
@@ -161,11 +165,11 @@ export function FeedFiltersComponent({
           disabled={isFilterLoading}
         >
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-            <SelectValue placeholder="All types" />
+            <SelectValue placeholder={t("filters.allTypes")} />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             <SelectItem value="all" className="text-white hover:bg-slate-700">
-              All types
+              {t("filters.allTypes")}
             </SelectItem>
             <SelectItem value="rss" className="text-white hover:bg-slate-700">
               RSS
@@ -183,7 +187,7 @@ export function FeedFiltersComponent({
       {/* Topic Filter */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-300">
-          Filter by topic
+          {t("filters.filterByTopic")}
         </label>
         <Select
           value={filters.topic_id || "all"}
@@ -192,12 +196,16 @@ export function FeedFiltersComponent({
         >
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
             <SelectValue
-              placeholder={topicsLoading ? "Loading topics..." : "All topics"}
+              placeholder={
+                topicsLoading
+                  ? t("filters.loadingTopics")
+                  : t("filters.allTopics")
+              }
             />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             <SelectItem value="all" className="text-white hover:bg-slate-700">
-              All topics
+              {t("filters.allTopics")}
             </SelectItem>
             {topics.map((topic) => (
               <SelectItem
@@ -224,7 +232,7 @@ export function FeedFiltersComponent({
       {activeFiltersCount > 0 && (
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-300">
-            Active filters
+            {t("filters.activeFilters")}
           </label>
           <div className="flex flex-wrap gap-2">
             {filters.title && (
@@ -232,7 +240,7 @@ export function FeedFiltersComponent({
                 variant="secondary"
                 className="bg-teal-900/30 text-teal-400 border-teal-700/50"
               >
-                Title: {filters.title}
+                {t("filters.titleLabel")}: {filters.title}
               </Badge>
             )}
             {filters.feed_id && (
@@ -240,7 +248,7 @@ export function FeedFiltersComponent({
                 variant="secondary"
                 className="bg-blue-900/30 text-blue-400 border-blue-700/50"
               >
-                Feed:{" "}
+                {t("filters.feedLabel")}:{" "}
                 {activeFeeds.find((f) => f.feed.id === filters.feed_id)?.feed
                   .name || "Unknown"}
               </Badge>
@@ -250,7 +258,7 @@ export function FeedFiltersComponent({
                 variant="secondary"
                 className="bg-purple-900/30 text-purple-400 border-purple-700/50"
               >
-                Type: {filters.feed_type.toUpperCase()}
+                {t("filters.typeLabel")}: {filters.feed_type.toUpperCase()}
               </Badge>
             )}
             {filters.topic_id && (
@@ -258,7 +266,7 @@ export function FeedFiltersComponent({
                 variant="secondary"
                 className="bg-orange-900/30 text-orange-400 border-orange-700/50"
               >
-                Topic:{" "}
+                {t("filters.topicLabel")}:{" "}
                 {topics.find((t) => t.id === filters.topic_id)?.name ||
                   "Unknown"}
               </Badge>
@@ -274,10 +282,10 @@ export function FeedFiltersComponent({
             {isFilterLoading ? (
               <>
                 <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Clearing...
+                {t("filters.clearing")}
               </>
             ) : (
-              "Clear all filters"
+              t("filters.clearAll")
             )}
           </Button>
         </div>
@@ -291,7 +299,7 @@ export function FeedFiltersComponent({
       <div className="hidden lg:block bg-slate-800/50 rounded-lg p-4 border border-slate-700 min-h-[410px]">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-gray-400" />
-          <h3 className="font-medium text-white">Filters</h3>
+          <h3 className="font-medium text-white">{t("filters.title")}</h3>
           {activeFiltersCount > 0 && (
             <Badge
               variant="secondary"
@@ -320,10 +328,10 @@ export function FeedFiltersComponent({
               {isFilterLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Filtering...
+                  {t("filters.filtering")}
                 </>
               ) : (
-                "Filters"
+                t("filters.title")
               )}
               {activeFiltersCount > 0 && !isFilterLoading && (
                 <Badge
@@ -342,7 +350,7 @@ export function FeedFiltersComponent({
             <SheetHeader>
               <SheetTitle className="text-white flex items-center gap-2">
                 <Filter className="h-4 w-4" />
-                Filters
+                {t("filters.title")}
                 {isFilterLoading && (
                   <Loader2 className="h-3 w-3 text-teal-500 animate-spin" />
                 )}
