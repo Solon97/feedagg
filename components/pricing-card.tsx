@@ -105,7 +105,7 @@ export function PricingCard({
           <Badge className="bg-teal-500 text-white">
             {t("subscription.pricing.savePercent").replace(
               "{percent}",
-              `${Math.round(yearlyPriceDiscount)}%`
+              `${Math.round(yearlyPriceDiscount)}`
             )}
           </Badge>
         </div>
