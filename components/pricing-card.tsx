@@ -64,7 +64,7 @@ export function PricingCard({
     return new Intl.NumberFormat(getCurrencyLocale(), {
       style: "currency",
       currency: price.currency.toUpperCase(),
-      minimumFractionDigits: 0,
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
   };
@@ -105,7 +105,7 @@ export function PricingCard({
           <Badge className="bg-teal-500 text-white">
             {t("subscription.pricing.savePercent").replace(
               "{percent}",
-              `${yearlyPriceDiscount}`
+              `${Math.round(yearlyPriceDiscount)}%`
             )}
           </Badge>
         </div>
