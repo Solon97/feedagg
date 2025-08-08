@@ -94,7 +94,7 @@
             "yearly": "Anual",
             "mostPopular": "Mais Popular",
             "defaultFeature": "Recurso premium incluído na sua assinatura",
-            "save50": "Economize 50%",
+            "savePercent": "Economize {percent}%",
             "month": "/mês",
             "year": "/ano",
             "billedAnnually": "Cobrado anualmente por",

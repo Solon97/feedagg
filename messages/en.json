@@ -97,7 +97,7 @@
             "yearly": "Yearly",
             "mostPopular": "Most Popular",
             "defaultFeature": "Premium feature included with your subscription",
-            "save50": "Save 50%",
+            "savePercent": "Save {percent}%",
             "month": "/month",
             "year": "/year",
             "billedAnnually": "Billed annually at",

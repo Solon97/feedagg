@@ -20,7 +20,12 @@ import { Navbar } from "@/components/navbar";
  */
 export default function SubscribePage() {
   const { t } = useLocalizedTranslations();
-  const { prices, loading: pricesLoading, error } = useStripePrices();
+  const {
+    prices,
+    loading: pricesLoading,
+    getYearlyPriceDiscount,
+    error,
+  } = useStripePrices();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const handleSubscribe = async (priceId: string) => {
@@ -100,11 +105,11 @@ export default function SubscribePage() {
               <PricingCard
                 key={price.id}
                 price={price}
+                yearlyPriceDiscount={getYearlyPriceDiscount()}
                 isPopular={getPopularBadge(price)}
                 isLoading={checkoutLoading === price.id}
                 features={premiumFeatures}
                 onSubscribe={handleSubscribe}
-                variant="example"
               />
             ))}
           </div>

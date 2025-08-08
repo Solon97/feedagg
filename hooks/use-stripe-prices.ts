@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apiService } from "@/lib/api";
-import { StripePrice, StripePricesResponse } from "@/types/stripe";
+import { StripePrice } from "@/types/stripe";
 
 interface UseStripePricesReturn {
   prices: StripePrice[];
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
+  getYearlyPriceDiscount: () => number;
 }
 
 export function useStripePrices(): UseStripePricesReturn {
@@ -68,10 +69,27 @@ export function useStripePrices(): UseStripePricesReturn {
     fetchPrices();
   }, []);
 
+  const getYearlyPriceDiscount = useCallback((): number => {
+    const monthlyUnitAmount =
+      prices.find((price) => price.interval === "month")?.unit_amount || 0;
+    const yearlyUnitAmount =
+      prices.find((price) => price.interval === "year")?.unit_amount || 0;
+    if (monthlyUnitAmount === 0 || yearlyUnitAmount === 0) {
+      return 0;
+    }
+    const monthlyPrice = monthlyUnitAmount / 100;
+    const yearlyPrice = yearlyUnitAmount / 100;
+    const totalMonthlyCost = monthlyPrice * 12;
+    const discount =
+      ((totalMonthlyCost - yearlyPrice) / totalMonthlyCost) * 100;
+    return discount;
+  }, [prices]);
+
   return {
     prices,
     loading,
     error,
     refetch: fetchPrices,
+    getYearlyPriceDiscount,
   };
 }
