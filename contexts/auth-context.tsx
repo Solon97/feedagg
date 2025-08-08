@@ -136,6 +136,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signInWithPassword = async (email: string, password: string) => {
+    try {
+      logger.info("Password sign-in attempt", { email });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        logger.warn("Password sign-in failed", { email, error: error.message });
+      } else {
+        logger.info("Password sign-in successful", {
+          email,
+          userId: data.user?.id,
+        });
+        // Immediately reflect authenticated state in context
+        setSession(data.session as Session);
+        setUser((data.user as AuthUser) || null);
+      }
+
+      return { error };
+    } catch (error: any) {
+      logger.error("Password sign-in error", { email, error: error.message });
+      return { error };
+    }
+  };
+
   const signOut = async () => {
     try {
       logger.info("User logout attempt", { userId: user?.id });
@@ -166,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signInWithGoogle,
     signInWithMicrosoft,
+    signInWithPassword,
     signOut,
   };
 

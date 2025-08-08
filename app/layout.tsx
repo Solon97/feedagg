@@ -7,6 +7,7 @@ import { SelectedItemProvider } from "@/contexts/selected-item-context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { DevLogger } from "@/components/dev-logger";
+import { DevEmailLogin } from "@/components/dev-email-login";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
               {children}
               <Toaster />
               <DevLogger />
+              <DevEmailLogin />
             </SelectedItemProvider>
           </AuthProvider>
         </ThemeProvider>

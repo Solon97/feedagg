@@ -13,5 +13,9 @@ export interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<{ error: any }>;
   signInWithMicrosoft: () => Promise<{ error: any }>;
+  signInWithPassword: (
+    email: string,
+    password: string
+  ) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
 }

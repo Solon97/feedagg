@@ -30,7 +30,7 @@ interface ItemPageProps {
 }
 
 export default function ItemPage({ params }: ItemPageProps) {
-  const { localizedDate, localizedTime } = useLocalizedTranslations();
+  const { t, localizedDate, localizedTime } = useLocalizedTranslations();
   const router = useRouter();
   const { selectedItem, setSelectedItem } = useSelectedItem();
   const [item, setItem] = useState<FeedItem | null>(null);
@@ -135,10 +135,10 @@ export default function ItemPage({ params }: ItemPageProps) {
             <Card className="bg-red-900/20 border-red-700/50">
               <CardContent className="p-8 text-center">
                 <h2 className="text-xl font-semibold text-red-300 mb-2">
-                  Error Loading Content
+                  {t("errors.loadingError")}
                 </h2>
                 <p className="text-red-400 mb-4">
-                  {error || "Content not found"}
+                  {error || t("errors.notFound")}
                 </p>
                 <Button
                   onClick={() => router.back()}
@@ -146,7 +146,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                   className="border-slate-600"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Go Back
+                  {t("common.goBack")}
                 </Button>
               </CardContent>
             </Card>
@@ -174,7 +174,7 @@ export default function ItemPage({ params }: ItemPageProps) {
               className="border-slate-600 text-gray-300 hover:bg-slate-700 flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Feed
+              {t("common.goBack")}
             </Button>
 
             <a
@@ -185,7 +185,9 @@ export default function ItemPage({ params }: ItemPageProps) {
             >
               <Button className="bg-teal-600 hover:bg-teal-700">
                 <ExternalLink className="w-4 h-4 mr-2" />
-                {isYouTube ? "Watch on YouTube" : "Read Original"}
+                {isYouTube
+                  ? t("feedItems.watchOnYoutube")
+                  : t("feedItems.readOriginal")}
               </Button>
             </a>
           </div>
@@ -220,9 +222,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                     className="border-red-700/50 text-red-400"
                   >
                     <Play className="w-3 h-3 mr-1" />
-                    {isYouTubeShort(item.url)
-                      ? "YouTube Short"
-                      : "YouTube Video"}
+                    {isYouTubeShort(item.url) ? "Shorts" : "YouTube"}
                   </Badge>
                 )}
               </div>
@@ -284,7 +284,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                   /* YouTube Description with Show More/Less */
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-white mb-4">
-                      Description
+                      {t("feedItems.description")}
                     </h3>
                     <div className="prose prose-invert prose-lg max-w-none">
                       <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
@@ -296,7 +296,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                           )
                         ) : (
                           <span className="text-gray-500 italic">
-                            No description available
+                            {t("feedItems.noDescription")}
                           </span>
                         )}
                       </div>
@@ -312,12 +312,12 @@ export default function ItemPage({ params }: ItemPageProps) {
                         {showFullDescription ? (
                           <>
                             <ChevronUp className="w-4 h-4 mr-1" />
-                            Show Less
+                            {t("feedItems.showLess")}
                           </>
                         ) : (
                           <>
                             <ChevronDown className="w-4 h-4 mr-1" />
-                            Show More
+                            {t("feedItems.showMore")}
                           </>
                         )}
                       </Button>
@@ -325,15 +325,15 @@ export default function ItemPage({ params }: ItemPageProps) {
                   </div>
                 ) : (
                   /* Article Content with Full HTML */
-                  <div className="prose prose-invert prose-lg max-w-none">
+                  <div className="article-prose prose-lg">
                     {item.content && item.content.trim() ? (
                       <div
-                        className="text-gray-300 leading-relaxed"
+                        className="leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: item.content }}
                       />
                     ) : (
                       <div className="text-gray-500 italic">
-                        No content available
+                        {t("feedItems.noContentAvailable")}
                       </div>
                     )}
                   </div>
@@ -347,13 +347,10 @@ export default function ItemPage({ params }: ItemPageProps) {
                       </div>
                       <div className="flex-1">
                         <h4 className="text-amber-300 font-semibold mb-2">
-                          Medium Membership Required
+                          {t("feedItems.medium.membershipRequired")}
                         </h4>
                         <p className="text-amber-200/80 text-sm mb-3">
-                          This article is from Medium and may require a Medium
-                          membership to read the full content. If you have a
-                          membership, click the button below to access the
-                          complete article.
+                          {t("feedItems.medium.membershipDescription")}
                         </p>
                         <a
                           href={item.url}
@@ -365,7 +362,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                             className="bg-amber-600 hover:bg-amber-700 text-white"
                           >
                             <ExternalLink className="w-4 h-4 mr-2" />
-                            Read Full Article on Medium
+                            {t("feedItems.medium.readFullArticle")}
                           </Button>
                         </a>
                       </div>

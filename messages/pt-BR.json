@@ -19,7 +19,8 @@
         "submit": "Enviar",
         "confirm": "Confirmar",
         "user": "Usuário",
-        "or": "ou"
+        "or": "ou",
+        "goBack": "Voltar"
     },
     "navigation": {
         "dashboard": "Painel",
@@ -222,9 +223,22 @@
         "unfavorite": "Desfavoritar",
         "share": "Compartilhar",
         "openOriginal": "Abrir Original",
+        "watchOnYoutube": "Assistir no YouTube",
+        "readOriginal": "Ler Original",
         "publishedOn": "Publicado em",
         "author": "Autor",
-        "source": "Fonte"
+        "source": "Fonte",
+        "backToFeed": "Voltar para o Feed",
+        "description": "Descrição",
+        "noDescription": "Nenhuma descrição disponível",
+        "showMore": "Mostrar Mais",
+        "showLess": "Mostrar Menos",
+        "noContentAvailable": "Nenhum conteúdo disponível",
+        "medium": {
+            "membershipRequired": "Assinatura Medium Necessária",
+            "membershipDescription": "Este artigo é do Medium e pode exigir uma assinatura para ler o conteúdo completo. Se você possui uma assinatura, clique no botão abaixo para acessar o artigo completo.",
+            "readFullArticle": "Ler artigo completo no Medium"
+        }
     },
     "filters": {
         "title": "Filtros",
@@ -277,6 +291,7 @@
         "networkError": "Erro de rede. Verifique sua conexão.",
         "serverError": "Erro do servidor. Tente novamente mais tarde.",
         "notFound": "Recurso não encontrado",
+        "loadingError": "Erro ao carregar recurso",
         "unauthorized": "Você não tem autorização para realizar esta ação",
         "validationError": "Verifique suas informações e tente novamente",
         "sessionExpired": "Sua sessão expirou. Entre novamente."

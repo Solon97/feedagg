@@ -98,3 +98,10 @@
     }
   }
 }
+
+/* Typography tweaks for article content */
+@layer components {
+  .article-prose {
+    @apply prose prose-invert max-w-none prose-headings:text-white prose-p:text-gray-300 prose-a:text-teal-400 hover:prose-a:text-teal-300 prose-strong:text-white prose-code:text-teal-300;
+  }
+}
