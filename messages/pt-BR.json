@@ -80,7 +80,7 @@
             "returnToDashboard": "Voltar ao Painel"
         },
         "checkoutError": "Falha ao criar sessão de checkout",
-        "checkoutErrorAlert": "Falha ao iniciar o processo de checkout. Tente novamente.",
+        "checkoutErrorAlert": "Falha ao iiciar o processo de checkout. Tente novamente.",
         "loadingPlans": "Carregando planos de preço...",
         "errorLoading": "Erro ao carregar planos de preço",
         "pricing": {
