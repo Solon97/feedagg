@@ -85,18 +85,16 @@ export default function Dashboard() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <Navbar />
 
-        <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto px-2 py-3 sm:p-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                {t("navigation.dashboard")}
-              </h1>
-            </div>
+          <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <h1 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">
+              {t("navigation.dashboard")}
+            </h1>
             <Button
               onClick={refresh}
               disabled={isAnyLoading}
-              className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto disabled:opacity-50"
+              className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto disabled:opacity-50 text-base sm:text-sm py-2 sm:py-1"
             >
               {refreshing ? (
                 <>
@@ -112,9 +110,9 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Filters Sidebar */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 mb-4 lg:mb-0">
               <FeedFiltersComponent
                 filters={filters}
                 onFiltersChange={applyFilters}
@@ -129,25 +127,21 @@ export default function Dashboard() {
             <div className="lg:col-span-3">
               {/* Filter Loading Indicator */}
               {filterLoading && (
-                <div className="mb-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
-                    <span className="text-sm text-gray-300">
-                      {t("feedItems.loadingItems")}
-                    </span>
-                  </div>
+                <div className="mb-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
+                  <span className="text-sm text-gray-300">
+                    {t("feedItems.loadingItems")}
+                  </span>
                 </div>
               )}
 
               {/* Refresh Loading Indicator */}
               {refreshing && (
-                <div className="mb-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
-                    <span className="text-sm text-gray-300">
-                      {t("feedItems.refreshing")}
-                    </span>
-                  </div>
+                <div className="mb-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
+                  <span className="text-sm text-gray-300">
+                    {t("feedItems.refreshing")}
+                  </span>
                 </div>
               )}
 
@@ -159,20 +153,20 @@ export default function Dashboard() {
                   feeds={feeds}
                 />
               ) : loading && items.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center justify-center py-12 gap-2">
                   <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
-                  <span className="ml-2 text-gray-400">
+                  <span className="text-base text-gray-400">
                     {t("feedItems.loadingItems")}
                   </span>
                 </div>
               ) : items.length === 0 && !isAnyLoading ? (
                 <div className="text-center py-12">
-                  <h2 className="text-xl font-semibold text-gray-300 mb-2">
+                  <h2 className="text-lg font-semibold text-gray-300 mb-2">
                     {hasActiveFilters()
                       ? t("feedItems.noItems")
                       : t("feedItems.noItems")}
                   </h2>
-                  <p className="text-gray-500 mb-6">
+                  <p className="text-gray-500 mb-6 text-sm">
                     {hasActiveFilters()
                       ? t("feedItems.noItemsDescription")
                       : t("feeds.noFeedsDescription")}
@@ -181,7 +175,7 @@ export default function Dashboard() {
                     <Button
                       onClick={clearFilters}
                       variant="outline"
-                      className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
+                      className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent text-sm px-4 py-2"
                       disabled={isAnyLoading}
                     >
                       {t("filters.clearFilters")}
@@ -192,9 +186,9 @@ export default function Dashboard() {
                 <>
                   {/* Results Summary */}
                   {displayCount > 0 && !isAnyLoading && (
-                    <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-gray-400">
+                    <div className="mb-3 p-2 bg-slate-800/50 rounded-lg border border-slate-700">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <p className="text-xs sm:text-sm text-gray-400">
                           {t("feedItems.showingItems", {
                             count: displayCount,
                             total: displayTotal,
@@ -216,7 +210,7 @@ export default function Dashboard() {
                   )}
 
                   {/* Feed Items Grid */}
-                  <div className="grid gap-4 sm:gap-6">
+                  <div className="flex flex-col gap-4 sm:gap-6">
                     {items.map((item) => (
                       <FeedItemCard key={item.id} item={item} />
                     ))}
@@ -229,7 +223,7 @@ export default function Dashboard() {
                         onClick={handleLoadMore}
                         disabled={isAnyLoading}
                         variant="outline"
-                        className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent"
+                        className="border-slate-600 text-gray-300 hover:bg-slate-700 bg-transparent text-base px-6 py-2"
                       >
                         {t("common.loadMore")}
                       </Button>

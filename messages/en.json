@@ -226,10 +226,10 @@
         "showMore": "Show More",
         "showLess": "Show Less",
         "noContentAvailable": "No content available",
-        "medium": {
-            "membershipRequired": "Medium Membership Required",
-            "membershipDescription": "This article is from Medium and may require a Medium membership to read the full content. If you have a membership, click the button below to access the complete article.",
-            "readFullArticle": "Read Full Article on Medium"
+        "originalContent": {
+            "title": "Original Content",
+            "description": "This content belongs to the original creator. Support their work by accessing the full article on their website.",
+            "readFullArticle": "Read Full Article"
         }
     },
     "filters": {

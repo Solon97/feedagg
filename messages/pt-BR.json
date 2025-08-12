@@ -234,10 +234,10 @@
         "showMore": "Mostrar Mais",
         "showLess": "Mostrar Menos",
         "noContentAvailable": "Nenhum conteúdo disponível",
-        "medium": {
-            "membershipRequired": "Assinatura Medium Necessária",
-            "membershipDescription": "Este artigo é do Medium e pode exigir uma assinatura para ler o conteúdo completo. Se você possui uma assinatura, clique no botão abaixo para acessar o artigo completo.",
-            "readFullArticle": "Ler artigo completo no Medium"
+        "originalContent": {
+            "title": "Leia o Conteúdo Original",
+            "description": "Este conteúdo pertence ao criador original. Apoie o trabalho dele acessando o artigo completo no site.",
+            "readFullArticle": "Ler artigo completo"
         }
     },
     "filters": {
