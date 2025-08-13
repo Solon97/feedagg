@@ -4,6 +4,16 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
+  // Skip middleware for service worker and PWA files
+  if (
+    request.nextUrl.pathname === "/sw.js" ||
+    request.nextUrl.pathname === "/manifest.webmanifest" ||
+    request.nextUrl.pathname === "/offline" ||
+    request.nextUrl.pathname.startsWith("/_next/")
+  ) {
+    return response;
+  }
+
   // Security: Check for tokens in URL and redirect to clean version
   const url = request.nextUrl;
   const hasTokensInQuery =
@@ -61,8 +71,9 @@ export const config = {
      * - favicon.ico (favicon file)
      * - sw.js (service worker)
      * - manifest.webmanifest
+     * - offline (PWA offline page)
      * - robots.txt, sitemap.xml
      */
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|offline|robots.txt|sitemap.xml).*)",
   ],
 };
