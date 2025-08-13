@@ -9,7 +9,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { DevLogger } from "@/components/dev-logger";
 import { DevEmailLogin } from "@/components/dev-email-login";
 import { SwUpdater } from "@/components/sw-updater";
-import { OnlineStatusIndicator } from "@/components/online-status";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -56,7 +55,6 @@ export default function RootLayout({
         >
           <AuthProvider>
             <SelectedItemProvider>
-              <OnlineStatusIndicator />
               {children}
               {/* SW update toast controller */}
               <SwUpdater />

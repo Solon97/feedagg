@@ -25,11 +25,9 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
     cleanupOutdatedCaches: true,
     navigateFallback: runtimeBase + "/offline",
     navigateFallbackDenylist: [
-      /\\.\w+$/, // assets with file extensions
+      /\\.\w+$/, // assets
       new RegExp("^" + runtimeBase + "/_next"),
       new RegExp("^" + runtimeBase + "/api"),
-      new RegExp("^" + runtimeBase + "/auth/callback"), // Don't fallback on auth callback
-      /\/auth\/.*/, // Don't fallback on any auth routes
     ],
     runtimeCaching: [
       // Next.js static assets
@@ -71,11 +69,6 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
           cacheName: "img-v1",
           expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
         },
-      },
-      // Auth routes - always network, no cache
-      {
-        urlPattern: ({ url }) => url.pathname.startsWith(runtimeBase + "/auth"),
-        handler: "NetworkOnly",
       },
       // HTML navigations (NetworkFirst with 3s timeout)
       {
