@@ -4,6 +4,24 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
+  // Security: Check for tokens in URL and redirect to clean version
+  const url = request.nextUrl;
+  const hasTokensInQuery =
+    url.searchParams.has("access_token") ||
+    url.searchParams.has("refresh_token") ||
+    url.searchParams.has("id_token");
+
+  // If tokens are found in URL, redirect to auth callback to handle them securely
+  if (hasTokensInQuery && !url.pathname.startsWith("/auth/callback")) {
+    // Preserve the tokens in the redirect to callback page
+    const callbackUrl = new URL("/auth/callback", request.url);
+    // Copy all search parameters to callback URL
+    url.searchParams.forEach((value, key) => {
+      callbackUrl.searchParams.set(key, value);
+    });
+    return NextResponse.redirect(callbackUrl);
+  }
+
   // Add Cache-Control headers for API routes to prevent caching of authenticated responses
   if (request.nextUrl.pathname.startsWith("/api/")) {
     // Default: no caching for API routes

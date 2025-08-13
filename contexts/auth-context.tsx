@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import type { AuthContextType, AuthUser } from "@/types/auth";
 import type { Session } from "@supabase/supabase-js";
 import { logger } from "@/lib/logger";
+import { cleanCurrentUrl, urlContainsTokens } from "@/lib/url-security";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -21,6 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+
+    // Clean any tokens from URL on mount (fallback security measure)
+    if (
+      typeof window !== "undefined" &&
+      urlContainsTokens(window.location.href)
+    ) {
+      cleanCurrentUrl();
+      logger.info("Cleaned tokens from URL for security");
+    }
 
     // Get initial session
     const getInitialSession = async () => {
@@ -49,6 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       logger.debug("Auth state changed", { event, userId: session?.user?.id });
+
+      // Clean URL after auth state changes to remove any tokens
+      if (
+        typeof window !== "undefined" &&
+        urlContainsTokens(window.location.href)
+      ) {
+        cleanCurrentUrl();
+        logger.info("Cleaned tokens from URL after auth state change");
+      }
 
       if (mounted) {
         setSession(session);
@@ -103,11 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const url = productionUrl.startsWith("http")
         ? productionUrl
         : `https://${productionUrl}`;
-      return `${url}/`;
+      return `${url}/auth/callback`;
     }
 
     // For development or when no production URL is set, use current origin
-    return `${window.location.origin}/`;
+    return `${window.location.origin}/auth/callback`;
   };
 
   const signInWithGoogle = async () => {

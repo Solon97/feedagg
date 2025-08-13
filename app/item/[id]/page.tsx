@@ -257,7 +257,9 @@ export default function ItemPage({ params }: ItemPageProps) {
       localStorage.setItem("yt_subscribe_channel_id", channelId);
     }
     const redirectTo =
-      typeof window !== "undefined" ? window.location.href : undefined;
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/callback`
+        : undefined;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
