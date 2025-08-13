@@ -13,28 +13,6 @@ export default function OfflinePage() {
   useEffect(() => {
     // Check online status
     setIsOnline(navigator.onLine);
-
-    const handleOnline = () => {
-      setIsOnline(true);
-      setIsRedirecting(true);
-      // Auto-redirect when connection is restored
-      setTimeout(() => {
-        router.replace("/");
-      }, 2000);
-    };
-
-    const handleOffline = () => {
-      setIsOnline(false);
-      setIsRedirecting(false);
-    };
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
   }, [router]);
 
   const tryAgain = async () => {
