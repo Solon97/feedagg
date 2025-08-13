@@ -41,7 +41,7 @@ export default function AuthCallbackPage() {
           }
 
           // Clean URL and redirect to main page
-          replaceSecure("/feeds");
+          replaceSecure("/");
         } else {
           logger.warn("Auth callback completed but no session found");
           replaceSecure("/auth/login");

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 export default function OfflinePage() {
   const router = useRouter();
   const [isOnline, setIsOnline] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
     // Check online status
@@ -14,13 +16,17 @@ export default function OfflinePage() {
 
     const handleOnline = () => {
       setIsOnline(true);
+      setIsRedirecting(true);
       // Auto-redirect when connection is restored
       setTimeout(() => {
-        router.replace("/feeds");
-      }, 1000);
+        router.replace("/");
+      }, 2000);
     };
 
-    const handleOffline = () => setIsOnline(false);
+    const handleOffline = () => {
+      setIsOnline(false);
+      setIsRedirecting(false);
+    };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -31,9 +37,19 @@ export default function OfflinePage() {
     };
   }, [router]);
 
-  const tryAgain = () => {
-    if (navigator.onLine) {
-      router.replace("/feeds");
+  const tryAgain = async () => {
+    setIsChecking(true);
+    // Force a network check by trying to fetch something
+    try {
+      await fetch("/", { method: "HEAD", cache: "no-cache" });
+      setIsOnline(true);
+      setIsRedirecting(true);
+      router.replace("/");
+    } catch (error) {
+      // Still offline
+      setIsOnline(false);
+    } finally {
+      setIsChecking(false);
     }
   };
 
@@ -53,9 +69,22 @@ export default function OfflinePage() {
           <h1 className="text-2xl font-semibold mb-2 text-green-400">
             Conexão Restaurada!
           </h1>
-          <p className="text-slate-300 mb-4">
-            Redirecionando você de volta para o app...
+          <p className="text-slate-300 mb-6">
+            {isRedirecting
+              ? "Redirecionando você de volta para o app..."
+              : "Sua conexão com a internet foi restabelecida."}
           </p>
+          {!isRedirecting && (
+            <Button
+              onClick={() => router.replace("/")}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Voltar ao App
+            </Button>
+          )}
+          {isRedirecting && (
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-400 mx-auto"></div>
+          )}
         </div>
       </main>
     );
@@ -90,10 +119,18 @@ export default function OfflinePage() {
         </p>
         <Button
           onClick={tryAgain}
+          disabled={isChecking}
           variant="outline"
-          className="bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700"
+          className="bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700 disabled:opacity-50"
         >
-          Tentar Novamente
+          {isChecking ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-200 mr-2"></div>
+              Verificando...
+            </>
+          ) : (
+            "Tentar Novamente"
+          )}
         </Button>
       </div>
     </main>
