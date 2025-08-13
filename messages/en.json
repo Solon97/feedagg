@@ -153,7 +153,9 @@
         },
         "status": {
             "active": "Active",
-            "inactive": "Inactive"
+            "inactive": "Inactive",
+            "activate": "Activate feed",
+            "deactivate": "Deactivate feed"
         },
         "messages": {
             "subscribed": "Feed subscribed successfully!",
@@ -164,6 +166,7 @@
             "deleteError": "Failed to unsubscribe"
         },
         "confirmDelete": "Are you sure you want to unsubscribe from",
+        "delete": "Delete feed",
         "empty": {
             "title": "No feeds yet",
             "description": "Add your first RSS feed or YouTube channel to get started."

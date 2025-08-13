@@ -88,9 +88,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-2 py-3 sm:p-6">
           {/* Header */}
           <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <h1 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">
-              {t("navigation.dashboard")}
-            </h1>
+            <h1 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2"></h1>
             <Button
               onClick={refresh}
               disabled={isAnyLoading}

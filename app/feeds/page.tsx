@@ -191,7 +191,7 @@ export default function FeedsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 md:space-y-6">
               {feeds.map((subscription: UserFeedSubscription) => {
                 const feed = subscription.feed;
                 const isUpdating = updatingStatus === feed.id;
@@ -199,94 +199,110 @@ export default function FeedsPage() {
                 return (
                   <Card
                     key={feed.id}
-                    className="bg-slate-800/50 border-slate-700/50"
+                    className="bg-slate-800/50 border-slate-700/50 shadow-lg"
                   >
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-white">
-                              {feed.name}
-                            </h3>
-                            <Badge
-                              variant="secondary"
-                              className={
+                    <CardContent className="p-4 md:p-6">
+                      {/* Mobile-first layout */}
+                      <div className="feed-item-mobile">
+                        {/* Header with name and actions */}
+                        <div className="feed-header">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="feed-title">{feed.name}</h3>
+                          </div>
+                          <div className="feed-actions">
+                            <Button
+                              onClick={() => handleToggleStatus(subscription)}
+                              variant="outline"
+                              size="sm"
+                              className="border-slate-600 feed-action-button"
+                              disabled={isUpdating}
+                              aria-label={
                                 subscription.is_active
-                                  ? "bg-green-900/30 text-green-400 border-green-700/50"
-                                  : "bg-gray-900/30 text-gray-400 border-gray-700/50"
+                                  ? t("feeds.status.deactivate")
+                                  : t("feeds.status.activate")
                               }
                             >
-                              {subscription.is_active ? (
-                                <CheckCircle className="w-4 h-4" />
-                              ) : (
+                              {isUpdating ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : subscription.is_active ? (
                                 <PowerOff className="w-4 h-4" />
+                              ) : (
+                                <Power className="w-4 h-4" />
                               )}
-                              <span className="ml-1">
-                                {subscription.is_active
-                                  ? t("feeds.status.active")
-                                  : t("feeds.status.inactive")}
-                              </span>
-                            </Badge>
-                            {subscription.topic && (
-                              <Badge
+                            </Button>
+                            {!subscription.is_active && (
+                              <Button
+                                onClick={() => handleDelete(subscription)}
                                 variant="outline"
-                                className="border-teal-700/50 text-teal-400"
+                                size="sm"
+                                className="border-red-700/50 text-red-400 hover:bg-red-900/20 feed-action-button"
+                                aria-label={t("feeds.delete")}
                               >
-                                {subscription.topic.color && (
-                                  <div
-                                    className="w-3 h-3 rounded-full mr-1"
-                                    style={{
-                                      backgroundColor: subscription.topic.color,
-                                    }}
-                                  />
-                                )}
-                                {subscription.topic.name}
-                              </Badge>
-                            )}
-                            {feed.url.includes("youtube") && (
-                              <Badge
-                                variant="outline"
-                                className="border-red-700/50 text-red-400"
-                              >
-                                <Youtube className="w-3 h-3 mr-1" />
-                                YouTube
-                              </Badge>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
                             )}
                           </div>
-                          <p className="text-gray-400 text-sm mb-2 break-all">
-                            {feed.url}
-                          </p>
-                          <p className="text-gray-500 text-xs">
+                        </div>
+
+                        {/* Status and type badges */}
+                        <div className="feed-badges">
+                          <Badge
+                            variant="secondary"
+                            className={
+                              subscription.is_active
+                                ? "bg-green-900/30 text-green-400 border-green-700/50"
+                                : "bg-gray-900/30 text-gray-400 border-gray-700/50"
+                            }
+                          >
+                            {subscription.is_active ? (
+                              <CheckCircle className="w-3 h-3" />
+                            ) : (
+                              <PowerOff className="w-3 h-3" />
+                            )}
+                            <span className="ml-1 feed-badge">
+                              {subscription.is_active
+                                ? t("feeds.status.active")
+                                : t("feeds.status.inactive")}
+                            </span>
+                          </Badge>
+
+                          {feed.url.includes("youtube") && (
+                            <Badge
+                              variant="outline"
+                              className="border-red-700/50 text-red-400"
+                            >
+                              <Youtube className="w-3 h-3 mr-1" />
+                              <span className="feed-badge">YouTube</span>
+                            </Badge>
+                          )}
+
+                          {subscription.topic && (
+                            <Badge
+                              variant="outline"
+                              className="border-teal-700/50 text-teal-400"
+                            >
+                              {subscription.topic.color && (
+                                <div
+                                  className="w-2 h-2 rounded-full mr-1"
+                                  style={{
+                                    backgroundColor: subscription.topic.color,
+                                  }}
+                                />
+                              )}
+                              <span className="feed-badge">
+                                {subscription.topic.name}
+                              </span>
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* URL */}
+                        <div className="space-y-1">
+                          <p className="feed-url">{feed.url}</p>
+                          <p className="feed-meta">
                             {t("feeds.lastFetched")}{" "}
                             {localizedDate(feed.last_fetched_at)}
                           </p>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <Button
-                            onClick={() => handleToggleStatus(subscription)}
-                            variant="outline"
-                            size="sm"
-                            className="border-slate-600"
-                            disabled={isUpdating}
-                          >
-                            {isUpdating ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : subscription.is_active ? (
-                              <PowerOff className="w-4 h-4" />
-                            ) : (
-                              <Power className="w-4 h-4" />
-                            )}
-                          </Button>
-                          {!subscription.is_active && (
-                            <Button
-                              onClick={() => handleDelete(subscription)}
-                              variant="outline"
-                              size="sm"
-                              className="border-red-700/50 text-red-400 hover:bg-red-900/20"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
                         </div>
                       </div>
                     </CardContent>

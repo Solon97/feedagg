@@ -161,7 +161,9 @@
         },
         "status": {
             "active": "Ativo",
-            "inactive": "Inativo"
+            "inactive": "Inativo",
+            "activate": "Ativar feed",
+            "deactivate": "Desativar feed"
         },
         "messages": {
             "subscribed": "Feed inscrito com sucesso!",
@@ -172,6 +174,7 @@
             "deleteError": "Falha ao cancelar inscrição"
         },
         "confirmDelete": "Tem certeza de que deseja cancelar a inscrição de",
+        "delete": "Excluir feed",
         "empty": {
             "title": "Nenhum feed ainda",
             "description": "Adicione seu primeiro feed RSS ou canal do YouTube para começar."
