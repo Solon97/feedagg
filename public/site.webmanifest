@@ -3,7 +3,7 @@
     "short_name": "FeedAgg",
     "start_url": ".",
     "display": "standalone",
-    "theme_color": "#009286",
+    "theme_color": "#1d283a",
     "background_color": "#1d283a",
     "icons": [
         {
