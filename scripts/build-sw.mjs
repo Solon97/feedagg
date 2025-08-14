@@ -23,12 +23,8 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
     skipWaiting: true,
     clientsClaim: true,
     cleanupOutdatedCaches: true,
-    navigateFallback: runtimeBase + "/offline",
-    navigateFallbackDenylist: [
-      /\\.\w+$/, // assets
-      new RegExp("^" + runtimeBase + "/_next"),
-      new RegExp("^" + runtimeBase + "/api"),
-    ],
+    // Important: don't use navigateFallback here. We'll handle offline fallback
+    // with workbox.routing.setCatchHandler so NetworkFirst can run first.
     runtimeCaching: [
       // Next.js static assets
       {
@@ -82,15 +78,17 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
       },
       // API GETs only (avoid caching authenticated/private responses)
       {
-        urlPattern: ({ url, request }) => {
-          const isApi = url.pathname.startsWith(runtimeBase + "/api/");
-          if (!isApi) return false;
-          if (request.method !== "GET") return false;
-          const hasAuth =
-            request.headers.get("authorization") ||
-            request.headers.get("cookie");
-          return !hasAuth;
-        },
+        urlPattern: new Function(
+          "{ url, request }",
+          "const BASE = " +
+            JSON.stringify(runtimeBase) +
+            ";\n" +
+            'const isApi = url.pathname.startsWith(BASE + "/api/");\n' +
+            "if (!isApi) return false;\n" +
+            'if (request.method !== "GET") return false;\n' +
+            'const hasAuth = request.headers.get("authorization") || request.headers.get("cookie");\n' +
+            "return !hasAuth;\n"
+        ),
         handler: "StaleWhileRevalidate",
         options: {
           cacheName: "api-v1",
@@ -118,7 +116,29 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
     `Generated ${swDest} with ${count} precached entries, total size ${size}.`
   );
 
+  // Inject a Workbox catch handler to serve the offline page only on errors
+  // by inserting it inside the AMD define closure (before the closing '});')
+  let swCode = fs.readFileSync(swDest, "utf-8");
+  const defineHeader = /define\(\["\.\/workbox-[^"]+"\],\s*function\((\w+)\)\{/;
+  const headerMatch = swCode.match(defineHeader);
+  if (headerMatch) {
+    const wbVar = headerMatch[1];
+    const injection = `\n${wbVar}.setCatchHandler(async ({ event }) => {\n  if (event.request.mode === 'navigate') {\n    const BASE = ${JSON.stringify(
+      runtimeBase
+    )};\n    const url = new URL(event.request.url);\n    const path = url.pathname;\n    const isAsset = /\\\.\\w+$/.test(path);\n    if (path.startsWith(BASE + '/_next') || path.startsWith(BASE + '/api') || isAsset) {\n      return Response.error();\n    }\n    const cached = await ${wbVar}.matchPrecache(BASE + '/offline');\n    if (cached) return cached;\n  }\n  return Response.error();\n});\n`;
+    const mapMarker = "\n//# sourceMappingURL";
+    const mapIdx = swCode.indexOf(mapMarker);
+    if (mapIdx !== -1) {
+      const closeIdx = swCode.lastIndexOf("});", mapIdx);
+      if (closeIdx !== -1) {
+        swCode =
+          swCode.slice(0, closeIdx) + "\n" + injection + swCode.slice(closeIdx);
+        fs.writeFileSync(swDest, swCode, "utf-8");
+      }
+    }
+  }
+
   // Append activation cleanup for old caches by prefix
-  const cleanupCode = `\nself.addEventListener('activate', (event) => {\n  const keep = new Set(['workbox-precache-v2', 'static-v1', 'img-v1', 'pages-v1', 'api-v1', 'feeds-v1']);\n  event.waitUntil((async () => {\n    const names = await caches.keys();\n    await Promise.all(names.map((n) => { if (!Array.from(keep).some(k => n.includes(k))) { return caches.delete(n); } }));\n  })());\n});\n`;
+  const cleanupCode = `\nself.addEventListener('activate', (event) => {\n  const keep = new Set(['static-v1', 'img-v1', 'pages-v1', 'api-v1', 'feeds-v1']);\n  event.waitUntil((async () => {\n    const names = await caches.keys();\n    await Promise.all(names.map((n) => {\n      const keepIt = n.startsWith('workbox-precache') || Array.from(keep).some(k => n.includes(k));\n      if (!keepIt) { return caches.delete(n); }\n    }));\n  })());\n});\n`;
   fs.appendFileSync(swDest, cleanupCode);
 })();
