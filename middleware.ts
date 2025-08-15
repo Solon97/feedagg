@@ -9,9 +9,11 @@ export function middleware(request: NextRequest) {
   const hasTokensInQuery =
     url.searchParams.has("access_token") ||
     url.searchParams.has("refresh_token") ||
-    url.searchParams.has("id_token");
+    url.searchParams.has("id_token") ||
+    url.searchParams.has("code");
 
   // If tokens are found in URL, redirect to auth callback to handle them securely
+  // But only if we're not already on the callback page
   if (hasTokensInQuery && !url.pathname.startsWith("/auth/callback")) {
     // Preserve the tokens in the redirect to callback page
     const callbackUrl = new URL("/auth/callback", request.url);

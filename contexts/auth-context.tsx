@@ -58,8 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      logger.debug("Auth state changed", { event, userId: session?.user?.id });
-
       // Clean URL after auth state changes to remove any tokens
       if (
         typeof window !== "undefined" &&

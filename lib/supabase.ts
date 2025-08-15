@@ -61,6 +61,7 @@ export const supabase = (() => {
         autoRefreshToken: true,
         detectSessionInUrl: true,
         flowType: "pkce", // More secure flow
+        debug: process.env.NODE_ENV === "development",
       },
     });
   }
