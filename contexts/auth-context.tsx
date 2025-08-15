@@ -23,9 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Clean any tokens from URL on mount (fallback security measure)
+    // Clean any tokens from URL on mount (but not on callback page)
     if (
       typeof window !== "undefined" &&
+      !window.location.pathname.includes("/auth/callback") &&
       urlContainsTokens(window.location.href)
     ) {
       cleanCurrentUrl();
@@ -58,9 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Clean URL after auth state changes to remove any tokens
+      // Clean URL after auth state changes to remove any tokens (but not on callback page)
       if (
         typeof window !== "undefined" &&
+        !window.location.pathname.includes("/auth/callback") &&
         urlContainsTokens(window.location.href)
       ) {
         cleanCurrentUrl();

@@ -5,31 +5,62 @@ import { supabase } from "@/lib/supabase";
 
 export default function AuthCallbackPage() {
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        const storedChannelId = localStorage.getItem("yt_subscribe_channel_id");
-        if (storedChannelId) {
-          localStorage.removeItem("yt_subscribe_channel_id");
-          window.location.href = `/item/video/${storedChannelId}`;
-        } else {
-          window.location.href = "/";
+    const handleAuthCallback = async () => {
+      try {
+        // Get the current session to check if user is already authenticated
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session) {
+          // User is authenticated, redirect appropriately
+          const storedChannelId = localStorage.getItem(
+            "yt_subscribe_channel_id"
+          );
+          if (storedChannelId) {
+            localStorage.removeItem("yt_subscribe_channel_id");
+            window.location.href = `/item/video/${storedChannelId}`;
+          } else {
+            window.location.href = "/";
+          }
+          return;
         }
-      } else if (
-        event === "SIGNED_OUT" ||
-        (event === "TOKEN_REFRESHED" && !session)
-      ) {
+
+        // If no session, wait a bit and try again (OAuth might still be processing)
+        setTimeout(async () => {
+          const {
+            data: { session: retrySession },
+          } = await supabase.auth.getSession();
+
+          if (retrySession) {
+            const storedChannelId = localStorage.getItem(
+              "yt_subscribe_channel_id"
+            );
+            if (storedChannelId) {
+              localStorage.removeItem("yt_subscribe_channel_id");
+              window.location.href = `/item/video/${storedChannelId}`;
+            } else {
+              window.location.href = "/";
+            }
+          } else {
+            // Still no session, redirect to login
+            window.location.href = "/auth/login";
+          }
+        }, 2000);
+      } catch (error) {
+        console.error("Auth callback error:", error);
         window.location.href = "/auth/login";
       }
-    });
+    };
 
+    handleAuthCallback();
+
+    // Fallback timeout
     const timeout = setTimeout(() => {
       window.location.href = "/auth/login";
     }, 10000);
 
     return () => {
-      subscription.unsubscribe();
       clearTimeout(timeout);
     };
   }, []);
