@@ -66,14 +66,24 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
           expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
         },
       },
-      // HTML navigations (NetworkFirst with 3s timeout)
+      // HTML navigations (NetworkFirst with 3s timeout) - exclude auth pages from cache
       {
-        urlPattern: ({ request }) => request.mode === "navigate",
+        urlPattern: new Function(
+          "{ url, request }",
+          "const BASE = " +
+            JSON.stringify(runtimeBase) +
+            ";\n" +
+            "if (request.mode !== 'navigate') return false;\n" +
+            "// Don't cache auth routes to avoid stale redirects after login\n" +
+            "if (url.pathname.startsWith(BASE + '/auth')) return false;\n" +
+            "return true;\n"
+        ),
         handler: "NetworkFirst",
         options: {
-          cacheName: "pages-v1",
+          cacheName: "pages-v2",
           networkTimeoutSeconds: 3,
           expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
+          cacheableResponse: { statuses: [200] },
         },
       },
       // API GETs only (avoid caching authenticated/private responses)
@@ -139,6 +149,6 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
   }
 
   // Append activation cleanup for old caches by prefix
-  const cleanupCode = `\nself.addEventListener('activate', (event) => {\n  const keep = new Set(['static-v1', 'img-v1', 'pages-v1', 'api-v1', 'feeds-v1']);\n  event.waitUntil((async () => {\n    const names = await caches.keys();\n    await Promise.all(names.map((n) => {\n      const keepIt = n.startsWith('workbox-precache') || Array.from(keep).some(k => n.includes(k));\n      if (!keepIt) { return caches.delete(n); }\n    }));\n  })());\n});\n`;
+  const cleanupCode = `\nself.addEventListener('activate', (event) => {\n  const keep = new Set(['static-v1', 'img-v1', 'pages-v2', 'api-v1', 'feeds-v1']);\n  event.waitUntil((async () => {\n    const names = await caches.keys();\n    await Promise.all(names.map((n) => {\n      const keepIt = n.startsWith('workbox-precache') || Array.from(keep).some(k => n.includes(k));\n      if (!keepIt) { return caches.delete(n); }\n    }));\n  })());\n});\n`;
   fs.appendFileSync(swDest, cleanupCode);
 })();
