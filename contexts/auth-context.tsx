@@ -30,7 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       urlContainsTokens(window.location.href)
     ) {
       cleanCurrentUrl();
-      logger.info("Cleaned tokens from URL for security");
     }
 
     // Get initial session
@@ -46,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false);
         }
       } catch (error) {
-        logger.error("Failed to get initial session", { error });
+        // ...existing code...
         if (mounted) {
           setLoading(false);
         }
@@ -66,7 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         urlContainsTokens(window.location.href)
       ) {
         cleanCurrentUrl();
-        logger.info("Cleaned tokens from URL after auth state change");
       }
 
       if (mounted) {
@@ -84,10 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithMicrosoft = async () => {
     try {
-      logger.info("Microsoft OAuth attempt");
       const redirectUrl = getRedirectUrl();
-      logger.debug("OAuth redirect URL", { redirectUrl });
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "azure",
         options: {
@@ -95,16 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           redirectTo: redirectUrl,
         },
       });
-
-      if (error) {
-        logger.warn("Microsoft OAuth failed", { error: error.message });
-      } else {
-        logger.info("Microsoft OAuth initiated");
-      }
-
       return { error };
     } catch (error: any) {
-      logger.error("Microsoft OAuth error", { error: error.message });
       return { error };
     }
   };
@@ -131,77 +118,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      logger.info("Google OAuth attempt");
       const redirectUrl = getRedirectUrl();
-      logger.debug("OAuth redirect URL", { redirectUrl });
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: redirectUrl,
         },
       });
-
-      if (error) {
-        logger.warn("Google OAuth failed", { error: error.message });
-      } else {
-        logger.info("Google OAuth initiated");
-      }
-
       return { error };
     } catch (error: any) {
-      logger.error("Google OAuth error", { error: error.message });
       return { error };
     }
   };
 
   const signInWithPassword = async (email: string, password: string) => {
     try {
-      logger.info("Password sign-in attempt", { email });
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      if (error) {
-        logger.warn("Password sign-in failed", { email, error: error.message });
-      } else {
-        logger.info("Password sign-in successful", {
-          email,
-          userId: data.user?.id,
-        });
-        // Immediately reflect authenticated state in context
+      if (!error) {
         setSession(data.session as Session);
         setUser((data.user as AuthUser) || null);
       }
-
       return { error };
     } catch (error: any) {
-      logger.error("Password sign-in error", { email, error: error.message });
       return { error };
     }
   };
 
   const signOut = async () => {
     try {
-      logger.info("User logout attempt", { userId: user?.id });
       const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        logger.warn("User logout failed", {
-          userId: user?.id,
-          error: error.message,
-        });
-      } else {
-        logger.info("User logout successful", { userId: user?.id });
-      }
-
       return { error };
     } catch (error: any) {
-      logger.error("User logout error", {
-        userId: user?.id,
-        error: error.message,
-      });
       return { error };
     }
   };
