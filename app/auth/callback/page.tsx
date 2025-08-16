@@ -9,75 +9,34 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Handle OAuth callback - Supabase should automatically process URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get("code");
-        const error = urlParams.get("error");
+        // Get the current session to check if user is already authenticated
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-        // If there's an error in the callback, redirect to login
-        if (error) {
-          console.error("OAuth error:", error);
-          window.location.href = "/auth/login";
+        if (session) {
+          setIsRedirecting(true);
+          // User is authenticated, redirect appropriately
+          const storedChannelId = localStorage.getItem(
+            "yt_subscribe_channel_id"
+          );
+          if (storedChannelId) {
+            localStorage.removeItem("yt_subscribe_channel_id");
+            window.location.href = `/item/video/${storedChannelId}`;
+          } else {
+            window.location.href = "/";
+          }
           return;
         }
 
-        // If there's a code, this is an OAuth callback - wait for Supabase to process it
-        if (code) {
-          // Try to exchange code for session (newer Supabase versions)
-          try {
-            const { data, error } = await supabase.auth.exchangeCodeForSession(
-              code
-            );
-            if (error) throw error;
-
-            if (data?.session?.user) {
-              // Session established, wait a bit more for context to update
-              await new Promise((resolve) => setTimeout(resolve, 500));
-
-              setIsRedirecting(true);
-              const storedChannelId = localStorage.getItem(
-                "yt_subscribe_channel_id"
-              );
-              if (storedChannelId) {
-                localStorage.removeItem("yt_subscribe_channel_id");
-                window.location.href = `/item/video/${storedChannelId}`;
-              } else {
-                window.location.href = "/";
-              }
-              return;
-            }
-          } catch (exchangeError) {
-            // Fallback for older Supabase versions - the callback should be processed automatically
-            console.log(
-              "Code exchange not available, waiting for automatic processing..."
-            );
-          }
-        }
-
-        // Wait for Supabase to automatically process the authentication
-        let attempts = 0;
-        const maxAttempts = 10;
-
-        while (attempts < maxAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
+        // If no session, wait a bit and try again (OAuth might still be processing)
+        setTimeout(async () => {
           const {
-            data: { session },
-            error: sessionError,
+            data: { session: retrySession },
           } = await supabase.auth.getSession();
 
-          if (sessionError) {
-            console.error("Session error:", sessionError);
-            break;
-          }
-
-          // If we have a session with a user, proceed with redirect
-          if (session?.user) {
+          if (retrySession) {
             setIsRedirecting(true);
-
-            // Extra wait to ensure the auth context is updated
-            await new Promise((resolve) => setTimeout(resolve, 300));
-
             const storedChannelId = localStorage.getItem(
               "yt_subscribe_channel_id"
             );
@@ -87,17 +46,11 @@ export default function AuthCallbackPage() {
             } else {
               window.location.href = "/";
             }
-            return;
+          } else {
+            // Still no session, redirect to login
+            window.location.href = "/auth/login";
           }
-
-          attempts++;
-        }
-
-        // If we still don't have a session after all attempts, redirect to login
-        console.warn(
-          "No session found after OAuth callback, redirecting to login"
-        );
-        window.location.href = "/auth/login";
+        }, 2000);
       } catch (error) {
         console.error("Auth callback error:", error);
         window.location.href = "/auth/login";
@@ -106,13 +59,10 @@ export default function AuthCallbackPage() {
 
     handleAuthCallback();
 
-    // Fallback timeout (increased to give more time for OAuth processing)
+    // Fallback timeout
     const timeout = setTimeout(() => {
-      if (!isRedirecting) {
-        console.warn("Auth callback timeout, redirecting to login");
-        window.location.href = "/auth/login";
-      }
-    }, 20000);
+      window.location.href = "/auth/login";
+    }, 10000);
 
     return () => {
       clearTimeout(timeout);
