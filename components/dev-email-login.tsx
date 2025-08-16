@@ -4,24 +4,40 @@ import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useRouter, usePathname } from "next/navigation";
 
 export function DevEmailLogin() {
-  const { signInWithPassword } = useAuth();
+  const { signInWithPassword, user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     const { error } = await signInWithPassword(email, password);
-    if (error) setError(error.message || "Login failed");
-    setLoading(false);
+    if (error) {
+      setError(error.message || "Login failed");
+      setLoading(false);
+    } else {
+      // Redirecionar para o dashboard após login bem-sucedido
+      router.push("/");
+    }
   };
 
+  // Não exibir em produção
   if (process.env.NODE_ENV === "production") return null;
+
+  // Não exibir se o usuário já está autenticado
+  if (user && !authLoading) return null;
+
+  // Só exibir em páginas de autenticação
+  const isAuthPage = pathname?.startsWith("/auth/");
+  if (!isAuthPage) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-[320px] rounded-xl border border-slate-700/50 bg-slate-900/90 backdrop-blur p-4 text-slate-200 shadow-lg">
