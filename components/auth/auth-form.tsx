@@ -120,32 +120,6 @@ export function AuthForm({ mode }: AuthFormProps) {
               {googleLoading ? t("auth.connecting") : "Google"}
             </span>
           </Button>
-
-          {/* Microsoft Button */}
-          {/* <Button
-            type="button"
-            variant="outline"
-            disabled={microsoftLoading || googleLoading}
-            onClick={handleMicrosoftSignIn}
-            className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 hover:text-gray-700 text-gray-700 font-semibold py-3 rounded-lg transition-colors flex items-center justify-center"
-          >
-            <div className="flex items-center justify-center w-5 h-5 sm:mr-2">
-              <svg
-                className="w-5 h-5"
-                viewBox="0 0 23 23"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path fill="#f25022" d="M1 1h10v10H1z" />
-                <path fill="#00a4ef" d="M12 1h10v10H12z" />
-                <path fill="#7fba00" d="M1 12h10v10H1z" />
-                <path fill="#ffb900" d="M12 12h10v10H12z" />
-              </svg>
-            </div>
-            <span className="hidden sm:inline">
-              {microsoftLoading ? t("auth.connecting") : "Microsoft"}
-            </span>
-          </Button> */}
         </div>
       </div>
     </div>
