@@ -25,7 +25,7 @@ const buildId = Date.now().toString();
     clientsClaim: true,
     cleanupOutdatedCaches: true,
     // Important: don't use navigateFallback here. We'll handle offline fallback
-    // with workbox.routing.setCatchHandler so NetworkFirst can run first.
+    // through the NetworkFirst strategy for navigation requests.
     runtimeCaching: [
       // Next.js static assets
       {
@@ -117,27 +117,8 @@ const buildId = Date.now().toString();
     `Generated ${swDest} with ${count} precached entries, total size ${size}.`
   );
 
-  // Inject a Workbox catch handler to serve the offline page only on errors
-  // by inserting it inside the AMD define closure (before the closing '});')
-  let swCode = fs.readFileSync(swDest, "utf-8");
-  const defineHeader = /define\(\["\.\/workbox-[^"]+"\],\s*function\((\w+)\)\{/;
-  const headerMatch = swCode.match(defineHeader);
-  if (headerMatch) {
-    const wbVar = headerMatch[1];
-    const injection = `\n${wbVar}.setCatchHandler(async ({ event }) => {\n  if (event.request.mode === 'navigate') {\n    const BASE = ${JSON.stringify(
-      runtimeBase
-    )};\n    const url = new URL(event.request.url);\n    const path = url.pathname;\n    const isAsset = /\\\.\\w+$/.test(path);\n    if (path.startsWith(BASE + '/_next') || path.startsWith(BASE + '/api') || isAsset) {\n      return Response.error();\n    }\n    const cached = await ${wbVar}.matchPrecache(BASE + '/offline');\n    if (cached) return cached;\n  }\n  return Response.error();\n});\n`;
-    const mapMarker = "\n//# sourceMappingURL";
-    const mapIdx = swCode.indexOf(mapMarker);
-    if (mapIdx !== -1) {
-      const closeIdx = swCode.lastIndexOf("});", mapIdx);
-      if (closeIdx !== -1) {
-        swCode =
-          swCode.slice(0, closeIdx) + "\n" + injection + swCode.slice(closeIdx);
-        fs.writeFileSync(swDest, swCode, "utf-8");
-      }
-    }
-  }
+  // For Workbox 7.2.0+, offline fallback is handled automatically by the NetworkFirst strategy
+  // No need to inject setCatchHandler as it's no longer available in this version
 
   // Append activation cleanup for old caches by prefix
   const cleanupCode = `\nself.addEventListener('activate', (event) => {\n  const keep = new Set(['static-v1', 'img-v1', 'pages-v1', 'api-v1', 'feeds-v1']);\n  event.waitUntil((async () => {\n    const names = await caches.keys();\n    await Promise.all(names.map((n) => {\n      const keepIt = n.startsWith('workbox-precache') || Array.from(keep).some(k => n.includes(k));\n      if (!keepIt) { return caches.delete(n); }\n    }));\n  })());\n});\n`;

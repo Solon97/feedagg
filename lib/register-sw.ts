@@ -12,28 +12,25 @@ async function clearAllCaches() {
   try {
     if ("caches" in window) {
       const cacheNames = await caches.keys();
-      console.log("🧹 Clearing caches:", cacheNames);
       await Promise.all(
         cacheNames.map(async (cacheName) => {
           await caches.delete(cacheName);
-          console.log(`🗑️ Deleted cache: ${cacheName}`);
         })
       );
     }
   } catch (error) {
-    console.error("Failed to clear caches:", error);
+    // Silent error handling
   }
 }
 
 // Force hard refresh with cache bypass
 function forceHardRefresh() {
-  console.log("🔄 Force hard refresh with cache bypass");
   // Clear local/session storage if needed
   try {
     localStorage.clear();
     sessionStorage.clear();
   } catch (error) {
-    console.warn("Could not clear storage:", error);
+    // Silent error handling
   }
 
   // Multiple reload strategies for maximum effectiveness
@@ -64,22 +61,18 @@ export function registerSW(onUpdate?: (refresh: () => void) => void) {
 
   // Enhanced refresh function with cache clearing
   const createRefreshFunction = () => async () => {
-    console.log("🚀 Starting SW update with cache cleanup...");
-
     try {
       // Step 1: Clear all caches first
       await clearAllCaches();
 
       // Step 2: Message skip waiting to new SW
       wb.addEventListener("controlling", () => {
-        console.log("✅ New SW is controlling, doing hard refresh...");
         forceHardRefresh();
       });
 
       // Step 3: Activate new service worker
       wb.messageSkipWaiting();
     } catch (error) {
-      console.error("SW update failed:", error);
       // Fallback: force refresh anyway
       setTimeout(forceHardRefresh, 1000);
     }
@@ -87,39 +80,33 @@ export function registerSW(onUpdate?: (refresh: () => void) => void) {
 
   // Handle waiting SW (most common case)
   wb.addEventListener("waiting", () => {
-    console.log("🔄 SW waiting detected");
     onUpdate?.(createRefreshFunction());
   });
 
   // Handle external waiting SW (corrected event name)
   wb.addEventListener("waiting", () => {
-    console.log("🔄 External SW waiting detected");
     onUpdate?.(createRefreshFunction());
   });
 
   // Additional: Handle SW updates that might not trigger waiting
   wb.addEventListener("installed", (event) => {
     if (!event.isUpdate) return;
-    console.log("🆕 SW installed (update detected)");
     onUpdate?.(createRefreshFunction());
   });
 
   // Register and start periodic checks
   wb.register().then(() => {
-    console.log("✅ SW registered successfully");
-
     // Periodic check for updates (every 30 seconds)
     setInterval(async () => {
       try {
         if ("serviceWorker" in navigator) {
           const registration = await navigator.serviceWorker.getRegistration();
           if (registration) {
-            console.log("🔍 Checking for SW updates...");
             await registration.update();
           }
         }
       } catch (error) {
-        console.warn("SW update check failed:", error);
+        // Silent error handling
       }
     }, 30000);
   });

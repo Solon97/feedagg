@@ -12,13 +12,11 @@ export function SwUpdater() {
   const clearCacheManually = async () => {
     try {
       setIsUpdating(true);
-      console.log("🧹 Manual cache clear initiated");
 
       // Clear all caches
       if ("caches" in window) {
         const cacheNames = await caches.keys();
         await Promise.all(cacheNames.map((name) => caches.delete(name)));
-        console.log("✅ All caches cleared");
       }
 
       // Clear storage
@@ -39,7 +37,6 @@ export function SwUpdater() {
         window.location.replace(url.toString());
       }, 1000);
     } catch (error) {
-      console.error("Manual cache clear failed:", error);
       toast({
         title: "Erro",
         description: "Falha ao limpar cache. Tente recarregar manualmente.",
@@ -51,18 +48,14 @@ export function SwUpdater() {
 
   useEffect(() => {
     registerSW((refresh) => {
-      console.log("🔄 SW update available, showing toast");
-
       const t = toast({
         title: "🚀 Atualização Disponível",
-        description:
-          "Nova versão do app detectada. Esta atualização pode resolver problemas de cache.",
+        description: "Nova versão do app detectada.",
         duration: 0, // Don't auto-dismiss
         action: (
           <div className="flex gap-2">
             <Button
               onClick={() => {
-                console.log("User clicked update button");
                 t.dismiss();
                 setIsUpdating(true);
                 refresh();
@@ -75,7 +68,6 @@ export function SwUpdater() {
             </Button>
             <Button
               onClick={() => {
-                console.log("User dismissed update");
                 t.dismiss();
               }}
               variant="outline"
@@ -93,8 +85,6 @@ export function SwUpdater() {
       setTimeout(() => {
         if (performance.navigation.type === 1) {
           // reload
-          console.log("🔧 Page was reloaded, offering manual cache clear");
-
           toast({
             title: "🔧 Problemas Persistentes?",
             description:
