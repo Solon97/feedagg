@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Navbar } from "@/components/navbar";
 import { ProtectedRoute } from "@/components/protected-route";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import { apiService } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { parseTextWithLinks } from "@/lib/text-utils";
 import type { FeedItem } from "@/types/api";
 import {
   ArrowLeft,
@@ -650,11 +652,23 @@ export default function ItemPage({ params }: ItemPageProps) {
                     <div className="prose prose-invert prose-lg max-w-none">
                       <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
                         {item.content && item.content.trim() ? (
-                          showFullDescription ? (
-                            item.content
-                          ) : (
-                            truncateDescription(item.content)
-                          )
+                          <div>
+                            {parseTextWithLinks(
+                              showFullDescription
+                                ? item.content
+                                : truncateDescription(item.content),
+                              60
+                            ).map((part, index) =>
+                              typeof part === "string"
+                                ? part
+                                : React.cloneElement(
+                                    part as React.ReactElement,
+                                    {
+                                      key: `link-${index}`,
+                                    }
+                                  )
+                            )}
+                          </div>
                         ) : (
                           <span className="text-gray-500 italic">
                             {t("feedItems.noDescription")}
