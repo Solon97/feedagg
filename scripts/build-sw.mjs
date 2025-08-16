@@ -26,18 +26,7 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
     // Important: don't use navigateFallback here. We'll handle offline fallback
     // with workbox.routing.setCatchHandler so NetworkFirst can run first.
     runtimeCaching: [
-      // Next.js static assets - prioritize CSS
-      {
-        urlPattern: new RegExp("^" + runtimeBase + "/_next/static/css/"),
-        handler: "CacheFirst",
-        options: {
-          cacheName: "css-v1",
-          expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 365 },
-          matchOptions: { ignoreVary: true },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
-      // Other Next.js static assets
+      // Next.js static assets
       {
         urlPattern: new RegExp("^" + runtimeBase + "/_next/static/"),
         handler: "CacheFirst",

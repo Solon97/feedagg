@@ -1,14 +1,14 @@
-import { DevEmailLogin } from "@/components/dev-email-login";
-import { DevLogger } from "@/components/dev-logger";
-import { SwUpdater } from "@/components/sw-updater";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/auth-context";
-import { SelectedItemProvider } from "@/contexts/selected-item-context";
+import type React from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import type React from "react";
 import "./globals.css";
+import { AuthProvider } from "@/contexts/auth-context";
+import { SelectedItemProvider } from "@/contexts/selected-item-context";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { DevLogger } from "@/components/dev-logger";
+import { DevEmailLogin } from "@/components/dev-email-login";
+import { SwUpdater } from "@/components/sw-updater";
 
 const inter = Inter({ subsets: ["latin"] });
 
