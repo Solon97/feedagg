@@ -50,17 +50,13 @@ export function SwUpdater() {
     registerSW((refresh) => {
       const t = toast({
         title: "🚀 Atualização Disponível",
-        description: "Nova versão do app detectada.",
+        description: "Deseja atualizar ?",
         duration: 0, // Don't auto-dismiss
         action: (
           <div className="flex gap-2">
             <Button
-              onClick={() => {
-                t.dismiss();
-                setIsUpdating(true);
-                refresh();
-              }}
-              variant="default"
+              onClick={clearCacheManually}
+              variant="secondary"
               size="sm"
               disabled={isUpdating}
             >
@@ -79,73 +75,6 @@ export function SwUpdater() {
         ),
       });
     });
-
-    // Show manual clear option if there are persistent issues
-    const showManualClearOption = () => {
-      setTimeout(() => {
-        if (performance.navigation.type === 1) {
-          // reload
-          toast({
-            title: "🔧 Problemas Persistentes?",
-            description:
-              "Se ainda há erros de carregamento, tente limpar o cache manualmente.",
-            duration: 10000,
-            action: (
-              <Button
-                onClick={clearCacheManually}
-                variant="secondary"
-                size="sm"
-                disabled={isUpdating}
-              >
-                {isUpdating ? "Limpando..." : "Limpar Cache"}
-              </Button>
-            ),
-          });
-        }
-      }, 3000);
-    };
-
-    // Check if page has errors (like missing CSS)
-    const checkForErrors = () => {
-      let errorCount = 0;
-
-      // Check for missing stylesheets
-      const links = document.querySelectorAll(
-        'link[rel="stylesheet"]'
-      ) as NodeListOf<HTMLLinkElement>;
-      links.forEach(async (link) => {
-        try {
-          const response = await fetch(link.href, { method: "HEAD" });
-          if (!response.ok) {
-            errorCount++;
-          }
-        } catch {
-          errorCount++;
-        }
-      });
-
-      if (errorCount > 0) {
-        setTimeout(() => {
-          toast({
-            title: "⚠️ Recursos Não Encontrados",
-            description: `${errorCount} arquivo(s) CSS não encontrado(s). Limpar cache pode resolver.`,
-            action: (
-              <Button
-                onClick={clearCacheManually}
-                variant="destructive"
-                size="sm"
-                disabled={isUpdating}
-              >
-                Limpar Cache Agora
-              </Button>
-            ),
-          });
-        }, 2000);
-      }
-    };
-
-    showManualClearOption();
-    checkForErrors();
   }, [toast, isUpdating]);
 
   return null;
