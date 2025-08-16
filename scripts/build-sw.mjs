@@ -10,6 +10,7 @@ const runtimeBase = process.env.NEXT_PUBLIC_BASE_PATH
   : "";
 
 const swDest = path.join(process.cwd(), "public", "sw.js");
+const buildId = Date.now().toString();
 
 (async () => {
   const { warnings, count, size, filePaths } = await generateSW({
@@ -17,8 +18,8 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
     globDirectory: "public",
     globPatterns: ["**/*.{js,css,html,svg,png,webp,ico,webmanifest}"],
     additionalManifestEntries: [
-      { url: runtimeBase + "/", revision: "1" },
-      { url: runtimeBase + "/offline", revision: "1" },
+      { url: runtimeBase + "/", revision: buildId },
+      { url: runtimeBase + "/offline", revision: buildId },
     ],
     skipWaiting: true,
     clientsClaim: true,
@@ -66,14 +67,14 @@ const swDest = path.join(process.cwd(), "public", "sw.js");
           expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
         },
       },
-      // HTML navigations (NetworkFirst with 3s timeout)
+      // HTML navigations (NetworkFirst with shorter cache time)
       {
         urlPattern: ({ request }) => request.mode === "navigate",
         handler: "NetworkFirst",
         options: {
           cacheName: "pages-v1",
-          networkTimeoutSeconds: 3,
-          expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
+          networkTimeoutSeconds: 2,
+          expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
         },
       },
       // API GETs only (avoid caching authenticated/private responses)
