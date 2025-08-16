@@ -122,7 +122,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           </Button>
 
           {/* Microsoft Button */}
-          <Button
+          {/* <Button
             type="button"
             variant="outline"
             disabled={microsoftLoading || googleLoading}
@@ -145,7 +145,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <span className="hidden sm:inline">
               {microsoftLoading ? t("auth.connecting") : "Microsoft"}
             </span>
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>
