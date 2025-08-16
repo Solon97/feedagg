@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,8 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTopics } from "@/hooks/use-topics";
-import { Check, Palette, Plus } from "lucide-react";
-import { useState } from "react";
+import { Check, Palette, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const TOPIC_COLORS = [
   "#8B5CF6", // violet-500
@@ -45,11 +46,17 @@ export function TopicSelector({
   onValueChange,
   required = false,
 }: TopicSelectorProps) {
-  const { topics, loading, createTopic } = useTopics();
+  const { topics, loading, createTopic, deleteTopic, fetchTopics } =
+    useTopics();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newTopicName, setNewTopicName] = useState("");
   const [selectedColor, setSelectedColor] = useState(TOPIC_COLORS[0]);
   const [isCreating, setIsCreating] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchTopics();
+  }, [fetchTopics]);
 
   const handleCreateTopic = async () => {
     if (!newTopicName.trim()) return;
@@ -62,6 +69,7 @@ export function TopicSelector({
       });
 
       if (result.success && result.topic) {
+        await fetchTopics();
         onValueChange(result.topic.id);
         setIsCreateDialogOpen(false);
         setNewTopicName("");
@@ -69,6 +77,40 @@ export function TopicSelector({
       }
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleDeleteTopic = async (topicId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (
+      !confirm("Deseja excluir este tópico? Esta ação não pode ser desfeita.")
+    ) {
+      return;
+    }
+
+    setDeleteError(null);
+
+    try {
+      const result = await deleteTopic(topicId);
+
+      if (result.success) {
+        // If the deleted topic was selected, clear the selection
+        if (value === topicId) {
+          onValueChange("");
+        }
+      } else {
+        setDeleteError(result.error || "Failed to delete topic");
+        // Clear error after 5 seconds
+        setTimeout(() => setDeleteError(null), 5000);
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete topic";
+      setDeleteError(errorMessage);
+      // Clear error after 5 seconds
+      setTimeout(() => setDeleteError(null), 5000);
     }
   };
 
@@ -101,21 +143,26 @@ export function TopicSelector({
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-600">
             {topics.map((topic) => (
-              <SelectItem
-                key={topic.id}
-                value={topic.id}
-                className="text-white"
-              >
-                <div className="flex items-center gap-2">
-                  {topic.color && (
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: topic.color }}
-                    />
-                  )}
-                  {topic.name}
-                </div>
-              </SelectItem>
+              <div key={topic.id} className="relative group">
+                <SelectItem value={topic.id} className="text-white pr-8">
+                  <div className="flex items-center gap-2">
+                    {topic.color && (
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: topic.color }}
+                      />
+                    )}
+                    {topic.name}
+                  </div>
+                </SelectItem>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteTopic(topic.id, e)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 flex items-center justify-center hover:bg-red-600/20 hover:text-red-400 rounded text-gray-400"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
             ))}
           </SelectContent>
         </Select>
@@ -205,6 +252,14 @@ export function TopicSelector({
           </DialogContent>
         </Dialog>
       </div>
+
+      {deleteError && (
+        <Alert className="border-red-600 bg-red-900/20">
+          <AlertDescription className="text-red-400">
+            {deleteError}
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

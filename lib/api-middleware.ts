@@ -197,6 +197,7 @@ export async function makeExternalApiCall(
 
 /**
  * Helper function to handle external API responses and throw appropriate errors
+ * Returns null for empty responses (like DELETE 204), otherwise tries to parse JSON
  * Use this instead of manually checking response.ok and throwing generic errors
  */
 export async function handleExternalApiResponse(
@@ -210,6 +211,13 @@ export async function handleExternalApiResponse(
       fallbackErrorMessage,
       originalUrl
     );
+  }
+
+  if (
+    response.status === 204 ||
+    response.headers.get("content-length") === "0"
+  ) {
+    return null;
   }
 
   return response.json();

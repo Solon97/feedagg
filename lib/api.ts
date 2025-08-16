@@ -24,7 +24,7 @@ class ApiService {
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<T> {
+  ): Promise<T | null> {
     const token = await this.getAuthToken();
 
     if (!token) {
@@ -46,6 +46,10 @@ class ApiService {
       throw new Error(
         errorData.error || `HTTP ${response.status}: ${response.statusText}`
       );
+    }
+
+    if (response.status === 204) {
+      return null;
     }
 
     return response.json();
@@ -108,14 +112,27 @@ class ApiService {
   }
 
   // Topics
-  async getTopics() {
-    return this.makeRequest<any>("/topics");
+  async getTopics(hasActiveFeeds: boolean = false) {
+    const endpoint = `/topics`;
+    if (!hasActiveFeeds) {
+      return this.makeRequest<any>(endpoint);
+    }
+    const searchParams = new URLSearchParams();
+    searchParams.set("has_active_feeds", String(hasActiveFeeds));
+    const query = searchParams.toString();
+    return this.makeRequest<any>(`${endpoint}?${query}`);
   }
 
   async createTopic(data: { name: string; color?: string }) {
     return this.makeRequest<any>("/topics", {
       method: "POST",
       body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTopic(topicId: string) {
+    return this.makeRequest<any>(`/topics/${topicId}`, {
+      method: "DELETE",
     });
   }
 

@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Search, Filter, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ interface FeedFiltersProps {
   isFilterLoading?: boolean;
 }
 
-export function FeedFiltersComponent({
+export function DashboardFilter({
   filters,
   onFiltersChange,
   onClearFilters,
@@ -47,8 +47,12 @@ export function FeedFiltersComponent({
 }: FeedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { topics, loading: topicsLoading } = useTopics();
+  const { topics, loading: topicsLoading, fetchTopics } = useTopics();
   const { t } = useLocalizedTranslations();
+
+  useEffect(() => {
+    fetchTopics(true);
+  }, [fetchTopics]);
 
   // Handler com debounce para o campo de título
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

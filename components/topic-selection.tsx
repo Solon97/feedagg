@@ -7,6 +7,7 @@ import type { FeedFilters } from "@/hooks/use-feeds";
 import type { UserFeedSubscription } from "@/types/api";
 import { AddFeedSuggestion } from "@/components/add-feed-suggestion";
 import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
+import { useEffect } from "react";
 
 interface TopicSelectionProps {
   onTopicSelect: (filters: FeedFilters) => void;
@@ -19,8 +20,12 @@ export function TopicSelection({
   onContinueWithoutFilter,
   feeds = [],
 }: TopicSelectionProps) {
-  const { topics, loading } = useTopics();
+  const { topics, loading, fetchTopics } = useTopics();
   const { t } = useLocalizedTranslations();
+
+  useEffect(() => {
+    fetchTopics(true);
+  }, []);
 
   const handleTopicClick = (topicId: string) => {
     onTopicSelect({ topic_id: topicId });

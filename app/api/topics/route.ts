@@ -12,9 +12,19 @@ export async function GET(request: NextRequest) {
   return withApiLogging(request, async (context) => {
     const { requestId, token } = context;
 
+    // Extrai o parâmetro has_active_feeds da query
+    const { searchParams } = new URL(request.url);
+    const hasActiveFeeds = searchParams.get("has_active_feeds");
+
+    // Monta a URL para a API externa, incluindo o parâmetro se presente
+    let externalUrl = `${API_BASE_URL}/topics`;
+    if (hasActiveFeeds !== null) {
+      externalUrl += `?has_active_feeds=${encodeURIComponent(hasActiveFeeds)}`;
+    }
+
     // Make request to external API
     const response = await makeExternalApiCall(
-      `${API_BASE_URL}/topics`,
+      externalUrl,
       {
         method: "GET",
         headers: {
@@ -29,7 +39,7 @@ export async function GET(request: NextRequest) {
     return await handleExternalApiResponse(
       response,
       "Failed to fetch topics",
-      `${API_BASE_URL}/topics`
+      externalUrl
     );
   });
 }

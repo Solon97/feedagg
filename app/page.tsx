@@ -1,14 +1,14 @@
 "use client";
 
-import { RefreshCw, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DashboardFilter } from "@/components/dashboard-filter";
 import { FeedItemCard } from "@/components/feed-item-card";
-import { FeedFiltersComponent } from "@/components/feed-filters";
-import { TopicSelection } from "@/components/topic-selection";
 import { Navbar } from "@/components/navbar";
 import { ProtectedRoute } from "@/components/protected-route";
+import { TopicSelection } from "@/components/topic-selection";
+import { Button } from "@/components/ui/button";
 import { useFeedItems, useFeeds } from "@/hooks/use-feeds";
 import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
+import { Loader2, RefreshCw } from "lucide-react";
 
 export default function Dashboard() {
   const { t } = useLocalizedTranslations();
@@ -111,7 +111,7 @@ export default function Dashboard() {
           <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Filters Sidebar */}
             <div className="lg:col-span-1 mb-4 lg:mb-0">
-              <FeedFiltersComponent
+              <DashboardFilter
                 filters={filters}
                 onFiltersChange={applyFilters}
                 onClearFilters={clearFilters}
