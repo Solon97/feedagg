@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function AuthCallbackPage() {
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
@@ -13,6 +15,7 @@ export default function AuthCallbackPage() {
         } = await supabase.auth.getSession();
 
         if (session) {
+          setIsRedirecting(true);
           // User is authenticated, redirect appropriately
           const storedChannelId = localStorage.getItem(
             "yt_subscribe_channel_id"
@@ -33,6 +36,7 @@ export default function AuthCallbackPage() {
           } = await supabase.auth.getSession();
 
           if (retrySession) {
+            setIsRedirecting(true);
             const storedChannelId = localStorage.getItem(
               "yt_subscribe_channel_id"
             );
@@ -69,7 +73,9 @@ export default function AuthCallbackPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
-        <p className="text-slate-400">Processando login...</p>
+        <p className="text-slate-400">
+          {isRedirecting ? "Redirecionando..." : "Processando login..."}
+        </p>
       </div>
     </div>
   );

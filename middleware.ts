@@ -2,10 +2,32 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
+  const url = request.nextUrl;
+
+  // Skip middleware for static assets
+  if (
+    url.pathname.startsWith("/_next/static") ||
+    url.pathname.startsWith("/_next/image") ||
+    url.pathname.endsWith(".css") ||
+    url.pathname.endsWith(".js") ||
+    url.pathname.endsWith(".png") ||
+    url.pathname.endsWith(".jpg") ||
+    url.pathname.endsWith(".jpeg") ||
+    url.pathname.endsWith(".gif") ||
+    url.pathname.endsWith(".svg") ||
+    url.pathname.endsWith(".webp") ||
+    url.pathname.endsWith(".ico") ||
+    url.pathname.endsWith(".woff") ||
+    url.pathname.endsWith(".woff2") ||
+    url.pathname.endsWith(".ttf") ||
+    url.pathname.endsWith(".eot")
+  ) {
+    return NextResponse.next();
+  }
+
   const response = NextResponse.next();
 
   // Security: Check for tokens in URL and redirect to clean version
-  const url = request.nextUrl;
   const hasTokensInQuery =
     url.searchParams.has("access_token") ||
     url.searchParams.has("refresh_token") ||
@@ -64,7 +86,8 @@ export const config = {
      * - sw.js (service worker)
      * - manifest.webmanifest
      * - robots.txt, sitemap.xml
+     * - Static assets (.css, .js, .png, etc.)
      */
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml).*)$",
   ],
 };
