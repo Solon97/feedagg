@@ -22,12 +22,11 @@ import {
   Clock,
   ExternalLink,
   Play,
-  ThumbsUp,
   Youtube,
   User,
-  UserPlus,
   Rss,
 } from "lucide-react";
+import { YouTubeActionBox } from "@/components/youtube-action-box";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
@@ -232,6 +231,7 @@ export default function ItemPage({ params }: ItemPageProps) {
   const youtubeChannelId = isYouTube
     ? extractYouTubeChannelId(item.feed?.url) || null
     : null;
+  const isDev = process.env.NODE_ENV === "development";
 
   const startGoogleOAuthForYouTube = async (videoId: string) => {
     // Persist intent
@@ -573,53 +573,22 @@ export default function ItemPage({ params }: ItemPageProps) {
 
                 {/* YouTube Action Box */}
                 {(youtubeChannelId || youtubeVideoId) && (
-                  <div className="mt-2 p-4 bg-red-900/30 border border-red-700/50 rounded-lg shadow-md ring-1 ring-teal-500/10">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-700/50 text-red-200 flex items-center justify-center shadow-inner">
-                        <Youtube className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 text-center sm:text-left">
-                        <h4 className="text-red-100 font-semibold mb-1">
-                          Gostou do vídeo? Inscreva-se e curta no YouTube para
-                          apoiar o criador.
-                        </h4>
-                        <div className="mt-6 flex flex-col sm:flex-row justify-center sm:justify-start gap-2">
-                          {youtubeChannelId && (
-                            <Button
-                              className="flex-1 sm:flex-none bg-red-700/90 hover:bg-red-600 text-white border border-red-800/50 shadow-sm hover:shadow-red-900/30 transition-transform duration-150 ease-out hover:-translate-y-[1px] active:translate-y-0"
-                              disabled={subscribing || subscribed}
-                              onClick={async () => {
-                                await subscribeChannel(youtubeChannelId);
-                              }}
-                            >
-                              <UserPlus className="w-4 h-4 mr-2" />
-                              {subscribed
-                                ? "Inscrito"
-                                : subscribing
-                                ? "Inscrevendo..."
-                                : "Inscrever-se no canal"}
-                            </Button>
-                          )}
-                          {youtubeVideoId && (
-                            <Button
-                              className="flex-1 sm:flex-none bg-red-700/90 hover:bg-red-600 text-white border border-red-800/50 shadow-sm hover:shadow-red-900/30 transition-transform duration-150 ease-out hover:-translate-y-[1px] active:translate-y-0"
-                              disabled={liking || liked}
-                              onClick={async () => {
-                                await likeVideo(youtubeVideoId);
-                              }}
-                            >
-                              <ThumbsUp className="w-4 h-4 mr-2" />
-                              {liked
-                                ? "Curtido"
-                                : liking
-                                ? "Curtindo..."
-                                : "Curtir vídeo"}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <YouTubeActionBox
+                    isDev={isDev}
+                    videoId={youtubeVideoId}
+                    channelId={youtubeChannelId}
+                    subscribed={subscribed}
+                    subscribing={subscribing}
+                    liked={liked}
+                    liking={liking}
+                    onSubscribe={async () => {
+                      if (youtubeChannelId)
+                        await subscribeChannel(youtubeChannelId);
+                    }}
+                    onLike={async () => {
+                      if (youtubeVideoId) await likeVideo(youtubeVideoId);
+                    }}
+                  />
                 )}
               </div>
             )}
