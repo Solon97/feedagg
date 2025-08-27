@@ -95,7 +95,7 @@ export function useFeeds() {
 export interface FeedFilters {
   title?: string;
   feed_id?: string;
-  feed_type?: "rss" | "youtube";
+  feed_type?: "blog" | "youtube";
   topic_id?: string;
 }
 

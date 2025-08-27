@@ -32,7 +32,7 @@ export function FeedItemCard({ item }: FeedItemCardProps) {
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
       return "YouTube";
     }
-    return "RSS";
+    return "Blog";
   };
 
   // Detectar se é Shorts pela URL

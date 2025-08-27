@@ -15,7 +15,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "FeedAgg - O conteúdo que importa",
   description:
-    "Agregue e gerencie seus feeds RSS e canais do YouTube em um só lugar",
+    "Agregue e gerencie seus Blogs e canais do YouTube em um só lugar",
   generator: "v0.dev",
   manifest: "/manifest.webmanifest",
   icons: {

@@ -102,7 +102,7 @@
             "freeTrial": "Teste gratuito de 14 dias",
             "noCreditCard": "Não é necessário cartão de crédito",
             "featureDescriptions": {
-                "unlimitedSources": "Adicione quantos feeds RSS e canais do YouTube quiser",
+                "unlimitedSources": "Adicione quantos Blogs e canais do YouTube quiser",
                 "cleanFeed": "Mantenha o foco com uma interface minimalista",
                 "webAccess": "Sem necessidade de aplicativos ou instalações",
                 "futureUpdates": "Aproveite todos os novos recursos e melhorias"
@@ -123,9 +123,9 @@
     },
     "feeds": {
         "title": "Meus Feeds",
-        "description": "Gerencie seus feeds RSS e fontes de conteúdo",
+        "description": "Gerencie seus Blogs e fontes de conteúdo",
         "manageTitle": "Gerenciar Feeds",
-        "manageDescription": "Adicione e gerencie seus feeds RSS e canais do YouTube",
+        "manageDescription": "Adicione e gerencie seus Blogs e canais do YouTube",
         "addFeed": "Adicionar Feed",
         "addFeedUrl": "Adicionar URL do Feed",
         "feedUrl": "URL do Feed",
@@ -183,7 +183,7 @@
             "activateTitle": "Ative Seus Feeds",
             "addFirstTitle": "Adicione Seu Primeiro Feed",
             "activateDescription": "Você tem feeds mas eles estão inativos. Ative-os para começar a ver conteúdo.",
-            "addFirstDescription": "Para começar a ver conteúdo personalizado, você precisa se inscrever e ativar alguns feeds RSS ou canais do YouTube.",
+            "addFirstDescription": "Para começar a ver conteúdo personalizado, você precisa se inscrever e ativar alguns Blogs ou canais do YouTube.",
             "manageFeeds": "Gerenciar Feeds",
             "addFeed": "Adicionar Feed"
         },
@@ -192,7 +192,7 @@
     },
     "feedForm": {
         "title": "Adicionar Novo Feed",
-        "description": "Inscreva-se em feeds RSS ou canais do YouTube fornecendo sua URL e selecionando um tópico",
+        "description": "Inscreva-se em Blogs ou canais do YouTube fornecendo sua URL e selecionando um tópico",
         "fields": {
             "url": "URL do Feed",
             "urlPlaceholder": "https://exemplo.com ou https://www.youtube.com/@canal"
@@ -301,7 +301,7 @@
     },
     "app": {
         "title": "FeedAgg - O conteúdo que importa",
-        "description": "Agregue e gerencie seus feeds RSS e canais do YouTube em um só lugar",
+        "description": "Agregue e gerencie seus Blogs e canais do YouTube em um só lugar",
         "tagline": "O conteúdo que importa"
     }
 }

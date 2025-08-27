@@ -64,7 +64,7 @@ class ApiService {
       order?: "asc" | "desc";
       title?: string;
       feed_id?: string;
-      feed_type?: "rss" | "youtube";
+      feed_type?: "blog" | "youtube";
       topic_id?: string;
     } = {}
   ) {
@@ -75,7 +75,11 @@ class ApiService {
     if (params.order) searchParams.set("order", params.order);
     if (params.title) searchParams.set("title", params.title);
     if (params.feed_id) searchParams.set("feed_id", params.feed_id);
-    if (params.feed_type) searchParams.set("feed_type", params.feed_type);
+    if (params.feed_type)
+      searchParams.set(
+        "feed_type",
+        params.feed_type === "blog" ? "rss" : params.feed_type
+      );
     if (params.topic_id) searchParams.set("topic_id", params.topic_id);
 
     return this.makeRequest<any>(`/feeds/user-feed-items?${searchParams}`);

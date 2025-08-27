@@ -1,13 +1,13 @@
-# FeedAgg - Agregador de Feeds RSS/YouTube
+# FeedAgg - Agregador de Blogs/YouTube
 
-*Um PWA moderno para gerenciar seus feeds RSS e canais do YouTube*
+*Um PWA moderno para gerenciar seus Blogs e canais do YouTube*
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.2.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-green?style=for-the-badge)](https://web.dev/progressive-web-apps/)
 
 ## Overview
 
-FeedAgg é um Progressive Web App (PWA) que permite agregar e gerenciar seus feeds RSS e canais do YouTube em um só lugar. Construído com Next.js 15, App Router, TypeScript e Tailwind CSS.
+FeedAgg é um Progressive Web App (PWA) que permite agregar e gerenciar seus Blogs e canais do YouTube em um só lugar. Construído com Next.js 15, App Router, TypeScript e Tailwind CSS.
 
 ## 🚀 Recursos PWA
 

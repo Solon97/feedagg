@@ -1,7 +1,7 @@
 {
     "name": "FeedAgg",
     "short_name": "FeedAgg",
-    "description": "Agregue e gerencie seus feeds RSS e canais do YouTube em um só lugar",
+    "description": "Agregue e gerencie seus Blogs e canais do YouTube em um só lugar",
     "start_url": ".",
     "scope": ".",
     "display": "standalone",

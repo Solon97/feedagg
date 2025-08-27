@@ -37,6 +37,11 @@ interface FeedFiltersProps {
   isFilterLoading?: boolean;
 }
 
+function capitalizeFirstLetter(text?: string) {
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export function DashboardFilter({
   filters,
   onFiltersChange,
@@ -80,7 +85,7 @@ export function DashboardFilter({
   const handleTypeChange = (value: string) => {
     onFiltersChange({
       ...filters,
-      feed_type: value === "all" ? undefined : (value as "rss" | "youtube"),
+      feed_type: value === "all" ? undefined : (value as "blog" | "youtube"),
     });
   };
 
@@ -175,8 +180,8 @@ export function DashboardFilter({
             <SelectItem value="all" className="text-white hover:bg-slate-700">
               {t("filters.allTypes")}
             </SelectItem>
-            <SelectItem value="rss" className="text-white hover:bg-slate-700">
-              RSS
+            <SelectItem value="blog" className="text-white hover:bg-slate-700">
+              Blog
             </SelectItem>
             <SelectItem
               value="youtube"
@@ -262,7 +267,8 @@ export function DashboardFilter({
                 variant="secondary"
                 className="bg-purple-900/30 text-purple-400 border-purple-700/50"
               >
-                {t("filters.typeLabel")}: {filters.feed_type.toUpperCase()}
+                {t("filters.typeLabel")}:{" "}
+                {capitalizeFirstLetter(filters.feed_type)}
               </Badge>
             )}
             {filters.topic_id && (
@@ -271,8 +277,9 @@ export function DashboardFilter({
                 className="bg-orange-900/30 text-orange-400 border-orange-700/50"
               >
                 {t("filters.topicLabel")}:{" "}
-                {topics.find((t) => t.id === filters.topic_id)?.name ||
-                  "Unknown"}
+                {capitalizeFirstLetter(
+                  topics.find((t) => t.id === filters.topic_id)?.name
+                ) || "Unknown"}
               </Badge>
             )}
           </div>
