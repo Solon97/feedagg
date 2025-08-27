@@ -626,7 +626,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                               showFullDescription
                                 ? item.content
                                 : truncateDescription(item.content),
-                              60
+                              35
                             ).map((part, index) =>
                               typeof part === "string"
                                 ? part
