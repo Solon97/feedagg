@@ -136,11 +136,8 @@ export function PricingCard({
           )}
         </div>
         <div className="bg-slate-700 rounded-lg p-4 mb-6">
-          <div className="text-lg font-semibold text-slate-50 mb-2">
+          <div className="text-lg font-semibold text-slate-50">
             {t("subscription.pricing.freeTrial")}
-          </div>
-          <div className="text-slate-400">
-            {t("subscription.pricing.noCreditCard")}
           </div>
         </div>
         <ul className="space-y-3 mb-8 text-left">
