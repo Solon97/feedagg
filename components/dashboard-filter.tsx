@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Search, Filter, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/sheet";
 import type { FeedFilters } from "@/hooks/use-feeds";
 import type { UserFeedSubscription } from "@/types/api";
-import { useTopics } from "@/hooks/use-topics";
 import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 
 const DEBOUNCE_DELAY = 1000;
@@ -35,6 +34,7 @@ interface FeedFiltersProps {
   feeds: UserFeedSubscription[];
   feedsLoading: boolean;
   isFilterLoading?: boolean;
+  topics?: any[]; // Receive topics from parent to avoid duplicate calls
 }
 
 function capitalizeFirstLetter(text?: string) {
@@ -49,15 +49,11 @@ export function DashboardFilter({
   feeds,
   feedsLoading,
   isFilterLoading = false,
+  topics = [],
 }: FeedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { topics, loading: topicsLoading, fetchTopics } = useTopics();
   const { t } = useLocalizedTranslations();
-
-  useEffect(() => {
-    fetchTopics(true);
-  }, [fetchTopics]);
 
   // Handler com debounce para o campo de título
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,12 +197,12 @@ export function DashboardFilter({
         <Select
           value={filters.topic_id || "all"}
           onValueChange={handleTopicChange}
-          disabled={topicsLoading || isFilterLoading}
+          disabled={feedsLoading || isFilterLoading}
         >
           <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
             <SelectValue
               placeholder={
-                topicsLoading
+                feedsLoading
                   ? t("filters.loadingTopics")
                   : t("filters.allTopics")
               }

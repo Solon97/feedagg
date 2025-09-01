@@ -78,7 +78,7 @@ pnpm dev
 - **Arquivos estáticos** (`/_next/static/**`, fontes Google, imagens locais): `CacheFirst` com revisionamento automático
 - **Imagens externas**: `StaleWhileRevalidate` com expiração de 30 dias (max 100 itens)  
 - **Navegação/HTML**: `NetworkFirst` com timeout 3s e fallback para `/offline`
-- **APIs GET públicas**: `StaleWhileRevalidate` (evita cache de dados autenticados)
+- **APIs internas**: Nunca cacheadas (todas requerem autenticação)
 - **Feeds externos** (RSS/Atom/JSON): `NetworkFirst` com cache de 24h
 
 ## 🔧 Tecnologias

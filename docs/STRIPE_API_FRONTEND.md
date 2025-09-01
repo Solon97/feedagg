@@ -21,7 +21,7 @@ Retrieve all available subscription pricing options.
 
 **Endpoint:** `GET /stripe/prices`
 
-**Authentication:** Not required
+**Authentication:** Required (JWT token)
 
 **Response Format:**
 ```typescript

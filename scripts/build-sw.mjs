@@ -77,26 +77,6 @@ const buildId = Date.now().toString();
           expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
         },
       },
-      // API GETs only (avoid caching authenticated/private responses)
-      {
-        urlPattern: new Function(
-          "{ url, request }",
-          "const BASE = " +
-            JSON.stringify(runtimeBase) +
-            ";\n" +
-            'const isApi = url.pathname.startsWith(BASE + "/api/");\n' +
-            "if (!isApi) return false;\n" +
-            'if (request.method !== "GET") return false;\n' +
-            'const hasAuth = request.headers.get("authorization") || request.headers.get("cookie");\n' +
-            "return !hasAuth;\n"
-        ),
-        handler: "StaleWhileRevalidate",
-        options: {
-          cacheName: "api-v1",
-          expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 6 },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
       // External feeds (RSS/Atom/JSON)
       {
         urlPattern: /https?:.*\.(?:rss|atom|xml|json)(\?.*)?$/i,

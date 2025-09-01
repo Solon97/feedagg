@@ -1,31 +1,28 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useTopics } from "@/hooks/use-topics";
 import { Loader2, TrendingUp, ArrowRight } from "lucide-react";
 import type { FeedFilters } from "@/hooks/use-feeds";
 import type { UserFeedSubscription } from "@/types/api";
 import { AddFeedSuggestion } from "@/components/add-feed-suggestion";
 import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
-import { useEffect } from "react";
 
 interface TopicSelectionProps {
   onTopicSelect: (filters: FeedFilters) => void;
   onContinueWithoutFilter: () => void;
   feeds?: UserFeedSubscription[];
+  topics?: any[]; // Receive topics from parent to avoid duplicate calls
+  topicsLoading?: boolean;
 }
 
 export function TopicSelection({
   onTopicSelect,
   onContinueWithoutFilter,
   feeds = [],
+  topics = [],
+  topicsLoading = false,
 }: TopicSelectionProps) {
-  const { topics, loading, fetchTopics } = useTopics();
   const { t } = useLocalizedTranslations();
-
-  useEffect(() => {
-    fetchTopics(true);
-  }, []);
 
   const handleTopicClick = (topicId: string) => {
     onTopicSelect({ topic_id: topicId });
@@ -34,7 +31,7 @@ export function TopicSelection({
   // Check if user has active feeds
   const hasActiveFeeds = feeds.some((feed) => feed.is_active);
 
-  if (loading) {
+  if (topicsLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-8 h-8 animate-spin text-teal-500 mb-4" />

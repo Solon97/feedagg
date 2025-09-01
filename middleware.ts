@@ -26,24 +26,11 @@ export function middleware(request: NextRequest) {
 
   // Add Cache-Control headers for API routes to prevent caching of authenticated responses
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    // Default: no caching for API routes
+    // All API routes require authentication - no public caching
     response.headers.set(
       "Cache-Control",
       "no-store, no-cache, must-revalidate, proxy-revalidate"
     );
-
-    // Allow caching only for specific public endpoints
-    const publicEndpoints = ["/api/stripe/prices"];
-    const isPublic = publicEndpoints.some(
-      (endpoint) => request.nextUrl.pathname === endpoint
-    );
-
-    if (isPublic && request.method === "GET") {
-      response.headers.set(
-        "Cache-Control",
-        "public, s-maxage=300, stale-while-revalidate=600"
-      );
-    }
   }
 
   // Add security headers

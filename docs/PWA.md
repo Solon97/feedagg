@@ -35,7 +35,7 @@ node scripts/generate-icons.mjs
 - **Estáticos** (`/_next/static/**`, fontes, imagens locais): `CacheFirst` com revisionamento
 - **Imagens externas**: `StaleWhileRevalidate` com expiração de 30 dias
 - **HTML/Navegação**: `NetworkFirst` com timeout de 3s e fallback `/offline`
-- **APIs GET públicas**: `StaleWhileRevalidate` (evita cache de dados autenticados)
+- **APIs internas**: Nunca cacheadas (todas requerem autenticação)
 - **Feeds externos**: `NetworkFirst` com cache de 24h
 
 ## URLs Importantes

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import { useAuth } from "@/contexts/auth-context";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useSubscriptionFromDashboard } from "@/contexts/dashboard-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -33,12 +34,21 @@ export function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Try to use dashboard context subscription data if available
+  let subscriptionData;
+  try {
+    subscriptionData = useSubscriptionFromDashboard();
+  } catch {
+    // Fallback to individual subscription hook if not in dashboard context
+    subscriptionData = useSubscription(user?.id);
+  }
+
   const {
     isActive: isPremium,
     currentPeriodEnd,
     manageUrl,
     loading: subscriptionLoading,
-  } = useSubscription(user?.id);
+  } = subscriptionData;
 
   const handleSignOut = async () => {
     const { error } = await signOut();
