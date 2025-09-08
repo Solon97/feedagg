@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiService } from "@/lib/api";
 import { Subscription, UserSubscriptionStatus } from "@/types/api";
+import { isSubscriptionActive } from "@/lib/subscription-utils";
 
 export function useSubscription(
   userId?: string
@@ -35,7 +36,7 @@ export function useSubscription(
     fetchSubscription();
   }, [userId]);
 
-  const isActive = subscription?.status?.toLowerCase() === "active";
+  const isActive = isSubscriptionActive(subscription?.status);
   const currentPeriodEnd = subscription?.current_period_end
     ? new Date(subscription.current_period_end)
     : null;

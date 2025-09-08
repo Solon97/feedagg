@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { apiService } from "@/lib/api";
 import { useAPIThrottle } from "@/hooks/use-api-throttle";
 import { apiCache } from "@/lib/api-cache";
+import { isSubscriptionActive } from "@/lib/subscription-utils";
 import type {
   FeedItem,
   UserFeedSubscription,
@@ -445,7 +446,7 @@ export function useDashboardData(userId?: string) {
     deleteTopic,
 
     // Computed values
-    isActive: state.subscription?.status?.toLowerCase() === "active",
+    isActive: isSubscriptionActive(state.subscription?.status),
     currentPeriodEnd: state.subscription?.current_period_end
       ? new Date(state.subscription.current_period_end)
       : null,

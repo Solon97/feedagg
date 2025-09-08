@@ -3,6 +3,7 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useAuth } from "@/contexts/auth-context";
+import { isSubscriptionActive } from "@/lib/subscription-utils";
 
 type DashboardContextType = ReturnType<typeof useDashboardData>;
 
@@ -36,7 +37,7 @@ export function useSubscriptionFromDashboard() {
   const { subscription, loading } = useDashboard();
 
   return {
-    isActive: subscription?.status?.toLowerCase() === "active",
+    isActive: isSubscriptionActive(subscription?.status),
     currentPeriodEnd: subscription?.current_period_end
       ? new Date(subscription.current_period_end)
       : null,

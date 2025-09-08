@@ -82,6 +82,14 @@ export NEXT_PUBLIC_PWA_DISABLE=1 pnpm dev  # Disable PWA in dev
 - **Dynamic pricing**: Fetch from `/api/stripe/prices`, display in `PricingCard` components
 - **Checkout flow**: Create session via `/api/stripe/checkout`, redirect to Stripe hosted checkout
 - **Success/cancel pages**: Handle post-checkout redirects at `/subscription/success|cancel`
+- **Subscription validation**: Use `isSubscriptionActive()` from `lib/subscription-utils.ts` for status checks
+
+### Subscription Status Management
+
+- **Active states**: Subscriptions with status "active" OR "trialing" are considered active/premium
+- **Centralized validation**: Always use `isSubscriptionActive(status)` from `lib/subscription-utils.ts`
+- **Consistent checks**: Apply same validation across hooks (`useSubscription`), contexts (`dashboard-context`), and components
+- **Status utilities**: Use `getSubscriptionStatusText()` and `isPaidSubscription()` for display and business logic
 
 ### External API Communication
 
@@ -118,11 +126,14 @@ NEXT_PUBLIC_BASE_PATH=/subpath   # Deploy to subdirectory
 - Don't bypass `api-middleware.ts` for external API calls
 - Don't forget to handle loading/error states in components
 - Don't hardcode strings - use i18n system even for dev work
+- **Don't manually check subscription status** - always use `isSubscriptionActive()` utility
+- **Don't forget "trialing" status** - trial subscriptions should be treated as active/premium
 
 ## Key Files to Reference
 
 - `scripts/build-sw.mjs` - PWA service worker configuration
 - `lib/api-middleware.ts` - API proxy and error handling patterns
+- `lib/subscription-utils.ts` - Subscription status validation utilities
 - `contexts/auth-context.tsx` - Authentication state management
 - `docs/PWA.md` - Comprehensive PWA implementation guide
 - `docs/STRIPE_INTEGRATION.md` - Payment flow documentation

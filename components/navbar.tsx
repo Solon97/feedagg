@@ -167,15 +167,6 @@ export function Navbar() {
                   </div>
                 </div>
                 <DropdownMenuSeparator className="bg-slate-700" />
-                <DropdownMenuItem
-                  onClick={() =>
-                    window.dispatchEvent(new Event("open-cookie-banner"))
-                  }
-                  className="text-gray-300 hover:text-white hover:bg-slate-700 cursor-pointer m-1"
-                >
-                  Preferências de cookies
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-slate-700" />
 
                 {/* Subscription Details */}
                 <div className="px-3 py-2">
@@ -290,17 +281,6 @@ export function Navbar() {
                     <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider px-3">
                       {t("navigation.account")}
                     </h3>
-                    <div className="px-3">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-gray-300 hover:text-white hover:bg-slate-700 px-3 py-3 h-auto"
-                        onClick={() =>
-                          window.dispatchEvent(new Event("open-cookie-banner"))
-                        }
-                      >
-                        Preferências de cookies
-                      </Button>
-                    </div>
 
                     {/* Subscription Details - mobile */}
                     {!subscriptionLoading && isPremium && (
