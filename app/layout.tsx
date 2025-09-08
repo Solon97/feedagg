@@ -9,6 +9,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { DevLogger } from "@/components/dev-logger";
 import { DevEmailLogin } from "@/components/dev-email-login";
 import { SwUpdater } from "@/components/sw-updater";
+import { CookieBanner } from "@/components/cookie-banner";
+import { AnalyticsConsentLoader } from "@/components/analytics-consent-loader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -61,6 +63,9 @@ export default function RootLayout({
               <Toaster />
               <DevLogger />
               <DevEmailLogin />
+              {/* Cookies & analytics consent */}
+              <CookieBanner />
+              <AnalyticsConsentLoader />
             </SelectedItemProvider>
           </AuthProvider>
         </ThemeProvider>
