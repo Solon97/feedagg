@@ -23,7 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Home, Rss, LogOut, Menu, Crown } from "lucide-react";
+import { Home, Rss, LogOut, Menu, Crown, Settings } from "lucide-react";
 import { PremiumBadge } from "@/components/premium-badge";
 import { SubscriptionDetails } from "@/components/subscription-details";
 
@@ -178,6 +178,30 @@ export function Navbar() {
                   />
                 </div>
 
+                {/* Quick Manage Button for Premium Users */}
+                {!subscriptionLoading &&
+                  isPremium &&
+                  process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL && (
+                    <div className="px-3 pb-2">
+                      <a
+                        href={
+                          process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-teal-400 hover:text-teal-300 hover:bg-slate-700"
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          {t("subscription.manageSubscription")}
+                        </Button>
+                      </a>
+                    </div>
+                  )}
+
                 <DropdownMenuSeparator className="bg-slate-700" />
                 <DropdownMenuItem
                   onClick={handleSignOut}
@@ -223,7 +247,7 @@ export function Navbar() {
                           : getFirstLetter(user?.email || "User")}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col space-y-1 leading-none">
+                    <div className="flex flex-col space-y-1 leading-none flex-1">
                       <p className="font-medium text-white text-sm">
                         {user?.user_metadata?.full_name || t("common.user")}
                       </p>
@@ -231,8 +255,23 @@ export function Navbar() {
                         {user?.email}
                       </p>
                       {!subscriptionLoading && isPremium && (
-                        <div className="mt-1">
+                        <div className="mt-1 flex items-center gap-2">
                           <PremiumBadge />
+                          {process.env
+                            .NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL && (
+                            <a
+                              href={
+                                process.env
+                                  .NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-teal-400 hover:text-teal-300 transition-colors"
+                            >
+                              <Settings className="w-3 h-3" />
+                              {t("subscription.manageSubscription")}
+                            </a>
+                          )}
                         </div>
                       )}
                     </div>
