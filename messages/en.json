@@ -160,7 +160,7 @@
             "message": "You need an active plan to add feeds.",
             "action": "Subscribe now",
             "suffix": "to get started.",
-            "freeLimit": "Free users can only subscribe to one feed.",
+            "freeLimit": "Free users can only subscribe to three feeds.",
             "premiumAction": "Upgrade to Premium",
             "unlimitedFeeds": "for unlimited feeds."
         },

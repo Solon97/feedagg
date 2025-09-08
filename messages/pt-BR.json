@@ -168,7 +168,7 @@
             "message": "Você precisa de um plano ativo para adicionar feeds.",
             "action": "Assine agora",
             "suffix": "para começar a usar.",
-            "freeLimit": "Usuários gratuitos podem se inscrever em apenas um feed.",
+            "freeLimit": "Usuários gratuitos podem se inscrever em apenas três feeds.",
             "premiumAction": "Faça upgrade para Premium",
             "unlimitedFeeds": "para feeds ilimitados."
         },

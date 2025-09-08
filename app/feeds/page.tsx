@@ -42,7 +42,7 @@ export default function FeedsPage() {
 
   // Check if user can add more feeds
   function canAddMoreFeeds() {
-    return isPremium || feeds.length < 1;
+    return isPremium || feeds.length < 3;
   }
 
   // Auto-hide messages after 5 seconds
