@@ -41,7 +41,9 @@ export default function FeedsPage() {
   } | null>(null);
 
   // Check if user can add more feeds
-  const canAddMoreFeeds = isPremium || feeds.length < 1;
+  function canAddMoreFeeds() {
+    return isPremium || feeds.length < 1;
+  }
 
   // Auto-hide messages after 5 seconds
   useEffect(() => {
@@ -132,7 +134,17 @@ export default function FeedsPage() {
           )}
 
           {/* Add New Feed */}
-          {canAddMoreFeeds ? (
+          {subscriptionLoading ? (
+            <Card className="mb-8 bg-slate-800/50 border-slate-700/50">
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-slate-700 rounded mb-2 w-1/3"></div>
+                  <div className="h-4 bg-slate-700 rounded mb-2 w-2/3"></div>
+                  <div className="h-4 bg-slate-700 rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : canAddMoreFeeds() ? (
             <div className="mb-8">
               <AddFeedForm onSuccess={handleFeedAdded} />
             </div>
