@@ -11,6 +11,7 @@ import { DevEmailLogin } from "@/components/dev-email-login";
 import { SwUpdater } from "@/components/sw-updater";
 import { CookieBanner } from "@/components/cookie-banner";
 import { AnalyticsConsentLoader } from "@/components/analytics-consent-loader";
+import { SiteFooter } from "@/components/site-footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -66,6 +67,7 @@ export default function RootLayout({
               {/* Cookies & analytics consent */}
               <CookieBanner />
               <AnalyticsConsentLoader />
+              <SiteFooter />
             </SelectedItemProvider>
           </AuthProvider>
         </ThemeProvider>

@@ -48,7 +48,6 @@ export async function POST(request: NextRequest) {
         },
         requestId
       );
-      console.log("Stripe checkout response:", response);
       // Handle response from external API and return the data directly
       return await handleExternalApiResponse(
         response,
