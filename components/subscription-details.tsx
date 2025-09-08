@@ -43,28 +43,8 @@ export function SubscriptionDetails({
           </div>
         )}
 
-        {/* Manage subscription - single action */}
-        {customerPortalUrl && (
-          <div className="pt-1">
-            <a
-              href={customerPortalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                {t("subscription.manageSubscription")}
-              </Button>
-            </a>
-          </div>
-        )}
-
         {/* Help / Contact */}
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 pt-1">
           <div className="flex items-center gap-2 text-xs text-gray-300">
             <LifeBuoy className="h-4 w-4 text-gray-400" />
             <span>{t("subscription.details.needHelp")}</span>

@@ -7,6 +7,7 @@ import { useLocalizedTranslations } from "@/hooks/use-localized-translations";
 import { useAuth } from "@/contexts/auth-context";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useSubscriptionFromDashboard } from "@/contexts/dashboard-context";
+import { getSubscriptionStatusText } from "@/lib/subscription-utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -23,12 +24,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Home, Rss, LogOut, Menu, Crown, Settings } from "lucide-react";
+import { Home, Rss, LogOut, Menu, Crown, Settings, Mail } from "lucide-react";
 import { PremiumBadge } from "@/components/premium-badge";
 import { SubscriptionDetails } from "@/components/subscription-details";
 
 export function Navbar() {
-  const { t } = useLocalizedTranslations();
+  const { t, localizedDate } = useLocalizedTranslations();
   const { user, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -45,6 +46,7 @@ export function Navbar() {
 
   const {
     isActive: isPremium,
+    status: subscriptionStatus,
     currentPeriodEnd,
     manageUrl,
     loading: subscriptionLoading,
@@ -168,48 +170,100 @@ export function Navbar() {
                 </div>
                 <DropdownMenuSeparator className="bg-slate-700" />
 
-                {/* Subscription Details */}
+                {/* Seção Assinatura */}
                 <div className="px-3 py-2">
-                  <SubscriptionDetails
-                    isActive={isPremium}
-                    currentPeriodEnd={currentPeriodEnd}
-                    manageUrl={manageUrl}
-                    loading={subscriptionLoading}
-                  />
+                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                    {t("subscription.title")}
+                  </h3>
+                  <div className="space-y-2">
+                    {subscriptionLoading ? (
+                      <div className="w-full h-6 bg-slate-700 animate-pulse rounded"></div>
+                    ) : (
+                      <>
+                        <div className="text-sm">
+                          {isPremium ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Crown className="h-4 w-4 text-emerald-400" />
+                                <span className="text-emerald-300 font-medium">
+                                  {t(
+                                    `subscription.status.${getSubscriptionStatusText(
+                                      subscriptionStatus || undefined
+                                    )}`
+                                  )}
+                                </span>
+                              </div>
+                              {currentPeriodEnd && (
+                                <div className="text-xs text-gray-400 pl-6">
+                                  {t("subscription.details.renews")}{" "}
+                                  {localizedDate(currentPeriodEnd)}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-gray-300">
+                              {t("subscription.status.free")}
+                            </div>
+                          )}
+                        </div>
+                        {isPremium &&
+                        process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL ? (
+                          <a
+                            href={
+                              process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm text-teal-400 hover:text-teal-300 font-medium transition-colors border border-teal-400/30 rounded-md px-3 py-2 hover:border-teal-300/40"
+                          >
+                            <Settings className="h-4 w-4" />
+                            {t("subscription.manageSubscription")}
+                          </a>
+                        ) : (
+                          <Link href="/subscribe">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200"
+                            >
+                              <Crown className="mr-2 h-4 w-4" />
+                              {t("subscription.subscribeNow")}
+                            </Button>
+                          </Link>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                {/* Quick Manage Button for Premium Users */}
-                {!subscriptionLoading &&
-                  isPremium &&
-                  process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL && (
-                    <div className="px-3 pb-2">
-                      <a
-                        href={
-                          process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-teal-400 hover:text-teal-300 hover:bg-slate-700"
-                        >
-                          <Settings className="mr-2 h-4 w-4" />
-                          {t("subscription.manageSubscription")}
-                        </Button>
-                      </a>
-                    </div>
-                  )}
+                <DropdownMenuSeparator className="bg-slate-700" />
+
+                {/* Seção Ajuda */}
+                <div className="px-3 py-2">
+                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                    {t("subscription.details.needHelp")}
+                  </h3>
+                  <a
+                    href={`mailto:contato@feedagg.com`}
+                    className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+                  >
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    contato@feedagg.com
+                  </a>
+                </div>
 
                 <DropdownMenuSeparator className="bg-slate-700" />
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-gray-300 hover:text-white hover:bg-slate-700 cursor-pointer m-1"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t("auth.signOut")}
-                </DropdownMenuItem>
+
+                {/* Seção Conta */}
+                <div className="px-1 py-1">
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="text-gray-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t("auth.signOut")}
+                  </DropdownMenuItem>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -257,41 +311,10 @@ export function Navbar() {
                       {!subscriptionLoading && isPremium && (
                         <div className="mt-1 flex items-center gap-2">
                           <PremiumBadge />
-                          {process.env
-                            .NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL && (
-                            <a
-                              href={
-                                process.env
-                                  .NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-teal-400 hover:text-teal-300 transition-colors"
-                            >
-                              <Settings className="w-3 h-3" />
-                              {t("subscription.manageSubscription")}
-                            </a>
-                          )}
                         </div>
                       )}
                     </div>
                   </div>
-
-                  {/* Subscription Status - mobile */}
-                  {!subscriptionLoading && !isPremium && (
-                    <div className="px-3">
-                      <Link href="/subscribe">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-teal-400 border-teal-400 hover:bg-teal-400 hover:text-white"
-                        >
-                          <Crown className="w-4 h-4 mr-2" />
-                          {t("subscription.subscribeNow")}
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
 
                   {/* Navigation Links */}
                   <div className="space-y-2">
@@ -316,31 +339,105 @@ export function Navbar() {
                   </div>
 
                   {/* Actions */}
-                  <div className="space-y-2 pt-4 border-t border-slate-700">
-                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider px-3">
-                      {t("navigation.account")}
-                    </h3>
-
-                    {/* Subscription Details - mobile */}
-                    {!subscriptionLoading && isPremium && (
-                      <div className="px-3 py-2">
-                        <SubscriptionDetails
-                          isActive={isPremium}
-                          currentPeriodEnd={currentPeriodEnd}
-                          manageUrl={manageUrl}
-                          loading={subscriptionLoading}
-                        />
+                  <div className="space-y-4 pt-4 border-t border-slate-700">
+                    {/* Seção Assinatura - mobile */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider px-3">
+                        {t("subscription.title")}
+                      </h3>
+                      <div className="px-3">
+                        {subscriptionLoading ? (
+                          <div className="w-full h-6 bg-slate-700 animate-pulse rounded"></div>
+                        ) : (
+                          <>
+                            <div className="text-sm mb-2">
+                              {isPremium ? (
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <Crown className="h-4 w-4 text-emerald-400" />
+                                    <span className="text-emerald-300 font-medium">
+                                      {t(
+                                        `subscription.status.${getSubscriptionStatusText(
+                                          subscriptionStatus || undefined
+                                        )}`
+                                      )}
+                                    </span>
+                                  </div>
+                                  {currentPeriodEnd && (
+                                    <div className="text-xs text-gray-400 pl-6">
+                                      {t("subscription.details.renews")}{" "}
+                                      {localizedDate(currentPeriodEnd)}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-gray-300">
+                                  {t("subscription.status.free")}
+                                </div>
+                              )}
+                            </div>
+                            {isPremium &&
+                            process.env
+                              .NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL ? (
+                              <a
+                                href={
+                                  process.env
+                                    .NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-sm text-teal-400 hover:text-teal-300 font-medium transition-colors border border-teal-400/30 rounded-md px-3 py-2 hover:border-teal-300/40"
+                              >
+                                <Settings className="h-4 w-4" />
+                                {t("subscription.manageSubscription")}
+                              </a>
+                            ) : (
+                              <Link href="/subscribe">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200"
+                                >
+                                  <Crown className="mr-2 h-4 w-4" />
+                                  {t("subscription.subscribeNow")}
+                                </Button>
+                              </Link>
+                            )}
+                          </>
+                        )}
                       </div>
-                    )}
+                    </div>
 
-                    <Button
-                      onClick={handleSignOut}
-                      variant="ghost"
-                      className="w-full justify-start text-gray-300 hover:text-white hover:bg-slate-700 px-3 py-3 h-auto"
-                    >
-                      <LogOut className="mr-3 h-5 w-5" />
-                      {t("auth.signOut")}
-                    </Button>
+                    {/* Seção Ajuda - mobile */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider px-3">
+                        {t("subscription.details.needHelp")}
+                      </h3>
+                      <div className="px-3">
+                        <a
+                          href={`mailto:contato@feedagg.com`}
+                          className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+                        >
+                          <Mail className="h-4 w-4 text-gray-400" />
+                          contato@feedagg.com
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Seção Conta - mobile */}
+                    <div className="space-y-2 pt-2 border-t border-slate-700">
+                      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider px-3">
+                        {t("navigation.account")}
+                      </h3>
+                      <Button
+                        onClick={handleSignOut}
+                        variant="ghost"
+                        className="w-full justify-start text-gray-300 hover:text-white hover:bg-slate-700 px-3 py-3 h-auto"
+                      >
+                        <LogOut className="mr-3 h-5 w-5" />
+                        {t("auth.signOut")}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </SheetContent>

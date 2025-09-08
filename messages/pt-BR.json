@@ -57,6 +57,7 @@
         "signInWithGitHub": "Entrar com GitHub"
     },
     "subscription": {
+        "title": "Assinatura",
         "subscribeNow": "Assinar Agora",
         "premium": "Premium",
         "free": "Gratuito",
@@ -70,6 +71,18 @@
         "nextBilling": "Próxima Cobrança",
         "monthly": "Mensal",
         "yearly": "Anual",
+        "status": {
+            "active": "Ativo",
+            "trialing": "Período de teste",
+            "canceled": "Cancelado",
+            "cancelled": "Cancelado",
+            "expired": "Expirado",
+            "incomplete": "Incompleto",
+            "past_due": "Em atraso",
+            "unpaid": "Não pago",
+            "inactive": "Inativo",
+            "free": "Gratuito"
+        },
         "success": {
             "title": "Bem-vindo ao Premium!",
             "message": "Sua assinatura foi ativada com sucesso. Agora você tem acesso a todos os recursos premium.",

@@ -44,6 +44,7 @@ export function useSubscription(
 
   return {
     isActive,
+    status: subscription?.status || null,
     currentPeriodEnd,
     manageUrl,
     loading,

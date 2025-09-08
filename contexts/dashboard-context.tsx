@@ -38,6 +38,7 @@ export function useSubscriptionFromDashboard() {
 
   return {
     isActive: isSubscriptionActive(subscription?.status),
+    status: subscription?.status || null,
     currentPeriodEnd: subscription?.current_period_end
       ? new Date(subscription.current_period_end)
       : null,

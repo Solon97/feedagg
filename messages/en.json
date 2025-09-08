@@ -60,6 +60,7 @@
         "signInWithGitHub": "Sign in with GitHub"
     },
     "subscription": {
+        "title": "Subscription",
         "subscribeNow": "Subscribe Now",
         "premium": "Premium",
         "free": "Free",
@@ -73,6 +74,18 @@
         "nextBilling": "Next Billing",
         "monthly": "Monthly",
         "yearly": "Yearly",
+        "status": {
+            "active": "Active",
+            "trialing": "Trial",
+            "canceled": "Canceled",
+            "cancelled": "Canceled",
+            "expired": "Expired",
+            "incomplete": "Incomplete",
+            "past_due": "Past Due",
+            "unpaid": "Unpaid",
+            "inactive": "Inactive",
+            "free": "Free"
+        },
         "success": {
             "title": "Welcome to Premium!",
             "message": "Your subscription has been activated successfully. You now have access to all premium features.",

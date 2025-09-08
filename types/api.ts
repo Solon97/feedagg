@@ -84,6 +84,7 @@ export interface Subscription {
 
 export interface UserSubscriptionStatus {
   isActive: boolean;
+  status: string | null;
   currentPeriodEnd: Date | null;
   manageUrl: string;
 }
