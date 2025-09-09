@@ -58,7 +58,10 @@ export default function RootLayout({
         >
           <AuthProvider>
             <SelectedItemProvider>
-              {children}
+              <div className="min-h-screen flex flex-col">
+                <main className="flex-1">{children}</main>
+                <SiteFooter />
+              </div>
               {/* SW update toast controller */}
               <SwUpdater />
               <Toaster />
@@ -67,7 +70,6 @@ export default function RootLayout({
               {/* Cookies & analytics consent */}
               <CookieBanner />
               <AnalyticsConsentLoader />
-              <SiteFooter />
             </SelectedItemProvider>
           </AuthProvider>
         </ThemeProvider>
