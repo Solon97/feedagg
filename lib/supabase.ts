@@ -34,7 +34,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
       "- NEXT_PUBLIC_SUPABASE_ANON_KEY",
       "",
       "You can add them in `.env.local` or via the Vercel project settings.",
-    ].join("\n")
+    ].join("\n"),
   );
 }
 
@@ -67,26 +67,3 @@ export const supabase = (() => {
   }
   return _browserClient;
 })();
-
-// Server-side client with service role (for API routes only)
-export const createServerSupabaseClient = () => {
-  if (typeof window !== "undefined") {
-    throw new Error(
-      "createServerSupabaseClient should only be used on the server"
-    );
-  }
-
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceRoleKey) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY is required for server-side operations"
-    );
-  }
-
-  return createClient(supabaseUrl!, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-};
